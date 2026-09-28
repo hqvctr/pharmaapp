@@ -1,4 +1,4 @@
-# Alertas de Promoção
+# economae — alertas de promoção
 
 App Android + backend próprio que notifica só promoção comprovadamente excepcional, nas categorias
 escolhidas, de loja confiável e que chega (ou está perto) do CEP do usuário.
