@@ -5,22 +5,40 @@
 **Confirmado pelo responsável:** impacto de cronograma das 14 observações aceito; interpretações 12, 13,
 14 e 17 do DECISIONS confirmadas; nome `economae`; região estado de SP; TIPO A = Mercado Livre.
 
-**Propostas aguardando aprovação** (detalhe na conversa da sessão):
-- P1. Coleta várias vezes ao dia, mas o avaliador entrega ao motor **uma observação por dia**
-  (último preço do dia), para que "14 observações" continue significando ~2 semanas. Sem mudança no motor.
-- P2. Credencial ML: app no DevCenter com conta da empresa; `ML_CLIENT_ID`, `ML_CLIENT_SECRET` e
-  `ML_REFRESH_TOKEN` inicial por env; refresh token rotacionado persistido cifrado no Postgres com
-  `CREDENTIALS_KEY` (env), usando `node:crypto`.
-- P3. CEP → coordenada: CEP Aberto com cache permanente em tabela própria; só necessário a partir da
-  fase 5 (loja física). Na fase 2 (ML, entrega) não é usado.
-- P4. Medicamento: trava dupla, falha fechada. Só passa com GTIN presente na lista CMED como venda
-  sem prescrição E princípio ativo fora das listas da Portaria SVS/MS 344/98; sem GTIN → bloqueia.
-- P5. Alerta repetido: chave de deduplicação (tenant, família, loja, preço efetivo, condição) com
-  índice único; novo alerta só se o preço cair mais 5% ou após 7 dias; resto vai para `offers`.
+**Propostas aguardando aprovação** — versão revisada em 2026-09-28 (a primeira versão tinha
+erros; ver conversa da sessão):
+- P1. Coleta a cada 2 h (config por fonte). `price_history` grava a primeira observação de cada dia
+  e toda mudança de preço; nunca "só quando muda" (dia sem linha sumiria da contagem). O avaliador
+  entrega ao motor uma observação por **dia fechado** (fuso America/Sao_Paulo), com o **menor**
+  preço do dia; o dia corrente não entra no histórico, é a oferta. "14 observações" passa a ser lido
+  como "14 dias com observação" — reinterpretação da especificação, depende de aprovação.
+- P2. Credencial por fonte e por tenant (tabela `source_credentials`, cifrada com AES-256-GCM via
+  `node:crypto`, chave `CREDENTIALS_KEY` por env, com id de versão da chave). Token inicial entra por
+  comando administrativo, não por variável global. Renovação sob lock no Postgres (duas instâncias
+  renovando juntas quebram a cadeia). Apps/autorizações separados para desenvolvimento e produção.
+- P3. CEP → coordenada: CEP Aberto só depois de ler os termos e registrar em SOURCES.md se o cache é
+  permitido. Cache por CEP (não por usuário). Aceitar erro de posição em CEP geral de cidade pequena.
+  Só necessário na fase 5.
+- P4. Medicamento, falha fechada, aplicado a **todo** produto, não só à categoria de medicamentos:
+  (a) GTIN encontrado na lista CMED → é medicamento → só passa se classificado como isento de
+  prescrição; (b) filtro de texto independente no título/descrição (tarja, receita, controlado,
+  retenção) bloqueia e manda para revisão; (c) produto na categoria de medicamentos sem GTIN ou sem
+  correspondência na CMED → bloqueado. Listas versionadas com data de download.
+- P5. Deduplicação por (tenant, família, loja): novo alerta só se o preço efetivo por unidade cair
+  mais 5% abaixo do último alerta, ou se a promoção anterior tiver terminado (preço voltou acima da
+  referência ou validade encerrou) e voltado. Promoção longa não renotifica. Mudança de decisão para
+  cima (somente_feed → notificar, após aprovação de loja ou humana) é permitida. Sem índice único
+  sobre preço; a regra roda dentro de transação com lock por chave.
+- P6 (novo). Critério de pronto da fase 2: `scripts/pronto-fase2.sh` roda coletor → normalizador →
+  avaliador contra respostas gravadas do Mercado Livre (HTTP falso) e histórico semeado de 20 dias,
+  e confere no banco: ≥ 1 alerta `notificar`, 1 desconto de mentira descartado, 1 medicamento
+  bloqueado, 0 alerta duplicado numa segunda execução. Coleta real fica em comando de integração.
 
 **Riscos abertos da fonte Mercado Livre** (verificar com credencial antes de codar o adapter):
 - Relatos públicos desde jan/2026 de 403 no `/sites/MLB/search` para apps comuns. Plano: adapter por
-  lista de itens/produtos acompanhados (watchlist do operador) via `/items`/`/products`, não por busca.
+  lista de itens acompanhados via `/items/bulk`, não por busca. A lista precisa ser semeada (mais
+  vendidos por categoria, se o endpoint responder; senão, operador), porque só entra alerta de item
+  acompanhado há 14 dias.
 - Programa de afiliados do ML não tem API oficial de geração de link. Sem link de afiliado automático
   até confirmar um caminho oficial; ferramentas de terceiros não entram.
 - Este ambiente de nuvem bloqueia `api.mercadolibre.com` e `www.cepaberto.com` na política de rede.
