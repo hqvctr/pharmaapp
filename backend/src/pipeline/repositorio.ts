@@ -162,6 +162,16 @@ export async function historicoDaFamilia(
   return r.rows.map((l) => ({ observadoEm: l.observado_em, precoPorUnidade: Number(l.preco_por_unidade_centavos) }));
 }
 
+/** Oferta da fonte que não veio numa coleta completa acabou: sai do feed. Devolve quantas mudaram. */
+export async function marcarAusentesIndisponiveis(db: Db, tenantId: string, sourceId: string, vistos: string[]): Promise<number> {
+  const r = await db.query(
+    `UPDATE offers SET disponivel = false
+      WHERE tenant_id = $1 AND source_id = $2 AND disponivel AND NOT (id_externo = ANY($3::text[]))`,
+    [tenantId, sourceId, vistos],
+  );
+  return r.rowCount ?? 0;
+}
+
 export async function registrarAvaliacao(
   db: Db,
   tenantId: string,

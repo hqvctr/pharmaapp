@@ -22,6 +22,14 @@ describe('adaptador Lomadee (respostas gravadas)', () => {
     expect(r.ofertas).toHaveLength(7);
     expect(r.ilegiveis).toHaveLength(1);
     expect(r.ilegiveis[0]!.erro).toContain('price');
+    expect(r.completa).toBe(true);
+  });
+
+  it('corte por maxPaginas marca a coleta como incompleta', async () => {
+    const http = new HttpGravado(path.join(RAIZ, 'fixtures/lomadee/promocao'));
+    const r = await new LomadeeAdapter(http, { ...config, lojas: ['9001'], maxPaginas: 1 }).coletar();
+    expect(http.pedidos).toEqual(['loja-9001-pagina-1.json']);
+    expect(r.completa).toBe(false);
   });
 
   it('converte preço em reais para centavos sem erro de ponto flutuante', () => {

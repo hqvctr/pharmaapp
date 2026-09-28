@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 if [ ! -f .env ]; then
-  echo "Falta .env. Copie .env.example para .env e defina POSTGRES_PASSWORD." >&2
+  echo "Falta .env. Copie .env.example para .env e defina POSTGRES_PASSWORD e AUTH_CODIGO_CHAVE." >&2
   exit 1
 fi
 set -a; . ./.env; set +a

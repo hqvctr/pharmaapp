@@ -53,5 +53,31 @@
   "cobertura": {
     "raioRetiradaKm": 5,
     "custoDeslocamentoPorKmCentavos": 80
+  },
+  "app": {
+    "nome": "economae",
+    "termos": { "versao": "rascunho-2026-09-28", "url": null },
+    "rotulosCategorias": {
+      "mercearia": "Mercearia",
+      "pereciveis": "Perecíveis",
+      "higiene_intima": "Higiene íntima",
+      "maquiagem": "Maquiagem",
+      "higiene_bebe": "Bebê",
+      "limpeza": "Limpeza",
+      "cuidados_pessoais": "Cuidados pessoais",
+      "medicamentos_isentos": "Medicamentos sem prescrição"
+    },
+    "regiao": { "nome": "Estado de São Paulo", "faixasCep": [{ "inicio": "01000000", "fim": "19999999" }] },
+    "planos": { "gratuito": { "maxCeps": 1 }, "premium": { "maxCeps": 3 } },
+    "limiteDiarioMaximo": 10,
+    "feed": { "idadeMaximaColetaHoras": 6, "tamanhoPaginaPadrao": 20, "tamanhoPaginaMaximo": 50 },
+    "auth": {
+      "codigoValidadeMinutos": 10,
+      "codigoTentativas": 5,
+      "codigosPorHora": 5,
+      "codigosPorHoraPorIp": 20,
+      "sessaoDias": 90,
+      "googleClientIds": []
+    }
   }
 }

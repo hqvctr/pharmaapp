@@ -1,0 +1,1768 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "economae API",
+    "version": "1.0.0",
+    "description": "Contrato entre o app Android e o backend. Gerado de backend/src/api/v1/definicoes.ts por `npm run contrato`; o teste falha se este arquivo divergir do código. Dinheiro sempre em centavos inteiros. Toda rota exige o cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer."
+  },
+  "security": [
+    {
+      "sessao": []
+    }
+  ],
+  "paths": {
+    "/v1/configuracao": {
+      "get": {
+        "operationId": "obterConfiguracao",
+        "summary": "Dados do tenant que o app precisa antes do login",
+        "description": "Nome, versão e endereço dos termos, categorias com rótulo, região atendida, limites dos planos e métodos de login.",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configuração",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Configuracao"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/email/codigo": {
+      "post": {
+        "operationId": "pedirCodigoEmail",
+        "summary": "Envia um código de 6 dígitos para o e-mail",
+        "description": "Responde igual para e-mail cadastrado ou não. Só o código mais recente vale. Limites por e-mail e por IP, por hora.",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Código enviado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "validadeMinutos": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "validadeMinutos"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de tentativas; ver Retry-After. Códigos: LIMITE_EXCEDIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependência indisponível. Códigos: ENVIO_FALHOU.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/email/verificar": {
+      "post": {
+        "operationId": "verificarCodigoEmail",
+        "summary": "Troca e-mail e código por uma sessão",
+        "description": "Cria a conta no primeiro acesso. Cada código aceita um número limitado de tentativas.",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  },
+                  "codigo": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$"
+                  }
+                },
+                "required": [
+                  "email",
+                  "codigo"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sessão criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sessao"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: CODIGO_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Limite de tentativas; ver Retry-After. Códigos: TENTATIVAS_ESGOTADAS.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/google": {
+      "post": {
+        "operationId": "entrarComGoogle",
+        "summary": "Troca um ID token do Google por uma sessão",
+        "description": "Aceita só e-mail verificado pelo Google. Se já existe conta com o mesmo e-mail, vincula o Google a ela.",
+        "security": [],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idToken": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "required": [
+                  "idToken"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sessão criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sessao"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: TOKEN_GOOGLE_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido. Códigos: LOGIN_GOOGLE_INDISPONIVEL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito. Códigos: EMAIL_VINCULADO_A_OUTRO_GOOGLE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependência indisponível. Códigos: GOOGLE_INDISPONIVEL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/sair": {
+      "post": {
+        "operationId": "sair",
+        "summary": "Revoga a sessão atual",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sessão revogada"
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/eu": {
+      "get": {
+        "operationId": "obterUsuario",
+        "summary": "Conta, plano, termos e consentimento",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "excluirConta",
+        "summary": "Exclui a conta e todos os dados pessoais",
+        "description": "Apaga preferências, sessões, entregas, assinaturas e códigos de login. Não tem volta.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Conta excluída"
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/eu/termos": {
+      "put": {
+        "operationId": "aceitarTermos",
+        "summary": "Registra o aceite da versão vigente dos termos",
+        "description": "O app envia a versão que mostrou; se ela não é mais a vigente, recebe 409 e mostra a nova.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "versao": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "versao"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito. Códigos: TERMOS_DESATUALIZADOS.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/eu/notificacoes": {
+      "put": {
+        "operationId": "definirConsentimentoNotificacoes",
+        "summary": "Dá ou retira o consentimento para notificações",
+        "description": "Separado do aceite dos termos (LGPD). Sem consentimento, nenhum push é enviado.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "consentidas": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "consentidas"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/preferencias": {
+      "get": {
+        "operationId": "obterPreferencias",
+        "summary": "Categorias, CEPs, horário de silêncio e limite diário",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Preferências (vazias se nunca salvas)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferenciasSalvas"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido. Códigos: TERMOS_PENDENTES.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "salvarPreferencias",
+        "summary": "Substitui as preferências",
+        "description": "Substituição completa. Mais CEPs que o plano permite: 403. CEP fora da região atendida: 422.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preferencias"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preferências salvas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferenciasSalvas"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido. Códigos: TERMOS_PENDENTES, LIMITE_DO_PLANO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Valor recusado pela regra de negócio. Códigos: CATEGORIA_DESCONHECIDA, CEP_FORA_DA_REGIAO, LIMITE_DIARIO_INVALIDO, SILENCIO_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/feed": {
+      "get": {
+        "operationId": "listarFeed",
+        "summary": "Promoções vigentes para as categorias e CEPs do usuário",
+        "description": "Só promoções aprovadas pela curadoria, ainda disponíveis, coletadas recentemente e com entrega para o CEP. Mais recentes primeiro. Paginação por cursor opaco.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          },
+          {
+            "name": "cep",
+            "in": "query",
+            "required": false,
+            "description": "Um dos CEPs do usuário; sem ele, vale qualquer CEP do usuário.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{8}$"
+            }
+          },
+          {
+            "name": "categoria",
+            "in": "query",
+            "required": false,
+            "description": "Uma das categorias do usuário.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página do feed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Feed"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA, CURSOR_INVALIDO.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido. Códigos: TERMOS_PENDENTES.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito. Códigos: PREFERENCIAS_INCOMPLETAS.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Valor recusado pela regra de negócio. Códigos: CEP_NAO_CADASTRADO, CATEGORIA_NAO_ESCOLHIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ofertas/{id}": {
+      "get": {
+        "operationId": "obterOferta",
+        "summary": "Detalhe de uma oferta, com histórico de preço",
+        "description": "Responde também para oferta encerrada (ativa = false, sem link), para o app abrir uma notificação antiga. Oferta que nunca passou na curadoria: 404.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Oferta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetalheOferta"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido. Códigos: TERMOS_PENDENTES.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado. Códigos: OFERTA_NAO_ENCONTRADA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessao": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token opaco devolvido pelo login."
+      }
+    },
+    "parameters": {
+      "Tenant": {
+        "name": "X-Tenant",
+        "in": "header",
+        "required": true,
+        "description": "Slug do tenant, fixo no build do app.",
+        "schema": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$"
+        }
+      }
+    },
+    "schemas": {
+      "Cep": {
+        "type": "string",
+        "pattern": "^[0-9]{8}$",
+        "description": "CEP com 8 dígitos, sem hífen."
+      },
+      "Configuracao": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "termos": {
+            "type": "object",
+            "properties": {
+              "versao": {
+                "type": "string"
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "versao",
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "categorias": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "nome": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "nome"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "regiao": {
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "planos": {
+            "type": "object",
+            "properties": {
+              "gratuito": {
+                "type": "object",
+                "properties": {
+                  "maxCeps": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "maxCeps"
+                ],
+                "additionalProperties": false
+              },
+              "premium": {
+                "type": "object",
+                "properties": {
+                  "maxCeps": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "maxCeps"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "gratuito",
+              "premium"
+            ],
+            "additionalProperties": false
+          },
+          "limiteDiarioMaximo": {
+            "type": "integer"
+          },
+          "login": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "boolean"
+              },
+              "google": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "email",
+              "google"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "nome",
+          "termos",
+          "categorias",
+          "regiao",
+          "planos",
+          "limiteDiarioMaximo",
+          "login"
+        ],
+        "additionalProperties": false
+      },
+      "DetalheOferta": {
+        "type": "object",
+        "properties": {
+          "ofertaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "produto": {
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string"
+              },
+              "marca": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "categoria": {
+                "type": "string"
+              },
+              "embalagem": {
+                "type": "object",
+                "properties": {
+                  "quantidade": {
+                    "type": "number"
+                  },
+                  "unidade": {
+                    "type": "string",
+                    "enum": [
+                      "kg",
+                      "l",
+                      "un"
+                    ]
+                  }
+                },
+                "required": [
+                  "quantidade",
+                  "unidade"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "nome",
+              "marca",
+              "categoria",
+              "embalagem"
+            ],
+            "additionalProperties": false
+          },
+          "loja": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "nome": {
+                "type": "string"
+              },
+              "rede": {
+                "type": "string"
+              },
+              "tipo": {
+                "type": "string",
+                "enum": [
+                  "online",
+                  "fisica"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "nome",
+              "rede",
+              "tipo"
+            ],
+            "additionalProperties": false
+          },
+          "precoCentavos": {
+            "type": "integer",
+            "description": "Preço anunciado de uma embalagem."
+          },
+          "precoEfetivoCentavos": {
+            "type": "integer",
+            "description": "Preço por embalagem sob a condição (ex.: leve 3 pague 2)."
+          },
+          "precoReferenciaCentavos": {
+            "type": "integer",
+            "description": "Preço de referência da mesma embalagem no histórico da loja."
+          },
+          "queda": {
+            "type": "number",
+            "description": "Fração de queda do preço efetivo sobre a referência (0,3 = 30%)."
+          },
+          "precoPorUnidade": {
+            "type": "object",
+            "properties": {
+              "centavos": {
+                "type": "number"
+              },
+              "unidade": {
+                "type": "string",
+                "enum": [
+                  "kg",
+                  "l",
+                  "un"
+                ]
+              }
+            },
+            "required": [
+              "centavos",
+              "unidade"
+            ],
+            "additionalProperties": false
+          },
+          "condicao": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Rótulo obrigatório de exibir quando a oferta é condicional."
+          },
+          "frete": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "conhecido",
+                  "a_confirmar",
+                  "nao_se_aplica"
+                ]
+              },
+              "centavos": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "centavos"
+            ],
+            "additionalProperties": false
+          },
+          "validaAte": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "decisao": {
+            "type": "string",
+            "enum": [
+              "notificar",
+              "aguardar_aprovacao",
+              "somente_feed"
+            ]
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "medicamento": {
+            "type": "boolean"
+          },
+          "linkAfiliado": {
+            "type": "boolean",
+            "description": "true: o app precisa informar que o link é de afiliado."
+          },
+          "alertadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "coletadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ativa": {
+            "type": "boolean",
+            "description": "false: a promoção acabou; o app mostra como encerrada e sem link."
+          },
+          "link": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null quando a oferta não está ativa."
+          },
+          "historico": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dia": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "precoEquivalenteCentavos": {
+                  "type": "integer",
+                  "description": "Menor preço do dia, convertido para esta embalagem."
+                }
+              },
+              "required": [
+                "dia",
+                "precoEquivalenteCentavos"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "ofertaId",
+          "produto",
+          "loja",
+          "precoCentavos",
+          "precoEfetivoCentavos",
+          "precoReferenciaCentavos",
+          "queda",
+          "precoPorUnidade",
+          "condicao",
+          "frete",
+          "validaAte",
+          "decisao",
+          "score",
+          "medicamento",
+          "linkAfiliado",
+          "alertadaEm",
+          "coletadaEm",
+          "ativa",
+          "link",
+          "historico"
+        ],
+        "additionalProperties": false
+      },
+      "Erro": {
+        "type": "object",
+        "properties": {
+          "erro": {
+            "type": "object",
+            "properties": {
+              "codigo": {
+                "type": "string",
+                "description": "Estável; o app decide por ele."
+              },
+              "mensagem": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "codigo",
+              "mensagem"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "erro"
+        ],
+        "additionalProperties": false
+      },
+      "Feed": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemFeed"
+            }
+          },
+          "proximoCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null: não há mais páginas."
+          }
+        },
+        "required": [
+          "itens",
+          "proximoCursor"
+        ],
+        "additionalProperties": false
+      },
+      "ItemFeed": {
+        "type": "object",
+        "properties": {
+          "ofertaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "produto": {
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string"
+              },
+              "marca": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "categoria": {
+                "type": "string"
+              },
+              "embalagem": {
+                "type": "object",
+                "properties": {
+                  "quantidade": {
+                    "type": "number"
+                  },
+                  "unidade": {
+                    "type": "string",
+                    "enum": [
+                      "kg",
+                      "l",
+                      "un"
+                    ]
+                  }
+                },
+                "required": [
+                  "quantidade",
+                  "unidade"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "nome",
+              "marca",
+              "categoria",
+              "embalagem"
+            ],
+            "additionalProperties": false
+          },
+          "loja": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "nome": {
+                "type": "string"
+              },
+              "rede": {
+                "type": "string"
+              },
+              "tipo": {
+                "type": "string",
+                "enum": [
+                  "online",
+                  "fisica"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "nome",
+              "rede",
+              "tipo"
+            ],
+            "additionalProperties": false
+          },
+          "precoCentavos": {
+            "type": "integer",
+            "description": "Preço anunciado de uma embalagem."
+          },
+          "precoEfetivoCentavos": {
+            "type": "integer",
+            "description": "Preço por embalagem sob a condição (ex.: leve 3 pague 2)."
+          },
+          "precoReferenciaCentavos": {
+            "type": "integer",
+            "description": "Preço de referência da mesma embalagem no histórico da loja."
+          },
+          "queda": {
+            "type": "number",
+            "description": "Fração de queda do preço efetivo sobre a referência (0,3 = 30%)."
+          },
+          "precoPorUnidade": {
+            "type": "object",
+            "properties": {
+              "centavos": {
+                "type": "number"
+              },
+              "unidade": {
+                "type": "string",
+                "enum": [
+                  "kg",
+                  "l",
+                  "un"
+                ]
+              }
+            },
+            "required": [
+              "centavos",
+              "unidade"
+            ],
+            "additionalProperties": false
+          },
+          "condicao": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Rótulo obrigatório de exibir quando a oferta é condicional."
+          },
+          "frete": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "conhecido",
+                  "a_confirmar",
+                  "nao_se_aplica"
+                ]
+              },
+              "centavos": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "centavos"
+            ],
+            "additionalProperties": false
+          },
+          "validaAte": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "decisao": {
+            "type": "string",
+            "enum": [
+              "notificar",
+              "aguardar_aprovacao",
+              "somente_feed"
+            ]
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "medicamento": {
+            "type": "boolean"
+          },
+          "linkAfiliado": {
+            "type": "boolean",
+            "description": "true: o app precisa informar que o link é de afiliado."
+          },
+          "alertadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "coletadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "prazoEntregaDias": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Menor prazo para os CEPs consultados."
+          }
+        },
+        "required": [
+          "ofertaId",
+          "produto",
+          "loja",
+          "precoCentavos",
+          "precoEfetivoCentavos",
+          "precoReferenciaCentavos",
+          "queda",
+          "precoPorUnidade",
+          "condicao",
+          "frete",
+          "validaAte",
+          "decisao",
+          "score",
+          "medicamento",
+          "linkAfiliado",
+          "alertadaEm",
+          "coletadaEm",
+          "prazoEntregaDias"
+        ],
+        "additionalProperties": false
+      },
+      "Preferencias": {
+        "type": "object",
+        "properties": {
+          "categorias": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "maxItems": 50
+          },
+          "ceps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cep"
+            },
+            "uniqueItems": true,
+            "maxItems": 3,
+            "description": "O primeiro é o principal; o plano limita a quantidade."
+          },
+          "silencio": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "inicio": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+                "description": "HH:MM, no fuso do tenant."
+              },
+              "fim": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+                "description": "HH:MM, no fuso do tenant."
+              }
+            },
+            "required": [
+              "inicio",
+              "fim"
+            ],
+            "additionalProperties": false
+          },
+          "limiteDiario": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        },
+        "required": [
+          "categorias",
+          "ceps",
+          "silencio",
+          "limiteDiario"
+        ],
+        "additionalProperties": false
+      },
+      "PreferenciasSalvas": {
+        "type": "object",
+        "properties": {
+          "categorias": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "maxItems": 50
+          },
+          "ceps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cep"
+            },
+            "uniqueItems": true,
+            "maxItems": 3,
+            "description": "O primeiro é o principal; o plano limita a quantidade."
+          },
+          "silencio": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "inicio": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+                "description": "HH:MM, no fuso do tenant."
+              },
+              "fim": {
+                "type": "string",
+                "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+                "description": "HH:MM, no fuso do tenant."
+              }
+            },
+            "required": [
+              "inicio",
+              "fim"
+            ],
+            "additionalProperties": false
+          },
+          "limiteDiario": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "completas": {
+            "type": "boolean",
+            "description": "Tem ao menos uma categoria e um CEP; o feed exige."
+          }
+        },
+        "required": [
+          "categorias",
+          "ceps",
+          "silencio",
+          "limiteDiario",
+          "completas"
+        ],
+        "additionalProperties": false
+      },
+      "Sessao": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Enviar em Authorization: Bearer <token>."
+          },
+          "expiraEm": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Renovada a cada uso; expira após o período sem uso."
+          },
+          "novoUsuario": {
+            "type": "boolean"
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/Usuario"
+          }
+        },
+        "required": [
+          "token",
+          "expiraEm",
+          "novoUsuario",
+          "usuario"
+        ],
+        "additionalProperties": false
+      },
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string"
+          },
+          "plano": {
+            "type": "string",
+            "enum": [
+              "gratuito",
+              "premium"
+            ]
+          },
+          "limites": {
+            "type": "object",
+            "properties": {
+              "maxCeps": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "maxCeps"
+            ],
+            "additionalProperties": false
+          },
+          "termos": {
+            "type": "object",
+            "properties": {
+              "versaoVigente": {
+                "type": "string"
+              },
+              "versaoAceita": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "aceitosEm": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "pendente": {
+                "type": "boolean",
+                "description": "true enquanto a versão aceita não for a vigente."
+              }
+            },
+            "required": [
+              "versaoVigente",
+              "versaoAceita",
+              "aceitosEm",
+              "pendente"
+            ],
+            "additionalProperties": false
+          },
+          "notificacoes": {
+            "type": "object",
+            "properties": {
+              "consentidas": {
+                "type": "boolean"
+              },
+              "consentidasEm": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "consentidas",
+              "consentidasEm"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "plano",
+          "limites",
+          "termos",
+          "notificacoes"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

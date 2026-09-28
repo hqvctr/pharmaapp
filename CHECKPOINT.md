@@ -1,5 +1,47 @@
 # Checkpoint
 
+## Fase 3 — API do app: contrato, autenticação, preferências, feed e detalhe (PRONTA; contrato aguarda aprovação)
+
+**Critério de pronto:** `./scripts/pronto-fase3.sh`. Num banco descartável (`pronto_fase3`), o pipeline da
+fase 2 acumula 20 dias de histórico com o relógio real; a API sobe de verdade e `scripts/fase3/cenario.mjs`
+percorre o caminho do app por HTTP (20 checagens): configuração, código por e-mail (lido do log), termos,
+consentimento, preferências recusadas por região e por plano, feed com os dois alertas, detalhe com
+histórico, coleta seguinte sem a oferta da loja B (sai do feed; detalhe `ativa = false`), logout,
+exclusão de conta. Depois roda `npm test` com os testes de integração ligados (`pronto_fase3_teste`).
+Resultado nesta sessão: 20/20 OK e 117 testes passando.
+
+**O que ficou pronto**
+- `backend/openapi/v1.json`: contrato OpenAPI 3.1 com 13 operações, gerado de
+  `src/api/v1/definicoes.ts` + `src/api/esquemas.ts` (`npm run contrato`). Os mesmos esquemas validam a
+  requisição (campo desconhecido é 400) e filtram a resposta. O teste falha se o arquivo divergir.
+- Autenticação (`src/auth/`, `src/api/v1/auth.ts`): código de 6 dígitos por e-mail (HMAC no banco,
+  5 tentativas, só o mais recente vale, limites por e-mail e por IP), login com Google por ID token
+  (RS256 com `node:crypto`, vincula a conta de mesmo e-mail), sessão opaca de 90 dias deslizantes, logout.
+- Conta: termos com versão vigente obrigatória, consentimento de notificação separado, exclusão de conta.
+- Preferências: categorias do tenant, CEPs da região (1 no gratuito, 3 no premium), silêncio, limite diário.
+- Feed paginado por cursor e detalhe de oferta com histórico diário convertido para a embalagem.
+- Pipeline: oferta ausente de coleta completa vira indisponível (item do BACKLOG da fase 2).
+- Migration `0003`: `auth_codigos`, `sessoes`, índice de alerta por oferta. Bloco `app` na config do
+  tenant. Dockerfile copia `config/`; compose passa `AUTH_CODIGO_CHAVE` e `EMAIL_MODO=log` à API.
+
+**Como rodar:** `./scripts/pronto-fase3.sh`. Contrato: `cd backend && npm run contrato`.
+Decisões 34–43 em DECISIONS.md.
+
+**Verificação neste ambiente:** sem Docker. As fases 1, 2 e 3 foram verificadas com Postgres 16 e Redis
+locais, por um substituto do comando `docker compose` fora do repositório. O `docker compose up` com a
+API nova não foi exercitado (ver BACKLOG).
+
+**Precisa do responsável**
+1. Aprovar o contrato `backend/openapi/v1.json` (congela a v1 para as telas do app). Pontos para olhar:
+   login por código + Google (decisão 34, escolha do BACKLOG da fase 0), cabeçalho `X-Tenant`,
+   o que o feed mostra (decisão 39) e os preços por embalagem (decisão 41).
+2. Escolher o provedor de e-mail com camada gratuita; sem ele a API não sobe em produção.
+3. Texto dos termos de uso e da política de privacidade (hoje versão "rascunho", sem URL).
+4. Criar o projeto no Google Cloud para o login com Google (client ID Web).
+
+**Próximo passo:** Fase 4 — app Android (`android/`) sobre o contrato aprovado, tabela de dispositivos
+FCM e despachante de push respeitando consentimento, silêncio e limite diário.
+
 ## Fase 2 — uma fonte ponta a ponta (PRONTA)
 
 **Critério de pronto:** `./scripts/pronto-fase2.sh`. Num banco descartável (`pronto_fase2`), roda o

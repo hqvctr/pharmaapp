@@ -1,0 +1,14 @@
+{
+  "_aviso": "SINTÉTICO. Formato presumido da API de Ofertas Lomadee v3; lojas e preços fictícios. Confirmar na vinculação.",
+  "requestInfo": {
+    "status": "OK",
+    "message": "SUCCESS"
+  },
+  "pagination": {
+    "page": 1,
+    "size": 100,
+    "totalSize": 0,
+    "totalPage": 1
+  },
+  "offers": []
+}

@@ -24,6 +24,8 @@ export interface ResumoColeta {
   decisoes: Record<Decisao, number>;
   alertasCriados: number;
   alertasSuprimidos: number;
+  /** Ofertas que sumiram da fonte nesta coleta; null se a coleta veio incompleta. */
+  encerradas: number | null;
 }
 
 export interface ContextoColeta {
@@ -50,6 +52,7 @@ export async function executarColeta(ctx: ContextoColeta): Promise<ResumoColeta>
     decisoes: { notificar: 0, aguardar_aprovacao: 0, somente_feed: 0, descartar: 0 },
     alertasCriados: 0,
     alertasSuprimidos: 0,
+    encerradas: null,
   };
   if (!ctx.fonte.ativa || ctx.fonte.statusConfianca === 'bloqueada') {
     throw new Error('Fonte inativa ou bloqueada; coleta não executada');
@@ -92,6 +95,14 @@ export async function executarColeta(ctx: ContextoColeta): Promise<ResumoColeta>
     } finally {
       client.release();
     }
+  }
+  if (coleta.completa) {
+    resumo.encerradas = await repo.marcarAusentesIndisponiveis(
+      ctx.pool,
+      ctx.tenantId,
+      ctx.fonte.id,
+      coleta.ofertas.map((o) => o.idExterno),
+    );
   }
   return resumo;
 }

@@ -31,7 +31,7 @@ export class LomadeeAdapter implements SourceAdapter {
   ) {}
 
   async coletar(): Promise<ResultadoColeta> {
-    const resultado: ResultadoColeta = { ofertas: [], ilegiveis: [] };
+    const resultado: ResultadoColeta = { ofertas: [], ilegiveis: [], completa: true };
     for (const loja of this.config.lojas) {
       for (let pagina = 1; pagina <= this.config.maxPaginas; pagina++) {
         const url = new URL(`v3/${this.config.appToken}/offer/_store/${encodeURIComponent(loja)}`, this.config.baseUrl);
@@ -53,6 +53,7 @@ export class LomadeeAdapter implements SourceAdapter {
         }
         const total = corpo.pagination?.totalPage ?? pagina;
         if (pagina >= total) break;
+        if (pagina === this.config.maxPaginas) resultado.completa = false;
       }
     }
     return resultado;
