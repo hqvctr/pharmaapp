@@ -4,6 +4,13 @@ Passo a passo para quem tem as contas. Nenhuma chave vai para o repositório: to
 variável de ambiente ou pela config do tenant. Planos gratuitos conferidos em 2026-09-28; eles mudam,
 então confira de novo ao criar as contas.
 
+## Valores já criados
+
+| O quê | Valor | Onde entra |
+|-------|-------|-----------|
+| ID do projeto no Google Cloud (criado em 2026-09-28) | `project-79519032-1c32-4dac-a1f` | Firebase e envio de push pela API HTTP v1 do FCM (fase 4) |
+| ID do cliente Web (OAuth) | pendente (seção 3, passo 3) | `app.auth.googleClientIds` e `serverClientId` do app |
+
 ## 1. Domínio (recomendado antes de tudo)
 
 Um domínio próprio (ex.: `economae.com.br`, cerca de R$ 40 por ano no registro.br) resolve três coisas:

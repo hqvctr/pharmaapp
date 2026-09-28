@@ -10,7 +10,10 @@ não está disponível.
 - **Hospedagem suspensa** (seção 4 do guia): a VM gratuita exige o faturamento. Não bloqueia nada
   agora; a fase 4 usa o backend local. Decidir antes do teste com usuários reais.
 
-**Próximo passo:** Fase 4. Para ligar o login com Google, falta o ID do cliente Web do projeto.
+Projeto criado: `project-79519032-1c32-4dac-a1f` (registrado no guia).
+
+**Próximo passo:** Fase 4. Para ligar o login com Google, falta o ID do cliente Web do projeto
+(tela de consentimento + cliente "Aplicativo da Web", seção 3 do guia).
 
 ## Provedor de e-mail e preparação do Google Cloud (2026-09-28)
 
