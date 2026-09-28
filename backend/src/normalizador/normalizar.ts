@@ -4,6 +4,7 @@ import type { Embalagem } from '../curadoria/tipos.js';
 import type { OfertaBruta } from '../fontes/contrato.js';
 import { extrairEmbalagem, removerEmbalagem } from './embalagem.js';
 import { normalizarTexto, triarMedicamento, type ListasMedicamentos, type CodigoBloqueioMedicamento } from './medicamentos.js';
+import { tamanhoFralda, type TamanhoFralda } from './fralda.js';
 import { triarNbcal } from './nbcal.js';
 
 export type CodigoBloqueio = CodigoBloqueioMedicamento | 'MEDICAMENTO_FORA_DO_ESCOPO' | 'NBCAL_PROMOCAO_VEDADA';
@@ -26,6 +27,7 @@ export interface ProdutoNormalizado {
   categoria: string;
   embalagem: Embalagem;
   ehMedicamento: boolean;
+  tamanhoFralda: TamanhoFralda | null;
 }
 
 export type ResultadoNormalizacao =
@@ -97,6 +99,7 @@ export function normalizarOferta(
       categoria: triagem.categoria,
       embalagem,
       ehMedicamento: triagem.ehMedicamento,
+      tamanhoFralda: tamanhoFralda(bruta.titulo),
     },
   };
 }

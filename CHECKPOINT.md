@@ -1,5 +1,30 @@
 # Checkpoint
 
+## Aprovação da fase 3 revisada (2026-09-28)
+
+**Aprovado pelo responsável:** a revisão e as decisões 44–50, o contrato v1 e as recomendações da
+revisão. Aplicado nesta rodada (critérios das fases 1, 2 e 3 passando; 144 testes):
+- **Contrato congelado:** a 1.0.0 aprovada está em `openapi/v1-aprovado.json`. O teste
+  `contrato v1 congelado` compara o contrato gerado com ela e falha em qualquer quebra (decisão 53).
+  O contrato atual é a 1.1.0, só com acréscimos.
+- **Filtro opcional por tamanho de fralda** (decisão 51):
+  - o normalizador extrai o tamanho do título (RN a XXXG; EG e EXG viram XG e XXG);
+  - `tamanhosFralda` entra nas preferências e é opcional no PUT;
+  - o feed filtra e cada item traz `produto.tamanhoFralda`;
+  - `GET /v1/configuracao` lista as opções.
+
+  Não pede idade nem data de nascimento.
+- **Tenant renomeado** de `padrao` para `economae` (migration 0005; decisão 52). Scripts e testes usam
+  `--tenant economae` e `X-Tenant: economae`.
+
+**Continua com o responsável ou com terceiros** (BACKLOG): validação jurídica da NBCAL e do tamanho
+de fralda, texto dos termos e da política, provedor de e-mail, projeto no Google Cloud, proposta do
+premium, calibração do limiar de queda com dados reais.
+
+**Próximo passo:** Fase 4 — app Android (`android/`) sobre o contrato v1, tabela de dispositivos FCM
+(entra como acréscimo no contrato) e despachante de push respeitando consentimento, silêncio e limite
+diário.
+
 ## Revisão da fase 3 — foco em mães, da gestação aos primeiros anos (2026-09-28)
 
 **Pedido do responsável:** o app mostrava categorias demais (mercearia, perecíveis, limpeza da casa...).

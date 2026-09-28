@@ -76,12 +76,12 @@ export async function registrarBloqueio(
 
 export async function gravarProduto(db: Db, tenantId: string, p: ProdutoNormalizado): Promise<string> {
   const r = await db.query<{ id: string }>(
-    `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, nome, categoria, quantidade, unidade)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, nome, categoria, quantidade, unidade, tamanho_fralda)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      ON CONFLICT (tenant_id, chave_hash)
-     DO UPDATE SET nome = EXCLUDED.nome, categoria = EXCLUDED.categoria
+     DO UPDATE SET nome = EXCLUDED.nome, categoria = EXCLUDED.categoria, tamanho_fralda = EXCLUDED.tamanho_fralda
      RETURNING id`,
-    [tenantId, p.gtin, p.chaveHash, p.familiaChave, p.marca, p.nome, p.categoria, p.embalagem.quantidade, p.embalagem.unidade],
+    [tenantId, p.gtin, p.chaveHash, p.familiaChave, p.marca, p.nome, p.categoria, p.embalagem.quantidade, p.embalagem.unidade, p.tamanhoFralda],
   );
   return r.rows[0]!.id;
 }

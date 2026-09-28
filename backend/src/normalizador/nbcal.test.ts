@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
 import { triarNbcal } from './nbcal.js';
 
-const { nbcal } = await carregarConfigTenant('padrao');
+const { nbcal } = await carregarConfigTenant('economae');
 
 describe('triarNbcal', () => {
   it.each([

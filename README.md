@@ -26,7 +26,8 @@ termina em `_teste` (o esquema é apagado); `scripts/pronto-fase3.sh` faz isso s
 
 Contrato: [backend/openapi/v1.json](backend/openapi/v1.json), gerado de `backend/src/api/v1/definicoes.ts`
 por `npm run contrato`. O teste falha se o arquivo divergir do código; toda mudança de rota aparece no
-diff do contrato. Toda requisição leva `X-Tenant: <slug>`; as autenticadas, `Authorization: Bearer <token>`.
+diff do contrato. A versão aprovada (1.0.0) está congelada em `backend/openapi/v1-aprovado.json`: o
+teste também falha se o contrato atual quebrar algo dela. A v1 só cresce por acréscimo. Toda requisição leva `X-Tenant: <slug>`; as autenticadas, `Authorization: Bearer <token>`.
 
 Login em desenvolvimento: `POST /v1/auth/email/codigo` e o código aparece no log da API
 (`EMAIL_MODO=log`, recusado em produção). Atrás de proxy reverso, `TRUST_PROXY=true`.
@@ -59,7 +60,7 @@ Passos disponíveis até agora (a lista cresce a cada fase):
 
 1. Inserir o tenant: `INSERT INTO tenants (slug, nome) VALUES ('<slug>', '<nome>');`
    O slug aceita apenas `a-z`, `0-9` e `-`.
-2. Copiar `backend/config/tenants/padrao.json` para `backend/config/tenants/<slug>.json` e ajustar
+2. Copiar `backend/config/tenants/economae.json` para `backend/config/tenants/<slug>.json` e ajustar
    limiares, pesos do score, categorias e raio/custo de deslocamento. Para validar o arquivo novo,
    chamar `carregarConfigTenant('<slug>')` (a API faz isso no primeiro pedido do tenant e falha alto se
    algo estiver errado).

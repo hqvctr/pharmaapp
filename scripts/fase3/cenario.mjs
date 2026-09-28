@@ -14,7 +14,7 @@ async function api(metodo, caminho, { token, corpo } = {}) {
   const res = await fetch(`${base}${caminho}`, {
     method: metodo,
     headers: {
-      'x-tenant': 'padrao',
+      'x-tenant': 'economae',
       ...(token ? { authorization: `Bearer ${token}` } : {}),
       ...(corpo !== undefined ? { 'content-type': 'application/json' } : {}),
     },
@@ -34,6 +34,7 @@ const cfg = await api('GET', '/v1/configuracao');
 confere('configuração pública do tenant', [cfg.status, cfg.corpo.nome, cfg.corpo.regiao.nome], [200, 'economae', 'Estado de São Paulo']);
 confere('só categorias do universo mãe e bebê', cfg.corpo.categorias.map((c) => c.id),
   ['fraldas_lencos', 'higiene_cuidados_bebe', 'alimentacao_infantil', 'gestacao_pos_parto']);
+confere('opções do filtro de tamanho de fralda', cfg.corpo.tamanhosFralda.map((t) => t.id), ['RN', 'P', 'M', 'G', 'XG', 'XXG', 'XXXG']);
 
 const email = 'pronto-fase3@exemplo.com';
 confere('pedido de código', (await api('POST', '/v1/auth/email/codigo', { corpo: { email } })).status, 202);

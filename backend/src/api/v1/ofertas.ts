@@ -3,6 +3,7 @@ import { agregarPorDia, diaLocal } from '../../avaliador/historico.js';
 import { precoEfetivoPorUnidade, rotuloCondicao } from '../../curadoria/preco.js';
 import { historicoDaFamilia } from '../../pipeline/repositorio.js';
 import type { ConfigTenant } from '../../shared/tenantConfig.js';
+import { ROTULOS_TAMANHO_FRALDA, TAMANHOS_FRALDA } from '../../normalizador/fralda.js';
 import { ErroApi } from '../erros.js';
 import * as repo from '../repositorio.js';
 import { DIA_MS, iso, sessaoDe, type Handler } from './contexto.js';
@@ -16,6 +17,7 @@ export const obterConfiguracao: Handler = async (req) => {
     regiao: { nome: app.regiao.nome },
     planos: app.planos,
     limiteDiarioMaximo: app.limiteDiarioMaximo,
+    tamanhosFralda: TAMANHOS_FRALDA.map((id) => ({ id, nome: ROTULOS_TAMANHO_FRALDA[id] })),
     login: { email: true, google: app.auth.googleClientIds.length > 0 },
   };
 };
@@ -27,7 +29,13 @@ export function visaoOferta(l: repo.LinhaOferta, config: ConfigTenant): Record<s
   const referencia = l.alerta.referenciaPorUnidade;
   return {
     ofertaId: l.ofertaId,
-    produto: { nome: l.produto.nome, marca: l.produto.marca, categoria: l.produto.categoria, embalagem: { quantidade, unidade } },
+    produto: {
+      nome: l.produto.nome,
+      marca: l.produto.marca,
+      categoria: l.produto.categoria,
+      embalagem: { quantidade, unidade },
+      tamanhoFralda: l.produto.tamanhoFralda,
+    },
     loja: l.loja,
     precoCentavos: l.precoCentavos,
     precoEfetivoCentavos: Math.round(efetivoPorUnidade * quantidade),
@@ -93,6 +101,7 @@ export const listarFeed: Handler = async (req, _reply, deps) => {
     idadeMaximaHoras: app.feed.idadeMaximaColetaHoras,
     categorias,
     ceps,
+    tamanhosFralda: prefs?.tamanhosFralda ?? [],
     depoisDe: q.cursor === undefined ? null : decodificarCursor(q.cursor),
     limite: limite + 1,
   });

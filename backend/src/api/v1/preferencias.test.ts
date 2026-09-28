@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { carregarConfigTenant } from '../../shared/tenantConfig.js';
 import { validarPreferencias, type PreferenciasEntrada } from './preferencias.js';
 
-const { app } = await carregarConfigTenant('padrao');
+const { app } = await carregarConfigTenant('economae');
 const base: PreferenciasEntrada = { categorias: ['fraldas_lencos'], ceps: ['01310100'], silencio: { inicio: '22:00', fim: '07:00' }, limiteDiario: 3 };
 
 describe('validarPreferencias', () => {

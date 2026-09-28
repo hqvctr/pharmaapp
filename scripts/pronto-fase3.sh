@@ -32,7 +32,7 @@ GRAV=backend/fixtures/lomadee
 LISTAS=backend/fixtures/medicamentos/listas_teste.json
 # Relógio real: o feed só mostra oferta coletada nas últimas horas. Promoção 1 h atrás.
 instante() { node -e "console.log(new Date(Date.now() - 36e5 - $1 * 864e5 + ${2:-0} * 6e4).toISOString())"; }
-coletar() { node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --listas-medicamentos "$LISTAS" --gravacoes "$1" --agora "$2"; }
+coletar() { node backend/dist/pipeline/coletar.js --tenant economae --fonte lomadee --listas-medicamentos "$LISTAS" --gravacoes "$1" --agora "$2"; }
 
 echo "--- pipeline: 20 dias de histórico e o dia da promoção"
 for d in $(seq 20 -1 8); do coletar "$GRAV/base" "$(instante "$d")" > /dev/null 2>&1; done
@@ -49,7 +49,7 @@ for _ in $(seq 1 50); do curl -fsS "http://127.0.0.1:$PORTA/health" >/dev/null 2
 
 falhou=0
 node scripts/fase3/cenario.mjs "http://127.0.0.1:$PORTA" "$LOG" \
-  node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --listas-medicamentos "$LISTAS" \
+  node backend/dist/pipeline/coletar.js --tenant economae --fonte lomadee --listas-medicamentos "$LISTAS" \
   --gravacoes "$GRAV/encerrada" --agora "$(instante 0 30)" || falhou=1
 
 echo "--- contrato e npm test (com integração da API)"

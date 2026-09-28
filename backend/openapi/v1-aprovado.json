@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "economae API",
-    "version": "1.1.0",
+    "version": "1.0.0",
     "description": "Contrato entre o app Android e o backend. Gerado de backend/src/api/v1/definicoes.ts por `npm run contrato`; o teste falha se este arquivo divergir do código. Dinheiro sempre em centavos inteiros. Toda rota exige o cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer. Evolução da v1: o servidor só acrescenta (campos, valores de enum, códigos de erro); o cliente ignora campo desconhecido, trata valor de enum desconhecido como o caso genérico e decide pelo código do erro, não pela mensagem. Respostas da v1 vêm com Cache-Control: no-store e Vary: X-Tenant, Authorization."
   },
   "security": [
@@ -997,34 +997,6 @@
           "limiteDiarioMaximo": {
             "type": "integer"
           },
-          "tamanhosFralda": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "enum": [
-                    "RN",
-                    "P",
-                    "M",
-                    "G",
-                    "XG",
-                    "XXG",
-                    "XXXG"
-                  ]
-                },
-                "nome": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id",
-                "nome"
-              ]
-            },
-            "description": "Opções do filtro de tamanho de fralda."
-          },
           "login": {
             "type": "object",
             "properties": {
@@ -1048,7 +1020,6 @@
           "regiao",
           "planos",
           "limiteDiarioMaximo",
-          "tamanhosFralda",
           "login"
         ]
       },
@@ -1093,30 +1064,13 @@
                   "quantidade",
                   "unidade"
                 ]
-              },
-              "tamanhoFralda": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "enum": [
-                  "RN",
-                  "P",
-                  "M",
-                  "G",
-                  "XG",
-                  "XXG",
-                  "XXXG",
-                  null
-                ]
               }
             },
             "required": [
               "nome",
               "marca",
               "categoria",
-              "embalagem",
-              "tamanhoFralda"
+              "embalagem"
             ]
           },
           "loja": {
@@ -1422,30 +1376,13 @@
                   "quantidade",
                   "unidade"
                 ]
-              },
-              "tamanhoFralda": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "enum": [
-                  "RN",
-                  "P",
-                  "M",
-                  "G",
-                  "XG",
-                  "XXG",
-                  "XXXG",
-                  null
-                ]
               }
             },
             "required": [
               "nome",
               "marca",
               "categoria",
-              "embalagem",
-              "tamanhoFralda"
+              "embalagem"
             ]
           },
           "loja": {
@@ -1667,24 +1604,6 @@
               "null"
             ],
             "minimum": 1
-          },
-          "tamanhosFralda": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "RN",
-                "P",
-                "M",
-                "G",
-                "XG",
-                "XXG",
-                "XXXG"
-              ]
-            },
-            "uniqueItems": true,
-            "maxItems": 7,
-            "description": "Filtro opcional de fraldas. Vazio ou ausente: todos os tamanhos. Fralda sem tamanho identificado aparece sempre."
           }
         },
         "required": [
@@ -1744,24 +1663,6 @@
             ],
             "minimum": 1
           },
-          "tamanhosFralda": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "RN",
-                "P",
-                "M",
-                "G",
-                "XG",
-                "XXG",
-                "XXXG"
-              ]
-            },
-            "uniqueItems": true,
-            "maxItems": 7,
-            "description": "Filtro opcional de fraldas. Vazio ou ausente: todos os tamanhos. Fralda sem tamanho identificado aparece sempre."
-          },
           "completas": {
             "type": "boolean",
             "description": "Tem ao menos uma categoria e um CEP; o feed exige."
@@ -1772,7 +1673,6 @@
           "ceps",
           "silencio",
           "limiteDiario",
-          "tamanhosFralda",
           "completas"
         ]
       },

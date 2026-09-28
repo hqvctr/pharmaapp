@@ -3,7 +3,7 @@ import { carregarConfigTenant } from '../../shared/tenantConfig.js';
 import type { LinhaOferta } from '../repositorio.js';
 import { codificarCursor, decodificarCursor, visaoOferta } from './ofertas.js';
 
-const config = await carregarConfigTenant('padrao');
+const config = await carregarConfigTenant('economae');
 const linha: LinhaOferta = {
   ofertaId: '6f1c2a8e-0000-4000-8000-000000000001',
   precoCentavos: 3000,

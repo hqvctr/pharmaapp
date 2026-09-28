@@ -30,6 +30,7 @@ export const Cep = nomear('Cep', texto({ pattern: '^[0-9]{8}$', description: 'CE
 const Hora = texto({ pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', description: 'HH:MM, no fuso do tenant.' });
 const Decisao = texto({ enum: ['notificar', 'aguardar_aprovacao', 'somente_feed'] });
 const Unidade = texto({ enum: ['kg', 'l', 'un'] });
+const TamanhoFralda = texto({ enum: ['RN', 'P', 'M', 'G', 'XG', 'XXG', 'XXXG'] });
 
 export const Erro = nomear(
   'Erro',
@@ -56,6 +57,7 @@ export const Configuracao = nomear(
       premium: objeto({ maxCeps: inteiro() }),
     }),
     limiteDiarioMaximo: inteiro(),
+    tamanhosFralda: lista(objeto({ id: TamanhoFralda, nome: texto() }), { description: 'Opções do filtro de tamanho de fralda.' }),
     login: objeto({ email: booleano, google: booleano }),
   }),
 );
@@ -102,8 +104,13 @@ const camposPreferencias = {
   ceps: lista(Cep, { uniqueItems: true, maxItems: 3, description: 'O primeiro é o principal; o plano limita a quantidade.' }),
   silencio: objeto({ inicio: Hora, fim: Hora }, [], true),
   limiteDiario: { type: ['integer', 'null'], minimum: 1 },
+  tamanhosFralda: lista(TamanhoFralda, {
+    uniqueItems: true,
+    maxItems: 7,
+    description: 'Filtro opcional de fraldas. Vazio ou ausente: todos os tamanhos. Fralda sem tamanho identificado aparece sempre.',
+  }),
 };
-export const Preferencias = nomear('Preferencias', objeto(camposPreferencias));
+export const Preferencias = nomear('Preferencias', objeto(camposPreferencias, ['tamanhosFralda']));
 export const PreferenciasSalvas = nomear(
   'PreferenciasSalvas',
   objeto({ ...camposPreferencias, completas: { ...booleano, description: 'Tem ao menos uma categoria e um CEP; o feed exige.' } }),
@@ -116,6 +123,7 @@ const camposOferta = {
     marca: textoOuNulo(),
     categoria: texto(),
     embalagem: objeto({ quantidade: { type: 'number' }, unidade: Unidade }),
+    tamanhoFralda: { ...TamanhoFralda, type: ['string', 'null'], enum: [...(TamanhoFralda.enum as string[]), null] },
   }),
   loja: objeto({ id: uuid, nome: texto(), rede: texto(), tipo: texto({ enum: ['online', 'fisica'] }) }),
   precoCentavos: inteiro({ description: 'Preço anunciado de uma embalagem.' }),

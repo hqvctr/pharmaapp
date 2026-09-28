@@ -199,6 +199,8 @@ export async function excluirConta(db: Db, tenantId: string, userId: string): Pr
 export interface LinhaPreferencias {
   categorias: string[];
   ceps: string[];
+  /** Vazio: todos os tamanhos. */
+  tamanhosFralda: string[];
   silencioInicio: string | null;
   silencioFim: string | null;
   limiteDiario: number | null;
@@ -206,23 +208,25 @@ export interface LinhaPreferencias {
 
 export async function obterPreferencias(db: Db, tenantId: string, userId: string): Promise<LinhaPreferencias | null> {
   const r = await db.query(
-    `SELECT categorias, ceps, to_char(silencio_inicio, 'HH24:MI') AS inicio, to_char(silencio_fim, 'HH24:MI') AS fim, limite_diario
+    `SELECT categorias, ceps, tamanhos_fralda, to_char(silencio_inicio, 'HH24:MI') AS inicio, to_char(silencio_fim, 'HH24:MI') AS fim, limite_diario
        FROM user_preferences WHERE tenant_id = $1 AND user_id = $2`,
     [tenantId, userId],
   );
   if (r.rowCount === 0) return null;
   const l = r.rows[0];
-  return { categorias: l.categorias, ceps: l.ceps, silencioInicio: l.inicio, silencioFim: l.fim, limiteDiario: l.limite_diario };
+  return { categorias: l.categorias, ceps: l.ceps, tamanhosFralda: l.tamanhos_fralda, silencioInicio: l.inicio, silencioFim: l.fim, limiteDiario: l.limite_diario };
 }
 
 export async function salvarPreferencias(db: Db, tenantId: string, userId: string, p: LinhaPreferencias, agora: Date): Promise<void> {
   await db.query(
-    `INSERT INTO user_preferences (tenant_id, user_id, categorias, ceps, silencio_inicio, silencio_fim, limite_diario, atualizado_em)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO user_preferences (tenant_id, user_id, categorias, ceps, silencio_inicio, silencio_fim, limite_diario, atualizado_em,
+                                   tamanhos_fralda)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      ON CONFLICT (user_id) DO UPDATE SET categorias = EXCLUDED.categorias, ceps = EXCLUDED.ceps,
+       tamanhos_fralda = EXCLUDED.tamanhos_fralda,
        silencio_inicio = EXCLUDED.silencio_inicio, silencio_fim = EXCLUDED.silencio_fim,
        limite_diario = EXCLUDED.limite_diario, atualizado_em = EXCLUDED.atualizado_em`,
-    [tenantId, userId, p.categorias, p.ceps, p.silencioInicio, p.silencioFim, p.limiteDiario, agora],
+    [tenantId, userId, p.categorias, p.ceps, p.silencioInicio, p.silencioFim, p.limiteDiario, agora, p.tamanhosFralda],
   );
 }
 
@@ -239,7 +243,15 @@ export interface LinhaOferta {
   linkAfiliado: boolean;
   imagemUrl: string | null;
   coletadaEm: Date;
-  produto: { nome: string; marca: string | null; categoria: string; familiaChave: string; quantidade: number; unidade: Unidade };
+  produto: {
+    nome: string;
+    marca: string | null;
+    categoria: string;
+    familiaChave: string;
+    quantidade: number;
+    unidade: Unidade;
+    tamanhoFralda: string | null;
+  };
   loja: { id: string; nome: string; rede: string; tipo: 'online' | 'fisica' };
   alerta: {
     id: string;
@@ -270,7 +282,7 @@ const OFERTA_ATIVA = `(
 const SELECT_OFERTA = `
   SELECT o.id AS oferta_id, o.preco_centavos, o.condicao, o.frete_status, o.frete_centavos, o.valida_ate, o.link,
          o.link_afiliado, o.coletada_em, o.imagem_url,
-         p.nome, p.marca, p.categoria, p.familia_chave, p.quantidade, p.unidade,
+         p.nome, p.marca, p.categoria, p.familia_chave, p.quantidade, p.unidade, p.tamanho_fralda,
          s.id AS loja_id, s.nome AS loja_nome, s.rede, s.tipo AS loja_tipo,
          a.id AS alerta_id, a.criado_em AS alertada_em, a.decisao, a.score, a.preco_referencia_por_unidade,
          -- Precisão de microssegundo: o cursor não pode perder nem repetir item por arredondamento.
@@ -305,6 +317,7 @@ function ofertaDaLinha(l: Record<string, any>): LinhaOferta {
       familiaChave: l.familia_chave,
       quantidade: Number(l.quantidade),
       unidade: l.unidade,
+      tamanhoFralda: l.tamanho_fralda,
     },
     loja: { id: l.loja_id, nome: l.loja_nome, rede: l.rede, tipo: l.loja_tipo },
     alerta: {
@@ -326,6 +339,8 @@ export interface ConsultaFeed {
   idadeMaximaHoras: number;
   categorias: string[];
   ceps: string[];
+  /** Vazio: todos. Fralda de tamanho não identificado aparece para todos. */
+  tamanhosFralda: string[];
   /** Último item da página anterior. */
   depoisDe: { alertadaEm: string; alertaId: string } | null;
   limite: number;
@@ -344,6 +359,7 @@ export async function listarFeed(db: Db, q: ConsultaFeed): Promise<LinhaOferta[]
        ${FROM_OFERTA}
        WHERE o.tenant_id = $1 AND ${OFERTA_ATIVA} AND p.categoria = ANY($4::text[])
          AND ($6::timestamptz IS NULL OR (a.criado_em, a.id) < ($6::timestamptz, $7::uuid))
+         AND (p.tamanho_fralda IS NULL OR cardinality($9::text[]) = 0 OR p.tamanho_fralda = ANY($9::text[]))
      ) x
      WHERE x.prazo IS NOT NULL
      ORDER BY x.alertada_em DESC, x.alerta_id DESC
@@ -357,6 +373,7 @@ export async function listarFeed(db: Db, q: ConsultaFeed): Promise<LinhaOferta[]
       q.depoisDe?.alertadaEm ?? null,
       q.depoisDe?.alertaId ?? null,
       q.limite,
+      q.tamanhosFralda,
     ],
   );
   return r.rows.map(ofertaDaLinha);

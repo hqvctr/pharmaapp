@@ -23,8 +23,8 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
   const deps: DepsV1 = {
     db: pool,
     tenants: new ResolvedorTenantsDb(pool, async (slug) => {
-      const c = await carregarConfigTenant('padrao');
-      c.app.auth.googleClientIds = slug === 'padrao' ? [AUD] : [];
+      const c = await carregarConfigTenant('economae');
+      c.app.auth.googleClientIds = slug === 'economae' ? [AUD] : [];
       return { ...c, slug };
     }),
     email: { enviarCodigo: async (m: MensagemCodigo) => void codigos.set(m.para, m.codigo) },
@@ -37,7 +37,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
   const ids: Record<string, string> = {};
 
   type Req = { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; url: string; token?: string; tenant?: string; body?: unknown };
-  const req = ({ method = 'GET', url, token, tenant = 'padrao', body }: Req) =>
+  const req = ({ method = 'GET', url, token, tenant = 'economae', body }: Req) =>
     app.inject({
       method,
       url,
@@ -75,7 +75,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
       c.release();
     }
     await sql(`INSERT INTO tenants (slug, nome) VALUES ('outro', 'Outro tenant')`);
-    ids.tenant = (await sql(`SELECT id FROM tenants WHERE slug = 'padrao'`)).rows[0].id;
+    ids.tenant = (await sql(`SELECT id FROM tenants WHERE slug = 'economae'`)).rows[0].id;
     ids.outroTenant = (await sql(`SELECT id FROM tenants WHERE slug = 'outro'`)).rows[0].id;
   });
 
@@ -143,7 +143,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
     const outroApp = buildApp({ healthChecks: [], v1: { ...deps, limitador } });
     const pedir = (tenant: string, i: number) =>
       outroApp.inject({ method: 'POST', url: '/v1/auth/email/codigo', headers: { 'x-tenant': tenant }, payload: { email: `ip${i}@exemplo.com` } });
-    for (let i = 0; i < 20; i++) expect((await pedir(i % 2 ? 'padrao' : 'outro', i)).statusCode).toBe(202);
+    for (let i = 0; i < 20; i++) expect((await pedir(i % 2 ? 'economae' : 'outro', i)).statusCode).toBe(202);
     expect((await pedir('outro', 99)).json().erro.codigo).toBe('LIMITE_EXCEDIDO');
     await outroApp.close();
   });
@@ -182,7 +182,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
     expect([velho.statusCode, velho.json().erro.codigo]).toEqual([409, 'TERMOS_DESATUALIZADOS']);
     await aceitar(token);
     expect((await req({ url: '/v1/preferencias', token })).json()).toEqual({
-      categorias: [], ceps: [], silencio: null, limiteDiario: null, completas: false,
+      categorias: [], ceps: [], tamanhosFralda: [], silencio: null, limiteDiario: null, completas: false,
     });
 
     const c1 = await req({ method: 'PUT', url: '/v1/eu/notificacoes', token, body: { consentidas: true } });
@@ -222,8 +222,12 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
     expect((await put(doisCeps)).json().erro.codigo).toBe('LIMITE_DO_PLANO');
 
     const salvo = await put(valida);
-    expect(salvo.json()).toEqual({ ...valida, completas: true });
-    expect((await req({ url: '/v1/preferencias', token })).json()).toEqual({ ...valida, completas: true });
+    // tamanhosFralda é opcional no PUT (contrato 1.0.0 não tinha) e sai sempre na resposta.
+    expect(salvo.json()).toEqual({ ...valida, tamanhosFralda: [], completas: true });
+    const comTamanho = await put({ ...valida, tamanhosFralda: ['M', 'G'] });
+    expect(comTamanho.json().tamanhosFralda).toEqual(['M', 'G']);
+    expect((await req({ url: '/v1/preferencias', token })).json()).toEqual({ ...valida, tamanhosFralda: ['M', 'G'], completas: true });
+    expect((await put({ ...valida, tamanhosFralda: ['GG'] })).statusCode).toBe(400);
 
     await sql(
       `INSERT INTO subscriptions (tenant_id, user_id, plano, status, origem, iniciada_em, expira_em)
@@ -262,14 +266,15 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
       alertas?: number;
       tenant?: string;
       fonte?: string;
+      tamanhoFralda?: string;
     }): Promise<string> {
       seq++;
       const tenant = o.tenant ?? ids.tenant;
       const produto = (
         await sql(
-          `INSERT INTO products (tenant_id, chave_hash, familia_chave, nome, categoria, quantidade, unidade)
-           VALUES ($1, $2, $2, $3, $4, 0.2, 'l') RETURNING id`,
-          [tenant, `p${seq}`, `Produto ${seq} 200ml`, o.categoria ?? 'higiene_cuidados_bebe'],
+          `INSERT INTO products (tenant_id, chave_hash, familia_chave, nome, categoria, quantidade, unidade, tamanho_fralda)
+           VALUES ($1, $2, $2, $3, $4, 0.2, 'l', $5) RETURNING id`,
+          [tenant, `p${seq}`, `Produto ${seq} 200ml`, o.categoria ?? 'higiene_cuidados_bebe', o.tamanhoFralda ?? null],
         )
       ).rows[0].id;
       const coletada = new Date(agora.getTime() - (o.coletadaHa ?? 1) * H);
@@ -314,6 +319,8 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
       ids.ativa = await oferta({ loja: sp });
       ids.duasVezes = await oferta({ loja: sp, alertas: 2 });
       ids.terceira = await oferta({ loja: sp, categoria: 'fraldas_lencos' });
+      ids.fraldaM = await oferta({ loja: sp, categoria: 'fraldas_lencos', tamanhoFralda: 'M' });
+      ids.fraldaG = await oferta({ loja: sp, categoria: 'fraldas_lencos', tamanhoFralda: 'G' });
       ids.papinha = await oferta({ loja: sp, categoria: 'alimentacao_infantil', decisao: 'somente_feed' });
       ids.descartada = await oferta({ loja: sp, decisao: 'descartar' });
       ids.indisponivel = await oferta({ loja: sp, disponivel: false });
@@ -357,8 +364,8 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
         cursor = r.json().proximoCursor;
         paginas++;
       } while (cursor !== null);
-      expect(vistos.sort()).toEqual([ids.ativa, ids.duasVezes, ids.terceira, ids.papinha].sort());
-      expect(paginas).toBe(2);
+      expect(vistos.sort()).toEqual([ids.ativa, ids.duasVezes, ids.terceira, ids.fraldaM, ids.fraldaG, ids.papinha].sort());
+      expect(paginas).toBe(3);
 
       const item = (await req({ url: '/v1/feed', token })).json().itens.find((i: { ofertaId: string }) => i.ofertaId === ids.ativa);
       expect(item).toMatchObject({
@@ -373,6 +380,17 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
       expect(item).not.toHaveProperty('link');
       const papinhas = (await req({ url: '/v1/feed?categoria=alimentacao_infantil', token })).json().itens;
       expect(papinhas.map((i: { ofertaId: string; avisos: string[] }) => [i.ofertaId, i.avisos.length])).toEqual([[ids.papinha, 1]]);
+    });
+
+    it('tamanho de fralda: só o escolhido, mais fralda de tamanho não identificado e lenço', async () => {
+      const prefs = { categorias: ['fraldas_lencos'], ceps: ['14010000'], tamanhosFralda: ['M'], silencio: null, limiteDiario: null };
+      expect((await req({ method: 'PUT', url: '/v1/preferencias', token, body: prefs })).statusCode).toBe(200);
+      const itens = (await req({ url: '/v1/feed', token })).json().itens;
+      expect(itens.map((i: { ofertaId: string }) => i.ofertaId).sort()).toEqual([ids.terceira, ids.fraldaM].sort());
+      expect(itens.find((i: { ofertaId: string }) => i.ofertaId === ids.fraldaM).produto.tamanhoFralda).toBe('M');
+      // Volta às preferências do teste anterior para os próximos.
+      const todas = { categorias: ['higiene_cuidados_bebe', 'fraldas_lencos', 'alimentacao_infantil'], ceps: ['14010000'], silencio: null, limiteDiario: null };
+      expect((await req({ method: 'PUT', url: '/v1/preferencias', token, body: todas })).json().tamanhosFralda).toEqual([]);
     });
 
     it('filtros do feed recusam CEP e categoria fora das preferências', async () => {

@@ -7,6 +7,8 @@ import { sessaoDe, type Handler } from './contexto.js';
 export interface PreferenciasEntrada {
   categorias: string[];
   ceps: string[];
+  /** Opcional no contrato: ausente vale como "todos os tamanhos". */
+  tamanhosFralda?: string[];
   silencio: { inicio: string; fim: string } | null;
   limiteDiario: number | null;
 }
@@ -29,10 +31,11 @@ export function validarPreferencias(p: PreferenciasEntrada, app: ConfigApp, prem
 }
 
 function visao(p: repo.LinhaPreferencias | null): Record<string, unknown> {
-  const v = p ?? { categorias: [], ceps: [], silencioInicio: null, silencioFim: null, limiteDiario: null };
+  const v = p ?? { categorias: [], ceps: [], tamanhosFralda: [], silencioInicio: null, silencioFim: null, limiteDiario: null };
   return {
     categorias: v.categorias,
     ceps: v.ceps,
+    tamanhosFralda: v.tamanhosFralda,
     silencio: v.silencioInicio === null || v.silencioFim === null ? null : { inicio: v.silencioInicio, fim: v.silencioFim },
     limiteDiario: v.limiteDiario,
     completas: v.categorias.length > 0 && v.ceps.length > 0,
@@ -50,6 +53,7 @@ export const salvarPreferencias: Handler = async (req, _reply, deps) => {
   const linha: repo.LinhaPreferencias = {
     categorias: p.categorias,
     ceps: p.ceps,
+    tamanhosFralda: p.tamanhosFralda ?? [],
     silencioInicio: p.silencio?.inicio ?? null,
     silencioFim: p.silencio?.fim ?? null,
     limiteDiario: p.limiteDiario,
