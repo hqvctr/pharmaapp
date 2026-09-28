@@ -1,0 +1,132 @@
+{
+  "acessado_em": "2026-09-28",
+  "metodo": "900 avaliações mais recentes por app, Google Play BR, pt; filtro nota<=2",
+  "apps": {
+    "br.com.drogasil": {
+      "titulo": "Drogasil: Drogaria Online 24h",
+      "nota": 4.85,
+      "instalacoes": "10.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 256,
+      "de": "2026-08-19",
+      "ate": "2026-09-27"
+    },
+    "br.com.drogaraia": {
+      "titulo": "Raia - Farmácia 24 horas",
+      "nota": 4.84,
+      "instalacoes": "10.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 287,
+      "de": "2026-08-01",
+      "ate": "2026-09-26"
+    },
+    "br.com.paguemenos.anjodaguarda": {
+      "titulo": "Farmácias Pague Menos",
+      "nota": 4.78,
+      "instalacoes": "5.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 225,
+      "de": "2026-07-20",
+      "ate": "2026-09-26"
+    },
+    "br.com.app.meuvivasaude.descontos": {
+      "titulo": "Drogaria São Paulo",
+      "nota": 4.79,
+      "instalacoes": "5.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 332,
+      "de": "2026-08-17",
+      "ate": "2026-09-26"
+    },
+    "br.com.meliuz": {
+      "titulo": "Méliuz: Cashback e Nota Fiscal",
+      "nota": 4.7,
+      "instalacoes": "10.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 150,
+      "de": "2026-09-16",
+      "ate": "2026-09-27"
+    },
+    "com.tippingcanoe.pelando": {
+      "titulo": "Pelando: ofertas e cupons",
+      "nota": 4.63,
+      "instalacoes": "1.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 396,
+      "de": "2023-01-01",
+      "ate": "2026-09-24"
+    },
+    "br.com.promobit.app": {
+      "titulo": "Promobit: Promoções e Cupons",
+      "nota": 4.59,
+      "instalacoes": "1.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 249,
+      "de": "2024-11-04",
+      "ate": "2026-09-01"
+    },
+    "br.com.pechinchou.pechinchou": {
+      "titulo": "Pechinchou: Promoções e Cupons",
+      "nota": 4.78,
+      "instalacoes": "1.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 78,
+      "de": "2023-12-31",
+      "ate": "2026-07-22"
+    },
+    "com.zoom.zoomandroid": {
+      "titulo": "Zoom: Descontos e Cashback",
+      "nota": 4.62,
+      "instalacoes": "10.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 342,
+      "de": "2025-02-13",
+      "ate": "2026-09-24"
+    },
+    "br.com.buscape.MainPack": {
+      "titulo": "Buscapé: Promoção e cashback",
+      "nota": 4.61,
+      "instalacoes": "10.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 221,
+      "de": "2025-03-05",
+      "ate": "2026-09-02"
+    },
+    "br.com.paodeacucarmais": {
+      "titulo": "Pão de Açúcar Mais",
+      "nota": 4.82,
+      "instalacoes": "5.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 168,
+      "de": "2025-12-19",
+      "ate": "2026-09-24"
+    },
+    "com.geomobile.tiendeo": {
+      "titulo": "Tiendeo - Encartes e Ofertas",
+      "nota": 4.21,
+      "instalacoes": "10.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 214,
+      "de": "2021-02-12",
+      "ate": "2026-09-08"
+    },
+    "br.gov.rs.procergs.mpbr": {
+      "titulo": "Menor Preço Brasil",
+      "nota": 2.72,
+      "instalacoes": "100.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 580,
+      "de": "2020-06-03",
+      "ate": "2026-09-23"
+    },
+    "com.cuponomia": {
+      "titulo": "Cuponomia: Cupons e Cashback",
+      "nota": 4.83,
+      "instalacoes": "1.000.000+",
+      "amostra": 900,
+      "avaliacoes_1_2": 144,
+      "de": "2025-09-21",
+      "ate": "2026-09-22"
+    }
+  }
+}

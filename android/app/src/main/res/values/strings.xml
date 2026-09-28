@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Todo texto do app. Fonte: ux/UX_COPY.md (a chave é a mesma). Variação A de cada texto. -->
+<resources>
+    <!-- 1. Notificação -->
+    <string name="canal_ofertas_nome">Ofertas excepcionais</string>
+    <string name="canal_ofertas_descricao">Avisos de promoção de verdade nas categorias que você segue. No máximo %1$d por dia.</string>
+    <string name="canal_app_nome">Avisos do app</string>
+    <string name="notif_titulo">%1$s · %2$s</string>
+    <string name="notif_titulo_condicao_leve">%1$s por %2$d · %3$s</string>
+    <string name="notif_texto_menor_meses">Menor preço em 6 meses: %1$s a menos</string>
+    <string name="notif_texto_menor_dias">Menor preço em %1$d dias: %2$s a menos</string>
+    <string name="notif_texto_menor_curto">Menor em 6 meses: %1$s a menos</string>
+    <string name="notif_texto_abaixo_normal">%1$s abaixo do normal da loja</string>
+    <string name="notif_texto_quase_menor">Quase o menor em 6 meses: %1$s a menos</string>
+    <string name="notif_texto_leve_pague">Leve %1$d, pague %2$d · economia de %3$s</string>
+    <string name="notif_texto_cartao">Com cartão %1$s · %2$s a menos</string>
+    <string name="notif_texto_cartao_curto">Só com cartão da loja · %1$s a menos</string>
+    <string name="notif_texto_app_loja">Só no app da %1$s · %2$s a menos</string>
+    <string name="notif_texto_quantidade">Comprando %1$d · economia de %2$s</string>
+    <string name="notif_texto_caiu_mais">Caiu mais: era %1$s no último aviso</string>
+    <string name="notif_texto_retirada">Retire a %1$s · %2$s a menos</string>
+    <string name="notif_expandido_normal">Preço normal nesta loja: %1$s.</string>
+    <string name="notif_expandido_menor_meses">Menor preço dos últimos 6 meses.</string>
+    <string name="notif_expandido_menor_dias">Menor preço em %1$d dias de medição.</string>
+    <string name="notif_expandido_quase">Perto do menor preço dos últimos 6 meses.</string>
+    <string name="notif_expandido_entrega">Entrega no seu CEP em até %1$d dias.</string>
+    <string name="notif_expandido_entrega_confirmar">Entrega no seu CEP. Frete a confirmar na loja.</string>
+    <string name="notif_expandido_retirada">Retire na loja a %1$s.</string>
+    <string name="notif_expandido_rodape">Conferido às %1$s. Você segue %2$s.</string>
+    <string name="notif_acao_loja">Ver na loja</string>
+    <string name="notif_acao_ajustar">Ajustar avisos</string>
+    <string name="notif_grupo_titulo">%1$d ofertas excepcionais</string>
+
+    <!-- 2. Primeiro uso -->
+    <string name="boas_vindas_titulo">Só avisamos quando a promoção é de verdade.</string>
+    <string name="boas_vindas_texto">Comparamos com o preço que a própria loja cobrou nos últimos meses. Se não for o menor, a gente não avisa.</string>
+    <string name="boas_vindas_acao">Começar</string>
+    <string name="boas_vindas_como">Como a gente confere</string>
+    <string name="categorias_titulo">O que você costuma comprar?</string>
+    <string name="categorias_texto">Escolha uma ou mais. Só avisamos sobre o que você escolher.</string>
+    <string name="categorias_acao">Continuar</string>
+    <string name="categorias_acao_contagem">Continuar com %1$d</string>
+    <string name="categorias_nenhuma">Escolha pelo menos uma</string>
+    <string name="cep_titulo">Qual é o seu CEP?</string>
+    <string name="cep_texto">Serve só para saber quais lojas entregam para você. Não pedimos endereço nem localização.</string>
+    <string name="cep_rotulo">CEP</string>
+    <string name="cep_exemplo">00000-000</string>
+    <string name="cep_nao_sei">Não sei meu CEP</string>
+    <string name="cep_erro_incompleto">O CEP tem 8 números.</string>
+    <string name="cep_fora_regiao_titulo">Ainda não chegamos aí</string>
+    <string name="cep_fora_regiao_texto">Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.</string>
+    <string name="cep_fora_regiao_acao">Me avise quando chegar</string>
+    <string name="cep_acao">Continuar</string>
+    <string name="permissao_titulo">Quer receber o aviso quando aparecer?</string>
+    <string name="permissao_texto">No máximo 3 por dia, nunca de madrugada, nunca propaganda. Você muda isso quando quiser.</string>
+    <string name="permissao_exemplo_rotulo">Um aviso é assim:</string>
+    <string name="permissao_aceitar">Quero receber avisos</string>
+    <string name="permissao_depois">Agora não</string>
+    <string name="permissao_negada_texto">Tudo bem. As ofertas continuam aqui no app. Se mudar de ideia, é só ir em Ajustes.</string>
+
+    <!-- 3. Prova -->
+    <string name="selo_menor_meses">Menor preço em 6 meses</string>
+    <string name="selo_menor_dias">Menor preço em %1$d dias de medição</string>
+    <string name="selo_quase_meses">Quase o menor preço em 6 meses</string>
+    <string name="selo_quase_dias">Quase o menor preço em %1$d dias</string>
+    <string name="preco_normal">Preço normal nesta loja: %1$s</string>
+    <string name="preco_cada">cada</string>
+    <string name="economia_chip">%1$s a menos</string>
+    <string name="economia_chip_levando">%1$s a menos levando %2$d</string>
+    <string name="economia_chip_percentual">%1$s a menos (%2$s)</string>
+    <string name="regua_hoje">hoje</string>
+    <string name="regua_normal">normal</string>
+    <string name="regua_maior">maior</string>
+    <string name="regua_descricao">Nos últimos %1$s, o preço foi de %2$s a %3$s. O normal é %4$s. Hoje está %5$s.</string>
+    <string name="periodo_6_meses">6 meses</string>
+    <string name="periodo_dias">%1$d dias</string>
+    <string name="prova_titulo">Por que é promoção de verdade</string>
+    <string name="prova_check_abaixo">Está %1$s abaixo do preço normal desta loja, que é a média do que ela cobrou nos últimos 30 dias.</string>
+    <string name="prova_check_abaixo_cada">Cada uma sai %1$s abaixo do preço normal desta loja, que é a média do que ela cobrou nos últimos 30 dias.</string>
+    <string name="prova_check_menor">É o menor preço desta loja em %1$s.</string>
+    <string name="prova_check_quase">Está a %1$s do menor preço desta loja em %2$s.</string>
+    <string name="prova_check_sem_aumento">A loja não aumentou o preço antes da promoção.</string>
+    <string name="prova_grafico_titulo">Preço nesta loja, últimos 90 dias</string>
+    <string name="prova_ver_dias">Ver preços dia a dia</string>
+    <string name="prova_ocultar_dias">Esconder preços dia a dia</string>
+    <string name="prova_dia_linha">%1$s: %2$s</string>
+    <string name="prova_como">Como a gente confere</string>
+    <string name="como_titulo">Como a gente confere uma promoção</string>
+    <string name="como_1">Todo dia, anotamos o preço de cada produto em cada loja.</string>
+    <string name="como_2">Só avisamos quando o preço está pelo menos %1$d%% abaixo do normal da loja. Para comida que estraga, %2$d%%.</string>
+    <string name="como_3">O preço precisa ser o menor dos últimos 6 meses, ou bem perto dele.</string>
+    <string name="como_4">Se a loja aumentou o preço pouco antes para depois “baixar”, a gente descarta.</string>
+    <string name="como_5">Se o frete come a economia, a gente descarta.</string>
+    <string name="como_6">Precisamos de pelo menos %1$d dias de preço de um produto para saber se ele está barato.</string>
+    <string name="unidade_por_100ml">%1$s por 100 ml</string>
+    <string name="unidade_por_100g">%1$s por 100 g</string>
+    <string name="unidade_por_un">%1$s por unidade</string>
+
+    <!-- 4. Condição -->
+    <string name="condicao_leve_pague">Leve %1$d, pague %2$d — %3$s levando %1$d</string>
+    <string name="condicao_quantidade">Preço comprando %1$d — %2$s no total</string>
+    <string name="condicao_cartao">Só com o cartão %1$s</string>
+    <string name="condicao_app">Só no app da %1$s</string>
+
+    <!-- 5. Detalhe -->
+    <string name="detalhe_ver_loja">Ver na %1$s</string>
+    <string name="detalhe_conferido">Conferido às %1$s. O preço e o estoque podem mudar na loja.</string>
+    <string name="detalhe_embalagem">Embalagem: %1$s</string>
+    <string name="detalhe_afiliado">O economae pode ganhar uma comissão se você comprar por este link. Isso não muda o preço nem a escolha das ofertas.</string>
+    <string name="detalhe_encerrada_titulo">Esta oferta acabou</string>
+    <string name="detalhe_encerrada_texto">Acabou em %1$s às %2$s. O preço voltou para %3$s.</string>
+    <string name="detalhe_encerrada_acao">Ver ofertas de hoje</string>
+    <string name="detalhe_mudou">O preço mudou para %1$s às %2$s.</string>
+    <string name="detalhe_compartilhar">Compartilhar</string>
+    <string name="retorno_titulo">O preço na loja bateu?</string>
+    <string name="retorno_sim">Sim</string>
+    <string name="retorno_nao">Não</string>
+    <string name="retorno_nao_comprei">Não comprei</string>
+    <string name="retorno_obrigado">Obrigado. Isso ajuda a conferir as próximas.</string>
+    <string name="remedio_advertencia">SE PERSISTIREM OS SINTOMAS, O MÉDICO DEVERÁ SER CONSULTADO.</string>
+    <string name="remedio_secao">Remédios sem receita</string>
+    <string name="remedio_secao_texto">Lista de preços. Remédio não recebe aviso.</string>
+
+    <!-- 6. Ofertas -->
+    <string name="ofertas_titulo">Ofertas</string>
+    <string name="ofertas_cep">CEP %1$s</string>
+    <string name="ofertas_resumo">Hoje conferimos %1$s preços nas suas categorias. %2$d passaram no teste.</string>
+    <string name="ofertas_resumo_um">Hoje conferimos %1$s preços nas suas categorias. 1 passou no teste.</string>
+    <string name="secao_excepcionais">Excepcionais</string>
+    <string name="secao_excepcionais_texto">Menor preço dos últimos meses. Estas a gente avisa.</string>
+    <string name="secao_boas">Boas ofertas</string>
+    <string name="secao_boas_texto">Também conferidas, mas não tão fortes para avisar.</string>
+    <string name="etiqueta_excepcional">Excepcional</string>
+    <string name="anuncio_rotulo">Anúncio</string>
+    <string name="anuncio_descricao">Anúncio pago. Não passou pela nossa conferência.</string>
+    <string name="vazio_hoje_titulo">Nada passou no teste hoje</string>
+    <string name="vazio_hoje_texto">Conferimos %1$s preços nas suas categorias. Nenhum era o menor dos últimos meses. Quando for, a gente avisa.</string>
+    <string name="medindo_titulo">Começando a medir</string>
+    <string name="medindo_texto">Para saber se um preço está baixo de verdade, precisamos de pelo menos %1$d dias de preço de cada produto. Faltam %2$d dias.</string>
+    <string name="medindo_progresso">%1$d de %2$d dias</string>
+    <string name="sem_categoria_titulo">Você não segue nenhuma categoria</string>
+    <string name="sem_categoria_acao">Escolher categorias</string>
+    <string name="sem_cep_titulo">Falta o seu CEP</string>
+    <string name="erro_titulo">Não deu para carregar as ofertas</string>
+    <string name="erro_texto">Pode ser a internet. Tente de novo em instantes.</string>
+    <string name="erro_acao">Tentar de novo</string>
+    <string name="salvas_desde">Mostrando as ofertas das %1$s</string>
+    <string name="offline_faixa">Sem internet. Mostrando as ofertas das %1$s.</string>
+    <string name="avisos_desligados_faixa">Os avisos estão desligados. Você só vê as ofertas abrindo o app.</string>
+    <string name="avisos_desligados_acao">Ligar avisos</string>
+    <string name="avisos_desligados_sistema">Toque em Notificações e ative.</string>
+    <string name="carregando_descricao">Carregando ofertas</string>
+
+    <!-- 7. Categorias -->
+    <string name="cat_mercearia">Mercearia</string>
+    <string name="cat_mercearia_ex">Arroz, café, óleo</string>
+    <string name="cat_pereciveis">Frios e hortifrúti</string>
+    <string name="cat_pereciveis_ex">Queijo, frutas, carne</string>
+    <string name="cat_higiene_intima">Higiene íntima</string>
+    <string name="cat_higiene_intima_ex">Absorvente, sabonete íntimo</string>
+    <string name="cat_maquiagem">Maquiagem</string>
+    <string name="cat_maquiagem_ex">Base, batom, rímel</string>
+    <string name="cat_higiene_bebe">Bebê</string>
+    <string name="cat_higiene_bebe_ex">Fralda, lenço, pomada</string>
+    <string name="cat_limpeza">Limpeza</string>
+    <string name="cat_limpeza_ex">Sabão, detergente, desinfetante</string>
+    <string name="cat_cuidados_pessoais">Cuidados pessoais</string>
+    <string name="cat_cuidados_pessoais_ex">Protetor solar, shampoo, hidratante</string>
+    <string name="cat_medicamentos_isentos">Remédios sem receita</string>
+    <string name="cat_medicamentos_isentos_ex">Analgésico, antiácido (sem aviso)</string>
+
+    <!-- 8. Avisos -->
+    <string name="avisos_titulo">Avisos</string>
+    <string name="avisos_hoje">Hoje</string>
+    <string name="avisos_ontem">Ontem</string>
+    <string name="avisos_ativa">Ativa</string>
+    <string name="avisos_encerrada">Encerrada</string>
+    <string name="avisos_vazio_titulo">Nenhum aviso ainda</string>
+    <string name="avisos_vazio_texto">Quando algo excepcional aparecer, fica guardado aqui.</string>
+    <string name="avisos_erro">Não deu para carregar seus avisos.</string>
+
+    <!-- 9. Ajustes -->
+    <string name="ajustes_titulo">Ajustes</string>
+    <string name="ajustes_categorias">Categorias que você segue</string>
+    <string name="ajustes_cep">Seu CEP</string>
+    <string name="ajustes_cep_adicionar">Adicionar outro CEP</string>
+    <string name="ajustes_avisos">Avisos</string>
+    <string name="ajustes_limite">Máximo de avisos por dia</string>
+    <string name="ajustes_limite_opcao">%1$d por dia</string>
+    <string name="ajustes_limite_sem">Sem limite</string>
+    <string name="ajustes_silencio">Não avisar entre</string>
+    <string name="ajustes_silencio_valor">%1$s e %2$s</string>
+    <string name="ajustes_silencio_texto">Avisos desse horário chegam às %1$s, os melhores primeiro.</string>
+    <string name="ajustes_sistema">Avisos no celular</string>
+    <string name="ajustes_sistema_ligado">Ligados</string>
+    <string name="ajustes_sistema_desligado">Desligados. Toque para ligar.</string>
+    <string name="ajustes_conta">Conta</string>
+    <string name="ajustes_sem_conta">Suas escolhas ficam só neste celular. Entre para não perder se trocar de aparelho.</string>
+    <string name="ajustes_entrar">Entrar com Google</string>
+    <string name="ajustes_entrar_email">Entrar com e-mail</string>
+    <string name="ajustes_premium">Premium</string>
+    <string name="ajustes_como">Como a gente confere</string>
+    <string name="ajustes_termos">Termos de uso</string>
+    <string name="ajustes_privacidade">Privacidade</string>
+    <string name="ajustes_apagar">Apagar meus dados</string>
+    <string name="apagar_titulo">Apagar seus dados?</string>
+    <string name="apagar_texto">Vamos apagar suas categorias, seus CEPs, seus avisos e sua conta, se tiver. Isso não pode ser desfeito.</string>
+    <string name="apagar_confirmar">Apagar</string>
+    <string name="apagar_cancelar">Cancelar</string>
+    <string name="apagado">Seus dados foram apagados.</string>
+    <string name="salvar_erro">Não deu para salvar. Deixamos como estava.</string>
+
+    <!-- 10. Premium -->
+    <string name="premium_titulo">Acompanhe até 3 CEPs</string>
+    <string name="premium_texto">Para quem compra para casa, para o trabalho ou para a família em outro endereço.</string>
+    <string name="premium_preco">%1$s por %2$s</string>
+    <string name="premium_renovacao">Renova sozinho. Cancele quando quiser na Google Play.</string>
+    <string name="premium_acao">Assinar por %1$s</string>
+    <string name="premium_ativo">Premium ativo até %1$s</string>
+    <string name="premium_pendente">Pagamento em análise pela Google Play</string>
+    <string name="premium_expirado">Seu premium acabou. Seu primeiro CEP continua valendo.</string>
+
+    <!-- 11. Acessibilidade -->
+    <string name="a11y_excepcional">Excepcional.</string>
+    <string name="a11y_normal">Preço normal nesta loja: %1$s.</string>
+    <string name="a11y_economia">Economia de %1$s.</string>
+    <string name="a11y_na_loja">%1$s, na %2$s.</string>
+    <string name="a11y_conferido">Conferido às %1$s.</string>
+    <string name="a11y_anuncio">Anúncio. %1$s</string>
+    <string name="a11y_abrir_loja">Ver na %1$s. Abre fora do app.</string>
+    <string name="a11y_voltar">Voltar</string>
+    <string name="a11y_cep_trocar">CEP %1$s. Toque para trocar.</string>
+    <string name="a11y_selecionada">selecionada</string>
+    <string name="a11y_nao_selecionada">não selecionada</string>
+    <string name="cobertura_entrega">Entrega no seu CEP em até %1$d dias</string>
+    <string name="cobertura_entrega_confirmar">Entrega no seu CEP · frete a confirmar na loja</string>
+    <string name="cobertura_retirada">Retire na loja a %1$s</string>
+    <string name="conferido_curto">Conferido às %1$s</string>
+</resources>
