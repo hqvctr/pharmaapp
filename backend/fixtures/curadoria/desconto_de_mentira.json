@@ -1,0 +1,27 @@
+{
+  "caso": "Preço inflado de R$ 10 para R$ 16 nos últimos 20 dias e 'promoção' para R$ 11. A mediana de 30 dias já está contaminada (R$ 16), então a queda aparente de 31% passa no limiar; piso e subida pré-queda barram.",
+  "tags": ["desconto_de_mentira"],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "limpeza",
+    "precoCentavos": 1100,
+    "embalagem": { "quantidade": 1, "unidade": "un" },
+    "condicao": null,
+    "frete": { "status": "nao_se_aplica" },
+    "disponivel": true,
+    "validaDe": null,
+    "validaAte": null,
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [
+    { "deDiasAtras": 179, "ateDiasAtras": 21, "aCadaDias": 2, "precoCentavos": 1000 },
+    { "deDiasAtras": 20, "ateDiasAtras": 1, "aCadaDias": 1, "precoCentavos": 1600 }
+  ],
+  "loja": { "status": "aprovada", "reputacao": 0.9 },
+  "fonte": { "confiabilidade": "alta" },
+  "esperado": {
+    "decisao": "descartar",
+    "reprovacoes": ["PRECO_ACIMA_DO_PISO", "SUBIDA_PRE_QUEDA"],
+    "motivoContem": ["Descartada", "subiu 60,0%"]
+  }
+}

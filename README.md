@@ -25,7 +25,10 @@ Critério de pronto de cada fase: `scripts/pronto-faseN.sh`.
 ```
 backend/
   migrations/        SQL puro, aplicado em ordem pelo serviço `migrate`
+  config/tenants/    configuração de negócio por tenant (limiares, pesos, categorias)
+  fixtures/          casos versionados do motor de curadoria e da cobertura
   src/api/           servidor HTTP (Fastify)
+  src/curadoria/     motor de curadoria e cobertura (módulo puro)
   src/db/            runner de migration
   src/shared/        leitura de ambiente
 docker-compose.yml   postgres, redis, migrate, api
@@ -37,3 +40,7 @@ Passos disponíveis até agora (a lista cresce a cada fase):
 
 1. Inserir o tenant: `INSERT INTO tenants (slug, nome) VALUES ('<slug>', '<nome>');`
    O slug aceita apenas `a-z`, `0-9` e `-`.
+2. Copiar `backend/config/tenants/padrao.json` para `backend/config/tenants/<slug>.json` e ajustar
+   limiares, pesos do score, categorias e raio/custo de deslocamento. Rodar `./scripts/pronto-fase1.sh`
+   continua validando o arquivo padrão; para validar o novo, trocar o caminho no teste ou chamar
+   `validarConfigCuradoria` sobre ele.

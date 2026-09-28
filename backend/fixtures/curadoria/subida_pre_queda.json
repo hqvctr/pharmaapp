@@ -1,0 +1,54 @@
+{
+  "caso": "Preço regular R$ 25 subiu 15% (R$ 28,75) nas duas últimas semanas antes da queda para R$ 17,50: a regra de subida pré-queda barra mesmo com queda real",
+  "tags": [
+    "desconto_de_mentira"
+  ],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "mercearia",
+    "precoCentavos": 1750,
+    "embalagem": {
+      "quantidade": 5,
+      "unidade": "kg"
+    },
+    "condicao": null,
+    "frete": {
+      "status": "conhecido",
+      "centavos": 0
+    },
+    "disponivel": true,
+    "validaDe": null,
+    "validaAte": "2026-09-03T00:00:00Z",
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [
+    {
+      "deDiasAtras": 179,
+      "ateDiasAtras": 15,
+      "aCadaDias": 2,
+      "precoCentavos": 2500
+    },
+    {
+      "deDiasAtras": 14,
+      "ateDiasAtras": 1,
+      "aCadaDias": 1,
+      "precoCentavos": 2875
+    }
+  ],
+  "loja": {
+    "status": "aprovada",
+    "reputacao": 0.8
+  },
+  "fonte": {
+    "confiabilidade": "alta"
+  },
+  "esperado": {
+    "decisao": "descartar",
+    "reprovacoes": [
+      "SUBIDA_PRE_QUEDA"
+    ],
+    "motivoContem": [
+      "subiu 15,0%"
+    ]
+  }
+}

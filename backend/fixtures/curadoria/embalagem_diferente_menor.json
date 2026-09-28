@@ -1,0 +1,26 @@
+{
+  "caso": "Café: histórico em pacote de 500 g a R$ 20. Oferta do pacote de 250 g a R$ 14 parece 30% mais barata, mas custa R$ 56/kg contra R$ 40/kg",
+  "tags": ["embalagem_diferente"],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "mercearia",
+    "precoCentavos": 1400,
+    "embalagem": { "quantidade": 0.25, "unidade": "kg" },
+    "condicao": null,
+    "frete": { "status": "nao_se_aplica" },
+    "disponivel": true,
+    "validaDe": null,
+    "validaAte": null,
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [
+    { "deDiasAtras": 179, "ateDiasAtras": 1, "aCadaDias": 2, "precoCentavos": 2000, "embalagem": { "quantidade": 0.5, "unidade": "kg" } }
+  ],
+  "loja": { "status": "aprovada", "reputacao": 0.9 },
+  "fonte": { "confiabilidade": "alta" },
+  "esperado": {
+    "decisao": "descartar",
+    "reprovacoes": ["QUEDA_ABAIXO_DO_LIMIAR", "PRECO_ACIMA_DO_PISO"],
+    "motivoContem": ["R$ 56,00/kg"]
+  }
+}

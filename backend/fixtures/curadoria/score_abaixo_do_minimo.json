@@ -1,0 +1,55 @@
+{
+  "caso": "Passa nas condições (queda de 26%, no piso) mas o preço já apareceu duas vezes no histórico e a loja tem reputação baixa: score 68, só feed",
+  "tags": [
+    "score"
+  ],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "mercearia",
+    "precoCentavos": 1850,
+    "embalagem": {
+      "quantidade": 5,
+      "unidade": "kg"
+    },
+    "condicao": null,
+    "frete": {
+      "status": "conhecido",
+      "centavos": 0
+    },
+    "disponivel": true,
+    "validaDe": null,
+    "validaAte": "2026-09-03T00:00:00Z",
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [
+    {
+      "deDiasAtras": 179,
+      "ateDiasAtras": 1,
+      "aCadaDias": 2,
+      "precoCentavos": 2500
+    },
+    {
+      "diasAtras": 100,
+      "precoCentavos": 1850
+    },
+    {
+      "diasAtras": 60,
+      "precoCentavos": 1850
+    }
+  ],
+  "loja": {
+    "status": "aprovada",
+    "reputacao": 0.2
+  },
+  "fonte": {
+    "confiabilidade": "alta"
+  },
+  "esperado": {
+    "decisao": "somente_feed",
+    "reprovacoes": [],
+    "score": 68,
+    "motivoContem": [
+      "score 68 abaixo do mínimo 70"
+    ]
+  }
+}

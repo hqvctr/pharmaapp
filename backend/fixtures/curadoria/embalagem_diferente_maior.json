@@ -1,0 +1,27 @@
+{
+  "caso": "Café: histórico em pacote de 500 g a R$ 20 (R$ 40/kg). Pacote de 1 kg a R$ 26 é R$ 26/kg: queda real de 35% por quilo",
+  "tags": ["embalagem_diferente"],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "mercearia",
+    "precoCentavos": 2600,
+    "embalagem": { "quantidade": 1, "unidade": "kg" },
+    "condicao": null,
+    "frete": { "status": "nao_se_aplica" },
+    "disponivel": true,
+    "validaDe": null,
+    "validaAte": null,
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [
+    { "deDiasAtras": 179, "ateDiasAtras": 1, "aCadaDias": 2, "precoCentavos": 2000, "embalagem": { "quantidade": 0.5, "unidade": "kg" } }
+  ],
+  "loja": { "status": "aprovada", "reputacao": 0.8 },
+  "fonte": { "confiabilidade": "alta" },
+  "esperado": {
+    "decisao": "notificar",
+    "reprovacoes": [],
+    "score": 85,
+    "motivoContem": ["R$ 40,00/kg → R$ 26,00/kg"]
+  }
+}

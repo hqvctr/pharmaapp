@@ -1,0 +1,24 @@
+{
+  "caso": "Loja física sem faixa de CEP e usuário cujo CEP ainda não tem coordenada: não inclui na audiência",
+  "tags": [
+    "cobertura"
+  ],
+  "loja": {
+    "tipo": "fisica",
+    "coordenada": {
+      "lat": -21.1775,
+      "lng": -47.8103
+    },
+    "raioEntregaKm": null,
+    "faixasCep": []
+  },
+  "usuario": {
+    "cep": "14010-000",
+    "coordenada": null
+  },
+  "economiaCentavos": 1000,
+  "esperado": {
+    "coberto": false,
+    "codigo": "CEP_SEM_COORDENADA"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "caso": "Loja física no centro de Ribeirão Preto sem entrega; usuário em Sertãozinho (~19 km)",
+  "tags": [
+    "loja_fora_de_cobertura"
+  ],
+  "loja": {
+    "tipo": "fisica",
+    "coordenada": {
+      "lat": -21.1775,
+      "lng": -47.8103
+    },
+    "raioEntregaKm": null,
+    "faixasCep": []
+  },
+  "usuario": {
+    "cep": "14160-000",
+    "coordenada": {
+      "lat": -21.1378,
+      "lng": -47.9903
+    }
+  },
+  "economiaCentavos": 5000,
+  "esperado": {
+    "coberto": false,
+    "codigo": "FORA_DE_COBERTURA"
+  }
+}

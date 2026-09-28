@@ -1,0 +1,27 @@
+{
+  "caso": "Mesma loja a 1,5 km, mas a economia é R$ 2,00 e o deslocamento custa R$ 2,40",
+  "tags": [
+    "cobertura"
+  ],
+  "loja": {
+    "tipo": "fisica",
+    "coordenada": {
+      "lat": -21.1775,
+      "lng": -47.8103
+    },
+    "raioEntregaKm": null,
+    "faixasCep": []
+  },
+  "usuario": {
+    "cep": "14010-000",
+    "coordenada": {
+      "lat": -21.164,
+      "lng": -47.8103
+    }
+  },
+  "economiaCentavos": 200,
+  "esperado": {
+    "coberto": false,
+    "codigo": "DESLOCAMENTO_ANULA_ECONOMIA"
+  }
+}

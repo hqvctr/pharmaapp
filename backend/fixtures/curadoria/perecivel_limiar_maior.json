@@ -1,0 +1,48 @@
+{
+  "caso": "Perecível com queda de 30%: passaria em mercearia (25%), mas o limiar de perecíveis é 35%",
+  "tags": [
+    "perecivel"
+  ],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "pereciveis",
+    "precoCentavos": 1750,
+    "embalagem": {
+      "quantidade": 5,
+      "unidade": "kg"
+    },
+    "condicao": null,
+    "frete": {
+      "status": "conhecido",
+      "centavos": 0
+    },
+    "disponivel": true,
+    "validaDe": null,
+    "validaAte": "2026-09-03T00:00:00Z",
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [
+    {
+      "deDiasAtras": 179,
+      "ateDiasAtras": 1,
+      "aCadaDias": 2,
+      "precoCentavos": 2500
+    }
+  ],
+  "loja": {
+    "status": "aprovada",
+    "reputacao": 0.8
+  },
+  "fonte": {
+    "confiabilidade": "alta"
+  },
+  "esperado": {
+    "decisao": "descartar",
+    "reprovacoes": [
+      "QUEDA_ABAIXO_DO_LIMIAR"
+    ],
+    "motivoContem": [
+      "limiar de 35,0% da categoria pereciveis"
+    ]
+  }
+}

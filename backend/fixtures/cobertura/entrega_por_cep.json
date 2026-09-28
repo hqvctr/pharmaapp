@@ -1,0 +1,33 @@
+{
+  "caso": "CEP dentro de duas faixas; vale o menor prazo",
+  "tags": [
+    "cobertura"
+  ],
+  "loja": {
+    "tipo": "online",
+    "coordenada": null,
+    "raioEntregaKm": null,
+    "faixasCep": [
+      {
+        "inicio": "14000000",
+        "fim": "14109999",
+        "prazoDias": 3
+      },
+      {
+        "inicio": "14020000",
+        "fim": "14029999",
+        "prazoDias": 1
+      }
+    ]
+  },
+  "usuario": {
+    "cep": "14025-000",
+    "coordenada": null
+  },
+  "economiaCentavos": 1000,
+  "esperado": {
+    "coberto": true,
+    "modo": "entrega_por_cep",
+    "prazoDias": 1
+  }
+}

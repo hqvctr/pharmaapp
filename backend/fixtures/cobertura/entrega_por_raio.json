@@ -1,0 +1,28 @@
+{
+  "caso": "Loja física com entrega em raio de 3 km; usuário a 1,5 km",
+  "tags": [
+    "cobertura"
+  ],
+  "loja": {
+    "tipo": "fisica",
+    "coordenada": {
+      "lat": -21.1775,
+      "lng": -47.8103
+    },
+    "raioEntregaKm": 3,
+    "faixasCep": []
+  },
+  "usuario": {
+    "cep": "14010-000",
+    "coordenada": {
+      "lat": -21.164,
+      "lng": -47.8103
+    }
+  },
+  "economiaCentavos": 100,
+  "esperado": {
+    "coberto": true,
+    "modo": "entrega_por_raio",
+    "distanciaKm": 1.5
+  }
+}

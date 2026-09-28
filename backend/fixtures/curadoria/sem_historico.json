@@ -1,0 +1,24 @@
+{
+  "caso": "Produto nunca observado nesta loja: sem histórico, sem alerta, por maior que pareça o desconto",
+  "tags": ["sem_historico"],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "maquiagem",
+    "precoCentavos": 1990,
+    "embalagem": { "quantidade": 1, "unidade": "un" },
+    "condicao": null,
+    "frete": { "status": "a_confirmar" },
+    "disponivel": true,
+    "validaDe": null,
+    "validaAte": null,
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [],
+  "loja": { "status": "aprovada", "reputacao": 0.9 },
+  "fonte": { "confiabilidade": "alta" },
+  "esperado": {
+    "decisao": "descartar",
+    "reprovacoes": ["HISTORICO_INSUFICIENTE", "SEM_REFERENCIA_RECENTE"],
+    "score": null
+  }
+}

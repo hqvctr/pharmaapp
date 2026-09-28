@@ -1,0 +1,32 @@
+{
+  "caso": "Loja online que só entrega em Ribeirão Preto; usuário com CEP da Av. Paulista",
+  "tags": [
+    "loja_fora_de_cobertura"
+  ],
+  "loja": {
+    "tipo": "online",
+    "coordenada": null,
+    "raioEntregaKm": null,
+    "faixasCep": [
+      {
+        "inicio": "14000000",
+        "fim": "14109999",
+        "prazoDias": 3
+      },
+      {
+        "inicio": "14020000",
+        "fim": "14029999",
+        "prazoDias": 1
+      }
+    ]
+  },
+  "usuario": {
+    "cep": "01310-100",
+    "coordenada": null
+  },
+  "economiaCentavos": 1000,
+  "esperado": {
+    "coberto": false,
+    "codigo": "FORA_DE_COBERTURA"
+  }
+}

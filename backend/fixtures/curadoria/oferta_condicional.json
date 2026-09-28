@@ -1,0 +1,27 @@
+{
+  "caso": "Fralda: leve 3 pague 2 sobre o preço regular. Preço efetivo por unidade cai 33%; a condição tem que sair no rótulo e no motivo",
+  "tags": ["oferta_condicional"],
+  "agora": "2026-09-01T12:00:00Z",
+  "oferta": {
+    "categoria": "higiene_bebe",
+    "precoCentavos": 5000,
+    "embalagem": { "quantidade": 1, "unidade": "un" },
+    "condicao": { "tipo": "leve_pague", "leve": 3, "pague": 2 },
+    "frete": { "status": "a_confirmar" },
+    "disponivel": true,
+    "validaDe": "2026-09-01T00:00:00Z",
+    "validaAte": "2026-09-07T23:59:59Z",
+    "observadaEm": "2026-09-01T12:00:00Z"
+  },
+  "historico": [{ "deDiasAtras": 179, "ateDiasAtras": 1, "aCadaDias": 2, "precoCentavos": 5000 }],
+  "loja": { "status": "aprovada", "reputacao": 0.9 },
+  "fonte": { "confiabilidade": "alta" },
+  "esperado": {
+    "decisao": "notificar",
+    "reprovacoes": [],
+    "score": 85,
+    "rotuloCondicao": "Leve 3, pague 2",
+    "entregaAConfirmar": true,
+    "motivoContem": ["Condição: Leve 3, pague 2", "Economia de R$ 50,00", "Entrega a confirmar"]
+  }
+}
