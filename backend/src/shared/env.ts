@@ -26,21 +26,43 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
   };
 }
 
+export type ConfigEmail =
+  | { modo: 'log' }
+  | { modo: 'brevo'; apiKey: string; remetente: string; nomeRemetente: string; limiteDiario: number };
+
 export interface EnvApi {
   /** Chave do HMAC dos códigos de login. */
   codigoChave: Buffer;
-  emailModo: 'log';
+  email: ConfigEmail;
   trustProxy: boolean;
 }
 
-/** Variáveis que só a API usa. Em produção, recusa o envio de e-mail pelo log. */
+/** Variáveis que só a API usa. Em produção, o código de login só sai por e-mail de verdade. */
 export function loadApiEnv(env: NodeJS.ProcessEnv = process.env): EnvApi {
   const chave = required(env, 'AUTH_CODIGO_CHAVE');
   if (chave.length < 32) throw new Error('AUTH_CODIGO_CHAVE precisa de ao menos 32 caracteres');
   const modo = env.EMAIL_MODO ?? 'log';
-  if (modo !== 'log') throw new Error(`EMAIL_MODO desconhecido: ${modo}`);
-  if (env.NODE_ENV === 'production') {
-    throw new Error('EMAIL_MODO=log escreve o código de login no log; não serve para produção (provedor de e-mail pendente)');
+  let email: ConfigEmail;
+  if (modo === 'log') {
+    if (env.NODE_ENV === 'production') {
+      throw new Error('EMAIL_MODO=log escreve o código de login no log; em produção use EMAIL_MODO=brevo');
+    }
+    email = { modo };
+  } else if (modo === 'brevo') {
+    const remetente = required(env, 'EMAIL_REMETENTE');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(remetente)) throw new Error('EMAIL_REMETENTE inválido');
+    // Plano gratuito do Brevo: 300 por dia, somando todos os e-mails da conta. Folga para testes manuais.
+    const limiteDiario = Number(env.EMAIL_LIMITE_DIARIO ?? '280');
+    if (!Number.isInteger(limiteDiario) || limiteDiario <= 0) throw new Error('EMAIL_LIMITE_DIARIO inválido');
+    email = {
+      modo,
+      apiKey: required(env, 'BREVO_API_KEY'),
+      remetente,
+      nomeRemetente: env.EMAIL_REMETENTE_NOME ?? 'economae',
+      limiteDiario,
+    };
+  } else {
+    throw new Error(`EMAIL_MODO desconhecido: ${modo} (use log ou brevo)`);
   }
-  return { codigoChave: Buffer.from(chave, 'utf8'), emailModo: modo, trustProxy: env.TRUST_PROXY === 'true' };
+  return { codigoChave: Buffer.from(chave, 'utf8'), email, trustProxy: env.TRUST_PROXY === 'true' };
 }

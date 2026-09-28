@@ -1,5 +1,41 @@
 # Checkpoint
 
+## Provedor de e-mail e preparação do Google Cloud (2026-09-28)
+
+**Recebido do responsável:**
+- NBCAL validada pela assessoria;
+- tamanho de fralda não é dado da criança;
+- termos e política em revisão;
+- definir o provedor de e-mail gratuito e preparar o Google Cloud.
+
+**Feito (153 testes passando; critério da fase 3 PRONTA):**
+- **Brevo** como provedor do código de login (decisão 54). Plano gratuito de 300 e-mails por dia, API
+  HTTP e sem cartão; ganhou do Mailjet (200 por dia) e do Resend (100 por dia).
+  - `EMAIL_MODO=brevo` com `BREVO_API_KEY` e `EMAIL_REMETENTE`. Produção recusa `EMAIL_MODO=log`.
+  - Erro do Brevo nunca expõe a chave nem o destinatário.
+  - O e-mail não tem link, só o código.
+- **Cota diária própria de 280 e-mails** (decisão 55). Acima dela, o pedido de código responde 503
+  `ENVIO_FALHOU` sugerindo o login com Google, em vez de o código vencer na fila do Brevo. Sem mudança
+  no contrato.
+- `docs/operacao/google-cloud.md`: passo a passo do Brevo (domínio, remetente, chave) e do projeto no
+  Google Cloud (tela de consentimento, client ID Web → `app.auth.googleClientIds`, client Android e
+  Firebase na fase 4). Traz também a proposta de hospedagem na VM `e2-micro` do nível sempre gratuito.
+- DECISIONS 46 e 51, BACKLOG e `docs/juridico` atualizados com as validações da assessoria.
+
+**Não verificado:** o envio real pelo Brevo. Este ambiente não tem chave; os testes usam um `fetch`
+falso com o formato da API documentada.
+
+**Precisa do responsável**
+1. Criar a conta no Brevo e autenticar o domínio ou o remetente.
+2. Criar o projeto `economae` no Google Cloud e o client ID Web (seção 3 do guia) e me passar o ID
+   do cliente. Não é segredo, entra na config do tenant.
+3. **Domínio próprio** (cerca de R$ 40 por ano): recomendado para o e-mail não cair no spam, para o
+   endereço dos termos e para a tela de consentimento do Google.
+4. **Hospedagem:** confirmar a VM `e2-micro` gratuita nos EUA (exige conta de faturamento com cartão e
+   põe os dados fora do Brasil) para eu preparar o deploy de produção.
+
+**Próximo passo:** deploy de produção (se a proposta de hospedagem for aprovada) ou Fase 4.
+
 ## Aprovação da fase 3 revisada (2026-09-28)
 
 **Aprovado pelo responsável:** a revisão e as decisões 44–50, o contrato v1 e as recomendações da

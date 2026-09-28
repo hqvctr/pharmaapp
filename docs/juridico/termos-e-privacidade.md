@@ -1,7 +1,10 @@
 # Termos de uso e política de privacidade: o que precisam cobrir
 
-**Situação:** os dois textos ainda não existem. A config do tenant publica a versão `rascunho-2026-09-28`,
-com `url: null`. O app não pode ser publicado assim.
+**Situação:** os textos estão em revisão pela assessoria (2026-09-28). A config do tenant publica a
+versão `rascunho-2026-09-28`, com `url: null`. O app não pode ser publicado assim.
+
+**Validado pela assessoria em 2026-09-28:** a triagem da NBCAL como está implementada, e o tamanho de
+fralda escolhido não é dado da criança.
 
 Este arquivo **não é o texto jurídico** e não é parecer. Ele lista o que o app faz de fato, a partir do
 código, para a assessoria redigir os textos. As leis citadas precisam ser conferidas pela assessoria;
@@ -17,7 +20,7 @@ algumas referências foram feitas de memória.
 | Sessão (só o hash do token) e data de uso | `sessoes` | manter o login | execução de contrato | até expirar ou excluir a conta (limpeza pendente, ver BACKLOG) |
 | Até 3 CEPs | `user_preferences` | mostrar ofertas com entrega | execução de contrato | até excluir a conta |
 | Categorias escolhidas | `user_preferences` | filtrar ofertas | **ver 1.1**, dado sensível por inferência | até excluir a conta |
-| Tamanhos de fralda escolhidos (opcional) | `user_preferences` | filtrar fraldas | execução de contrato; **ver 1.1** (pode ser lido como dado da criança) | até excluir a conta |
+| Tamanhos de fralda escolhidos (opcional) | `user_preferences` | filtrar fraldas | execução de contrato (não é dado da criança, segundo a assessoria) | até excluir a conta |
 | Horário de silêncio e limite diário | `user_preferences` | regular as notificações | execução de contrato | até excluir a conta |
 | Aceite dos termos (versão e data) | `users` | provar o aceite | cumprimento de obrigação / exercício de direitos | até excluir a conta, ou mais, se a assessoria pedir |
 | Consentimento de notificação (data) | `users` | enviar push | consentimento (art. 7º, I), revogável no app | até revogar ou excluir a conta |
@@ -34,9 +37,9 @@ data provável do parto. Recomendação: manter assim (ver 1.1).
   precisa dizer isso e a base legal precisa ser definida (provavelmente consentimento específico e
   destacado). Esse dado nunca pode ir para publicidade de terceiros.
 - Dados de criança (art. 14) exigem consentimento específico de um dos pais. O filtro opcional por
-  tamanho de fralda (decisão 51) guarda só o tamanho, sem idade nem data de nascimento; a assessoria
-  decide se isso é dado da criança e, se for, como pedir o consentimento do art. 14. Um filtro por
-  "fase do bebê", se entrar, segue a mesma regra.
+  tamanho de fralda (decisão 51) guarda só o tamanho, sem idade nem data de nascimento, e a assessoria
+  confirmou que não é dado da criança. Um filtro por "fase do bebê", se entrar, volta para a
+  assessoria antes.
 
 ### 1.2 Marco Civil da Internet
 O provedor de aplicação constituído como pessoa jurídica e com fins econômicos precisa guardar os
@@ -56,8 +59,7 @@ API não tem retenção definida (ver BACKLOG). A política deve citar essa guar
    aprovada). Evitar "menor preço garantido".
 6. **NBCAL (Lei 11.265/2006 e Decreto 9.579/2018):** o app não divulga fórmulas infantis para lactentes,
    mamadeiras, bicos, chupetas nem protetores de mamilo. As ofertas de alimento infantil saem com a
-   advertência do Ministério da Saúde. A assessoria confirma o alcance: fórmula de seguimento, composto
-   lácteo, leites de crescimento, foto da embalagem.
+   advertência do Ministério da Saúde (regra validada pela assessoria).
 7. **Sem medicamentos** e sem nenhuma orientação de saúde, de uso ou de dosagem.
 8. Plano premium (fase 6): preço, renovação automática, cancelamento pelo Google Play, direito de
    arrependimento (CDC, art. 49).
@@ -72,7 +74,8 @@ API não tem retenção definida (ver BACKLOG). A política deve citar essa guar
 2. A tabela da seção 1, com finalidade, base legal e retenção de cada dado.
 3. O dado sensível por inferência (1.1), dito de forma clara.
 4. Com quem o dado é compartilhado:
-   - provedor de e-mail (a escolher);
+   - Brevo (empresa francesa; razão social conforme o contrato), provedor do e-mail do código de login: recebe o e-mail do
+     usuário e o código;
    - Google (login e, na fase 4, push);
    - hospedagem;
    - no clique, a rede de afiliados (Lomadee) e a loja, que tratam o dado pelas políticas delas.

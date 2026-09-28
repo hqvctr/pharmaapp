@@ -1,4 +1,5 @@
 // Login por código no e-mail e por ID token do Google; logout.
+import { CotaDiariaDeEmailEsgotada } from '../../auth/email.js';
 import { TokenGoogleInvalido, verificarIdTokenGoogle, type IdentidadeGoogle } from '../../auth/google.js';
 import { gerarCodigo, hashCodigo, mesmoHash, normalizarEmail } from '../../auth/segredos.js';
 import { ErroApi } from '../erros.js';
@@ -42,7 +43,12 @@ export const pedirCodigoEmail: Handler = async (req, reply, deps) => {
     await deps.email.enviarCodigo({ para: email, codigo, nomeApp: tenant.config.app.nome, validadeMinutos: cfg.codigoValidadeMinutos });
   } catch (err) {
     req.log.error({ err }, 'falha ao enviar código de login');
-    throw new ErroApi(503, 'ENVIO_FALHOU', 'Não foi possível enviar o e-mail agora.');
+    const cota = err instanceof CotaDiariaDeEmailEsgotada;
+    throw new ErroApi(
+      503,
+      'ENVIO_FALHOU',
+      cota ? 'Limite diário de e-mails atingido. Entre com o Google ou tente amanhã.' : 'Não foi possível enviar o e-mail agora.',
+    );
   }
   return reply.code(202).send({ validadeMinutos: cfg.codigoValidadeMinutos });
 };

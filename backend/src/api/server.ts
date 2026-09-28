@@ -1,6 +1,6 @@
 import pg from 'pg';
 import { Redis } from 'ioredis';
-import { EnviadorEmailLog } from '../auth/email.js';
+import { EnviadorComCotaDiaria, EnviadorEmailBrevo, EnviadorEmailLog, type EnviadorEmail } from '../auth/email.js';
 import { ChavesGoogleHttp } from '../auth/google.js';
 import { LimitadorRedis } from '../auth/limitador.js';
 import { loadApiEnv, loadEnv } from '../shared/env.js';
@@ -12,6 +12,12 @@ async function main(): Promise<void> {
   const envApi = loadApiEnv();
   const pool = new pg.Pool({ connectionString: env.databaseUrl, max: 10 });
   const redis = new Redis(env.redisUrl, { maxRetriesPerRequest: 1, lazyConnect: false });
+  const limitador = new LimitadorRedis(redis);
+  const cfgEmail = envApi.email;
+  const email: EnviadorEmail =
+    cfgEmail.modo === 'brevo'
+      ? new EnviadorComCotaDiaria(new EnviadorEmailBrevo(cfgEmail), limitador, cfgEmail.limiteDiario)
+      : new EnviadorEmailLog((linha) => app.log.warn(linha));
 
   const app = buildApp({
     logger: true,
@@ -23,8 +29,8 @@ async function main(): Promise<void> {
     v1: {
       db: pool,
       tenants: new ResolvedorTenantsDb(pool),
-      email: new EnviadorEmailLog((linha) => app.log.warn(linha)),
-      limitador: new LimitadorRedis(redis),
+      email,
+      limitador,
       chavesGoogle: new ChavesGoogleHttp(),
       codigoChave: envApi.codigoChave,
       agora: () => new Date(),
