@@ -1,0 +1,30 @@
+# ux/ — proposta de interface do economae
+
+Trabalho de UX em cinco fases, na ordem em que foram feitas. Cada arquivo cita a evidência de cada
+decisão (código do repositório ou fonte externa com data de acesso).
+
+| # | Entregável | Arquivo | Fase |
+|---|---|---|---|
+| 1 | Retrato do produto, pesquisa externa e três perfis | [DOSSIE_UX.md](DOSSIE_UX.md) | 1, 2, 3 |
+| 2 | Suposições, com evidência, confiança e como validar | [SUPOSICOES.md](SUPOSICOES.md) | todas |
+| 3 | Auditoria heurística e de acessibilidade, priorizada | [AUDITORIA.md](AUDITORIA.md) | 4 |
+| 4 | Proposta: arquitetura, fluxos, componentes, estados, justificativas | [PROPOSTA_UX.md](PROPOSTA_UX.md) | 5 |
+| 5 | Tokens (claro e escuro) + tema do app + contraste verificado | [design-tokens/](design-tokens/README.md) | 5 |
+| 6 | Protótipo navegável, arquivo único, abre no navegador | [prototipo.html](prototipo.html) | 5 |
+| 7 | Telas implementadas (Kotlin + Jetpack Compose) | [../android/](../android/README.md) | 5 |
+| 8 | Todo texto de interface | [UX_COPY.md](UX_COPY.md) | 5 |
+| 9 | Métricas, metas e o que testar primeiro | [MEDICAO.md](MEDICAO.md) | 5 |
+| 10 | O que ficou de fora e por quê | [BACKLOG_UX.md](BACKLOG_UX.md) | 5 |
+
+Apoio: `pesquisa/` (scripts e resumo da coleta de avaliações da Google Play) e `ferramentas/`
+(verificação automática do protótipo).
+
+## Verificar
+
+```bash
+node ux/design-tokens/gerar.mjs                      # regenera CSS/Kotlin e falha se o contraste cair
+(cd android && ./gradlew testDebugUnitTest)          # 13 testes JVM + 51 capturas de tela
+npm i playwright@1 && node ux/ferramentas/verificar-prototipo.mjs   # 45 estados × 2 fontes × 2 temas
+```
+
+Todos os dados do protótipo e das telas são **fictícios** (marcas, lojas e preços de exemplo).

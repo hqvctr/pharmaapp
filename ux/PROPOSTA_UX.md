@@ -128,7 +128,7 @@ Entradas externas: notificação → Detalhe · link compartilhado → Detalhe
 | Decisão | Porquê | Descartada |
 |---|---|---|
 | 3 destinos na barra inferior | Convenção M3 para 3–5 destinos; "Avisos" existe porque notificação some e a pessoa quer rever [review Promobit: "Só mostram 4 notificaçoes, não consigo ver as anteriores"] | Gaveta lateral (esconde destinos; custo de descoberta) |
-| Sem busca | O app não é catálogo; busca produziria "por que X não está aqui?" e contradiz a curadoria | Busca por produto (entra em BACKLOG_UX B-10 como "Seguir um produto") |
+| Sem busca | O app não é catálogo; busca produziria "por que X não está aqui?" e contradiz a curadoria | Busca por produto (entra em BACKLOG_UX B-12 como "Seguir um produto") |
 | Sem conta para usar | Login é a reclamação nº 1 [R1, U16] | Login no primeiro uso |
 | Onboarding de 4 passos, sem carrossel | Cada passo coleta um dado necessário; carrossel não coleta nada | Carrossel de 3 telas de apresentação |
 | Permissão no passo 4, por botão | Diretriz Android de pedir em contexto e a partir de ação [U03] | Pedir ao abrir o app |
@@ -147,7 +147,7 @@ Ordem visual **e** de leitura (A07):
 ├──────────────────────────────────────────────┤
 │ [ícone/foto]  Fralda Bebê Seco G · 34 un     │ ← nome curto, 2 linhas
 │               Farmácia Vida                  │ ← loja (apoio)
-│ R$ 53,80 cada          [↘ R$ 78,30 a menos]  │ ← PREÇO 30sp + chip economia
+│ R$ 53,80 cada   [↘ R$ 78,30 a menos levando 3] │ ← PREÇO 30sp + chip
 │ Preço normal nesta loja: R$ 79,90            │ ← subordinado, sem risco
 │ ✓ Menor preço em 6 meses                     │ ← Selo de prova
 │ ▕━━━━━━━━━━━━━━━━┿━━━━━━━━━━━▏               │ ← Régua de preço (compacta)
@@ -383,7 +383,7 @@ depende de movimento [A09].
 | Nome de exibição da loja | não | Card, notificação | B-03 |
 | Imagem | não | Card, notificação | B-03 |
 | Encerrada em / preço atual depois do aviso | não | Detalhe, Avisos | B-04 |
-| Cobertura por usuário (modo, prazo, distância) | cálculo existe, sem persistência | Linha de cobertura | B-11 |
+| Cobertura por usuário (modo, prazo, distância) | cálculo existe, sem persistência | Linha de cobertura | B-10 |
 | Resumo do dia (preços conferidos, aprovados) | contadores em memória | Estado "nada hoje" | B-09 |
 | Dias de coleta da região | derivável | Estado "começando a medir" | B-09 |
 | Usuário anônimo | não (`email NOT NULL`) | Uso sem conta | B-01 |

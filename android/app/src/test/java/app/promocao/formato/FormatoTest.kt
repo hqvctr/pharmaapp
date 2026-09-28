@@ -11,20 +11,20 @@ class FormatoTest {
 
     @Test
     fun `reais no padrao brasileiro`() {
-        assertEquals("R$ 0,05", Formato.reais(5))
-        assertEquals("R$ 39,90", Formato.reais(3990))
-        assertEquals("R$ 1.234,56", Formato.reais(123456))
-        assertEquals("R$ 1.234.567,00", Formato.reais(123456700))
-        assertEquals("-R$ 2,00", Formato.reais(-200))
+        assertEquals(n("R$ 0,05"), Formato.reais(5))
+        assertEquals(n("R$ 39,90"), Formato.reais(3990))
+        assertEquals(n("R$ 1.234,56"), Formato.reais(123456))
+        assertEquals(n("R$ 1.234.567,00"), Formato.reais(123456700))
+        assertEquals(n("-R$ 2,00"), Formato.reais(-200))
     }
 
     @Test
     fun `hora km cep e milhar`() {
-        assertEquals("08:05", Formato.hora(LocalTime.of(8, 5)))
-        assertEquals("1,2 km", Formato.km(1.234))
-        assertEquals("01310-100", Formato.cep("01310100"))
-        assertEquals("01310", Formato.cep("01310"))
-        assertEquals("1.284", Formato.milhar(1284))
+        assertEquals(n("08:05"), Formato.hora(LocalTime.of(8, 5)))
+        assertEquals(n("1,2 km"), Formato.km(1.234))
+        assertEquals(n("01310-100"), Formato.cep("01310100"))
+        assertEquals(n("01310"), Formato.cep("01310"))
+        assertEquals(n("1.284"), Formato.milhar(1284))
     }
 
     @Test
@@ -59,4 +59,7 @@ class FormatoTest {
         assertEquals(0f, pos.hoje)
         assertEquals(3990L, pos.minimoCentavos)
     }
+
+    /** Os textos esperados são escritos com espaço comum; o app usa espaço não separável depois de "R$". */
+    private fun n(s: String) = s.replace("R$ ", "R$\u00A0")
 }

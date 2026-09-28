@@ -15,11 +15,14 @@ import kotlin.math.roundToLong
  */
 object Formato {
 
-    /** 123456 → "R$ 1.234,56". */
+    /**
+     * 123456 → "R$ 1.234,56", com espaço não separável depois de "R$": o símbolo nunca fica numa
+     * linha e o número na outra (fonte a 200%). Conta como 1 caractere no limite da notificação.
+     */
     fun reais(centavos: Long): String {
         val negativo = centavos < 0
         val inteiro = abs(centavos)
-        return (if (negativo) "-" else "") + "R$ " + milhar(inteiro / 100) + "," + (inteiro % 100).toString().padStart(2, '0')
+        return (if (negativo) "-" else "") + "R$\u00A0" + milhar(inteiro / 100) + "," + (inteiro % 100).toString().padStart(2, '0')
     }
 
     /** 1284 → "1.284". */

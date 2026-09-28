@@ -6,6 +6,7 @@ escolhidas, de loja confiável e que chega (ou está perto) do CEP do usuário.
 Estado atual e próximo passo: veja [CHECKPOINT.md](CHECKPOINT.md).
 Decisões já tomadas: [DECISIONS.md](DECISIONS.md). Pendências fora de fase: [BACKLOG.md](BACKLOG.md).
 Fontes e base legal: [SOURCES.md](SOURCES.md).
+Proposta de interface (pesquisa, auditoria, protótipo e telas): [ux/README.md](ux/README.md).
 
 ## Rodar em desenvolvimento
 
@@ -36,6 +37,8 @@ backend/
   src/db/            runner de migration
   src/shared/        leitura de ambiente
 docker-compose.yml   postgres, redis, migrate, api
+android/             app Android (Kotlin + Compose): telas da proposta de UX, dados de exemplo
+ux/                  pesquisa, auditoria, proposta, tokens, protótipo, textos e medição
 ```
 
 ## Subir um cliente novo (tenant)

@@ -50,10 +50,24 @@ css.push('/* GERADO por ux/design-tokens/gerar.mjs a partir de tokens.json. Não
 css.push(':root {');
 css.push(blocoCores('claro'));
 css.push(`  --fonte-familia: ${t.tipografia.familia};`);
+// Tipografia: tamanhos em px para 100%, e blocos [data-fonte="1.3"] e [data-fonte="2"] com a curva
+// NÃO LINEAR do Android 14+ (texto grande cresce menos). A tabela é uma aproximação da
+// FontScaleConverter do AOSP; ver ux/design-tokens/README.md.
+const CURVAS = {
+  '1.3': { de: [8, 10, 12, 14, 18, 20, 24, 30, 100], para: [10.4, 13, 15.6, 18.2, 23.4, 26, 31.2, 39, 100] },
+  '2': { de: [8, 10, 12, 14, 18, 20, 24, 30, 100], para: [16, 20, 24, 26, 30, 34, 36, 38, 100] },
+};
+function escalar(sp, curva) {
+  const { de, para } = curva;
+  if (sp <= de[0]) return (sp * para[0]) / de[0];
+  for (let i = 1; i < de.length; i++) {
+    if (sp <= de[i]) return para[i - 1] + ((sp - de[i - 1]) / (de[i] - de[i - 1])) * (para[i] - para[i - 1]);
+  }
+  return sp;
+}
 for (const [k, e] of Object.entries(t.tipografia.estilos)) {
-  // rem = 16px; o protótipo escala a fonte mudando o font-size da raiz do quadro.
-  css.push(`  --tipo-${kebab(k)}-tamanho: ${e.tamanho / 16}rem;`);
-  css.push(`  --tipo-${kebab(k)}-altura: ${e.altura / 16}rem;`);
+  css.push(`  --tipo-${kebab(k)}-tamanho: ${e.tamanho}px;`);
+  css.push(`  --tipo-${kebab(k)}-altura: ${e.altura}px;`);
   css.push(`  --tipo-${kebab(k)}-peso: ${e.peso};`);
 }
 for (const [k, v] of Object.entries(t.espaco)) if (!k.startsWith('$')) css.push(`  --espaco-${k}: ${v}px;`);
@@ -64,6 +78,16 @@ for (const [k, v] of Object.entries(t.icone.tamanho)) css.push(`  --icone-${k}: 
 for (const [k, v] of Object.entries(t.movimento.duracao)) css.push(`  --duracao-${k}: ${v}ms;`);
 for (const [k, v] of Object.entries(t.movimento.curva)) css.push(`  --curva-${k}: cubic-bezier(${v.join(', ')});`);
 css.push('}');
+for (const [escala, curva] of Object.entries(CURVAS)) {
+  css.push(`[data-fonte="${escala}"] {`);
+  for (const [k, e] of Object.entries(t.tipografia.estilos)) {
+    const tam = escalar(e.tamanho, curva);
+    // Altura de linha acompanha a proporção original do estilo.
+    css.push(`  --tipo-${kebab(k)}-tamanho: ${tam.toFixed(1)}px;`);
+    css.push(`  --tipo-${kebab(k)}-altura: ${((tam * e.altura) / e.tamanho).toFixed(1)}px;`);
+  }
+  css.push('}');
+}
 css.push('[data-tema="escuro"] {');
 css.push(blocoCores('escuro'));
 css.push('}');
@@ -135,6 +159,14 @@ kt.push('}');
 const destinoKt = path.join(raiz, 'android/app/src/main/java/app/promocao/ui/theme/Tokens.kt');
 fs.mkdirSync(path.dirname(destinoKt), { recursive: true });
 fs.writeFileSync(destinoKt, kt.join('\n') + '\n');
+
+// ---------- protótipo: injeta o CSS entre marcadores (arquivo único, abre sem instalar nada) ----------
+const prototipo = path.join(raiz, 'ux/prototipo.html');
+if (fs.existsSync(prototipo)) {
+  const html = fs.readFileSync(prototipo, 'utf8');
+  const novo = html.replace(/\/\* tokens:inicio \*\/[\s\S]*\/\* tokens:fim \*\//, `/* tokens:inicio */\n${css.join('\n')}\n/* tokens:fim */`);
+  fs.writeFileSync(prototipo, novo);
+}
 
 // ---------- tabela de contraste ----------
 const tabela = [

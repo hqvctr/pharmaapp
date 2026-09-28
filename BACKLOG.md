@@ -16,3 +16,4 @@ Problemas encontrados fora do escopo da fase em andamento. Não são consertados
 - [fase 2] Oferta que some da coleta seguinte não é marcada como indisponível; o feed (fase 3) precisa disso para não mostrar oferta encerrada.
 - [fase 2] Coletor ainda não roda agendado nem no compose; hoje é comando manual. Entra com a vinculação real (agendamento a cada 2 h).
 - [fase 2] Protetor em R$/l mostra valores altos (R$ 1.598,00/l); a notificação (fase 4) deve mostrar preço da embalagem e usar preço por unidade só na comparação.
+- [ux] Pendências de interface e dependências de dado da proposta de UX: ver [ux/BACKLOG_UX.md](ux/BACKLOG_UX.md) (B-01 a B-28).

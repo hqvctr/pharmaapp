@@ -1,5 +1,21 @@
 # Checkpoint
 
+## Trabalho de UX (fora da sequência de fases) — 2026-09-28
+
+**O que ficou pronto** (índice em [ux/README.md](ux/README.md)): dossiê com retrato do produto,
+pesquisa externa (3.642 avaliações de 1–2 estrelas de 14 apps análogos, diretrizes Android e Play,
+WCAG 2.2, dados do público) e três perfis; suposições; auditoria heurística e de acessibilidade;
+proposta com a notificação como tela principal; tokens com contraste verificado; protótipo
+navegável; textos; plano de medição; backlog de UX. Primeiro módulo `android/` (Compose) com as
+telas, notificação N1–N7, 13 testes JVM e 51 capturas (claro, escuro, fonte a 200%).
+
+**Depende de aprovação do responsável:** Kotlin + Compose como tecnologia do app (S-02); conta
+opcional com usuário anônimo (S-13, mudança de esquema); campos de prova no contrato da fase 3
+(ux/PROPOSTA_UX.md seção 11).
+
+**Próximo passo recomendado:** teste de compreensão T1 com o protótipo (ux/MEDICAO.md) antes de
+congelar o contrato da fase 3.
+
 ## Fase 2 — uma fonte ponta a ponta (PRONTA)
 
 **Critério de pronto:** `./scripts/pronto-fase2.sh`. Num banco descartável (`pronto_fase2`), roda o

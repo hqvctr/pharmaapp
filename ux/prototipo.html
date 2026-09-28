@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protótipo economae</title>
+<meta name="description" content="Protótipo navegável da proposta de UX do economae: notificação, primeiro uso, ofertas, detalhe, avisos e ajustes, com todos os estados. Dados de exemplo fictícios.">
+<style>
+/* tokens:inicio */
+/* GERADO por ux/design-tokens/gerar.mjs a partir de tokens.json. Não editar à mão. */
+:root {
+  --cor-superficie: #F8FAF8;
+  --cor-superficie-cartao: #FFFFFF;
+  --cor-superficie-container: #ECEFEC;
+  --cor-superficie-container-alta: #E1E5E2;
+  --cor-texto: #171D1C;
+  --cor-texto-secundario: #3D4947;
+  --cor-contorno: #6B7876;
+  --cor-contorno-suave: #C0C9C6;
+  --cor-economia: #155B26;
+  --cor-economia-container: #D6F2DA;
+  --cor-sobre-economia-container: #0A3A16;
+  --cor-prova: #2A48A8;
+  --cor-prova-container: #E3E8FF;
+  --cor-sobre-prova-container: #0F2468;
+  --cor-prova-regua: #2A48A8;
+  --cor-condicao-container: #FFE2A3;
+  --cor-sobre-condicao-container: #472F00;
+  --cor-condicao-borda: #8A5F00;
+  --cor-erro: #B3261E;
+  --cor-erro-container: #F9DEDC;
+  --cor-sobre-erro-container: #410E0B;
+  --cor-anuncio-container: #EEEEEE;
+  --cor-sobre-anuncio-container: #454747;
+  --cor-anuncio-borda: #767878;
+  --cor-esqueleto: #E1E5E2;
+  --cor-scrim: #000000;
+  --marca-primaria: #00696B;
+  --marca-sobre-primaria: #FFFFFF;
+  --marca-primaria-container: #A6EEEE;
+  --marca-sobre-primaria-container: #002021;
+  --fonte-familia: system-ui, Roboto, 'Segoe UI', sans-serif;
+  --tipo-preco-destaque-tamanho: 40px;
+  --tipo-preco-destaque-altura: 48px;
+  --tipo-preco-destaque-peso: 700;
+  --tipo-preco-cartao-tamanho: 30px;
+  --tipo-preco-cartao-altura: 36px;
+  --tipo-preco-cartao-peso: 700;
+  --tipo-economia-tamanho: 16px;
+  --tipo-economia-altura: 22px;
+  --tipo-economia-peso: 700;
+  --tipo-preco-normal-tamanho: 16px;
+  --tipo-preco-normal-altura: 24px;
+  --tipo-preco-normal-peso: 400;
+  --tipo-titulo-tela-tamanho: 24px;
+  --tipo-titulo-tela-altura: 32px;
+  --tipo-titulo-tela-peso: 600;
+  --tipo-titulo-secao-tamanho: 18px;
+  --tipo-titulo-secao-altura: 24px;
+  --tipo-titulo-secao-peso: 600;
+  --tipo-nome-produto-tamanho: 16px;
+  --tipo-nome-produto-altura: 22px;
+  --tipo-nome-produto-peso: 500;
+  --tipo-corpo-tamanho: 16px;
+  --tipo-corpo-altura: 24px;
+  --tipo-corpo-peso: 400;
+  --tipo-apoio-tamanho: 14px;
+  --tipo-apoio-altura: 20px;
+  --tipo-apoio-peso: 400;
+  --tipo-rotulo-tamanho: 14px;
+  --tipo-rotulo-altura: 20px;
+  --tipo-rotulo-peso: 600;
+  --tipo-rotulo-pequeno-tamanho: 12px;
+  --tipo-rotulo-pequeno-altura: 16px;
+  --tipo-rotulo-pequeno-peso: 600;
+  --espaco-0: 0px;
+  --espaco-1: 2px;
+  --espaco-2: 4px;
+  --espaco-3: 8px;
+  --espaco-4: 12px;
+  --espaco-5: 16px;
+  --espaco-6: 20px;
+  --espaco-7: 24px;
+  --espaco-8: 32px;
+  --espaco-9: 40px;
+  --espaco-10: 48px;
+  --espaco-11: 64px;
+  --raio-nenhum: 0px;
+  --raio-xs: 4px;
+  --raio-sm: 8px;
+  --raio-md: 12px;
+  --raio-lg: 16px;
+  --raio-xl: 28px;
+  --raio-total: 999px;
+  --elevacao-nivel0: 0px;
+  --elevacao-nivel1: 1px;
+  --elevacao-nivel2: 3px;
+  --elevacao-nivel3: 6px;
+  --alvo-toque-minimo: 48px;
+  --alvo-botao-principal-altura: 56px;
+  --alvo-espaco-entre-alvos: 8px;
+  --icone-pequeno: 18px;
+  --icone-padrao: 24px;
+  --icone-grande: 32px;
+  --icone-categoria: 28px;
+  --duracao-instantanea: 0ms;
+  --duracao-curta: 150ms;
+  --duracao-media: 250ms;
+  --curva-padrao: cubic-bezier(0.2, 0, 0, 1);
+  --curva-saida: cubic-bezier(0.3, 0, 1, 1);
+}
+[data-fonte="2"] {
+  --tipo-preco-destaque-tamanho: 46.9px;
+  --tipo-preco-destaque-altura: 56.2px;
+  --tipo-preco-cartao-tamanho: 38.0px;
+  --tipo-preco-cartao-altura: 45.6px;
+  --tipo-economia-tamanho: 28.0px;
+  --tipo-economia-altura: 38.5px;
+  --tipo-preco-normal-tamanho: 28.0px;
+  --tipo-preco-normal-altura: 42.0px;
+  --tipo-titulo-tela-tamanho: 36.0px;
+  --tipo-titulo-tela-altura: 48.0px;
+  --tipo-titulo-secao-tamanho: 30.0px;
+  --tipo-titulo-secao-altura: 40.0px;
+  --tipo-nome-produto-tamanho: 28.0px;
+  --tipo-nome-produto-altura: 38.5px;
+  --tipo-corpo-tamanho: 28.0px;
+  --tipo-corpo-altura: 42.0px;
+  --tipo-apoio-tamanho: 26.0px;
+  --tipo-apoio-altura: 37.1px;
+  --tipo-rotulo-tamanho: 26.0px;
+  --tipo-rotulo-altura: 37.1px;
+  --tipo-rotulo-pequeno-tamanho: 24.0px;
+  --tipo-rotulo-pequeno-altura: 32.0px;
+}
+[data-fonte="1.3"] {
+  --tipo-preco-destaque-tamanho: 47.7px;
+  --tipo-preco-destaque-altura: 57.3px;
+  --tipo-preco-cartao-tamanho: 39.0px;
+  --tipo-preco-cartao-altura: 46.8px;
+  --tipo-economia-tamanho: 20.8px;
+  --tipo-economia-altura: 28.6px;
+  --tipo-preco-normal-tamanho: 20.8px;
+  --tipo-preco-normal-altura: 31.2px;
+  --tipo-titulo-tela-tamanho: 31.2px;
+  --tipo-titulo-tela-altura: 41.6px;
+  --tipo-titulo-secao-tamanho: 23.4px;
+  --tipo-titulo-secao-altura: 31.2px;
+  --tipo-nome-produto-tamanho: 20.8px;
+  --tipo-nome-produto-altura: 28.6px;
+  --tipo-corpo-tamanho: 20.8px;
+  --tipo-corpo-altura: 31.2px;
+  --tipo-apoio-tamanho: 18.2px;
+  --tipo-apoio-altura: 26.0px;
+  --tipo-rotulo-tamanho: 18.2px;
+  --tipo-rotulo-altura: 26.0px;
+  --tipo-rotulo-pequeno-tamanho: 15.6px;
+  --tipo-rotulo-pequeno-altura: 20.8px;
+}
+[data-tema="escuro"] {
+  --cor-superficie: #0F1413;
+  --cor-superficie-cartao: #171D1C;
+  --cor-superficie-container: #1D2423;
+  --cor-superficie-container-alta: #27302E;
+  --cor-texto: #E0E4E2;
+  --cor-texto-secundario: #BEC9C6;
+  --cor-contorno: #89938F;
+  --cor-contorno-suave: #3D4947;
+  --cor-economia: #9CD9A4;
+  --cor-economia-container: #0D3A19;
+  --cor-sobre-economia-container: #C4EFC9;
+  --cor-prova: #B5C3FF;
+  --cor-prova-container: #1B2B66;
+  --cor-sobre-prova-container: #DDE2FF;
+  --cor-prova-regua: #B5C3FF;
+  --cor-condicao-container: #4A3400;
+  --cor-sobre-condicao-container: #FFE0A0;
+  --cor-condicao-borda: #D8A93C;
+  --cor-erro: #F2B8B5;
+  --cor-erro-container: #8C1D18;
+  --cor-sobre-erro-container: #F9DEDC;
+  --cor-anuncio-container: #242827;
+  --cor-sobre-anuncio-container: #C6CAC8;
+  --cor-anuncio-borda: #8E9290;
+  --cor-esqueleto: #27302E;
+  --cor-scrim: #000000;
+  --marca-primaria: #7FD4D4;
+  --marca-sobre-primaria: #003738;
+  --marca-primaria-container: #004F51;
+  --marca-sobre-primaria-container: #A6EEEE;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --duracao-curta: 0ms; --duracao-media: 0ms; }
+}
+/* tokens:fim */
+
+/* ---------- Simulação da interface do sistema Android (tela de bloqueio, diálogo). Não são tokens do app. ---------- */
+:root {
+  --sistema-fundo: #1E2624;
+  --sistema-fundo-2: #2B3634;
+  --sistema-texto: #F1F4F2;
+  --sistema-texto-2: #C9D1CE;
+  --sistema-cartao: #F3F6F4;
+  --sistema-cartao-texto: #1A1F1E;
+  --sistema-cartao-texto-2: #3F4847;
+  --sistema-dialogo: #FFFFFF;
+  --pagina-fundo: #E7EBE9;
+  --pagina-texto: #1A1F1E;
+  --pagina-painel: #FFFFFF;
+  --pagina-contorno: #B9C2BF;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-pagina="clara"]) { --pagina-fundo: #121614; --pagina-texto: #E3E7E5; --pagina-painel: #1B2120; --pagina-contorno: #3E4845; }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--pagina-fundo); color: var(--pagina-texto);
+  font-family: var(--fonte-familia); font-size: 16px; line-height: 1.5;
+}
+button { font: inherit; color: inherit; }
+.pagina { display: flex; gap: 24px; padding: 24px 16px; max-width: 1180px; margin: 0 auto; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+
+/* ---------- Painel de controle do protótipo ---------- */
+.painel { flex: 1 1 320px; max-width: 420px; background: var(--pagina-painel); border: 1px solid var(--pagina-contorno); border-radius: 16px; padding: 16px 20px; }
+.painel h1 { font-size: 20px; line-height: 28px; margin: 0 0 4px; }
+.painel p { margin: 0 0 12px; font-size: 14px; line-height: 20px; }
+.painel label { display: block; font-size: 14px; font-weight: 600; margin: 12px 0 4px; }
+.painel select { width: 100%; min-height: 44px; font: inherit; font-size: 15px; padding: 8px; border-radius: 8px; border: 1px solid var(--pagina-contorno); background: var(--pagina-painel); color: var(--pagina-texto); }
+.painel .linha { display: flex; gap: 8px; flex-wrap: wrap; }
+.painel .opcao { min-height: 44px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--pagina-contorno); background: transparent; cursor: pointer; font-size: 14px; }
+.painel .opcao[aria-pressed="true"] { background: var(--pagina-texto); color: var(--pagina-painel); border-color: var(--pagina-texto); }
+.painel .nota { margin-top: 16px; padding: 12px; border-radius: 12px; background: var(--pagina-fundo); font-size: 14px; line-height: 20px; }
+.painel .nota strong { display: block; margin-bottom: 4px; }
+.painel .aviso-exemplo { font-size: 13px; line-height: 18px; margin-top: 12px; opacity: 0.85; }
+.painel ul.atalhos { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.painel ul.atalhos button { min-height: 36px; font-size: 13px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--pagina-contorno); background: transparent; cursor: pointer; }
+
+/* ---------- Quadro do celular: 390 × 844 ---------- */
+.quadro-envoltorio { flex: 0 0 auto; }
+.celular {
+  --escala-fonte: 1;
+  width: 390px; height: 844px; max-width: calc(100vw - 32px);
+  border-radius: 36px; overflow: hidden; position: relative;
+  border: 10px solid #0E1110; box-shadow: 0 12px 40px rgba(0,0,0,.25);
+  background: var(--cor-superficie); color: var(--cor-texto);
+  display: flex; flex-direction: column;
+  font-family: var(--fonte-familia);
+}
+.barra-status { height: 28px; flex: 0 0 28px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; font-size: 13px; font-weight: 600; background: var(--cor-superficie); color: var(--cor-texto); }
+.barra-status .icones { display: flex; gap: 4px; }
+.barra-status svg { width: 15px; height: 15px; fill: currentColor; }
+.tela { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; position: relative; background: var(--cor-superficie); }
+.tela:focus { outline: none; }
+
+svg.i { width: var(--icone-padrao); height: var(--icone-padrao); fill: currentColor; flex: 0 0 auto; }
+svg.i.p { width: var(--icone-pequeno); height: var(--icone-pequeno); }
+svg.i.g { width: 48px; height: 48px; }
+
+/* ---------- Tipografia (tokens) ---------- */
+.t-preco-destaque, .t-preco-cartao { white-space: nowrap; }
+.t-preco-destaque { font-size: var(--tipo-preco-destaque-tamanho); line-height: var(--tipo-preco-destaque-altura); font-weight: var(--tipo-preco-destaque-peso); font-variant-numeric: tabular-nums; }
+.t-preco-cartao { font-size: var(--tipo-preco-cartao-tamanho); line-height: var(--tipo-preco-cartao-altura); font-weight: var(--tipo-preco-cartao-peso); font-variant-numeric: tabular-nums; }
+.t-economia { font-size: var(--tipo-economia-tamanho); line-height: var(--tipo-economia-altura); font-weight: var(--tipo-economia-peso); font-variant-numeric: tabular-nums; }
+.t-preco-normal { font-size: var(--tipo-preco-normal-tamanho); line-height: var(--tipo-preco-normal-altura); font-weight: var(--tipo-preco-normal-peso); font-variant-numeric: tabular-nums; color: var(--cor-texto-secundario); }
+.t-titulo-tela { font-size: var(--tipo-titulo-tela-tamanho); line-height: var(--tipo-titulo-tela-altura); font-weight: var(--tipo-titulo-tela-peso); margin: 0; }
+.t-titulo-secao { font-size: var(--tipo-titulo-secao-tamanho); line-height: var(--tipo-titulo-secao-altura); font-weight: var(--tipo-titulo-secao-peso); margin: 0; }
+.t-nome { font-size: var(--tipo-nome-produto-tamanho); line-height: var(--tipo-nome-produto-altura); font-weight: var(--tipo-nome-produto-peso); }
+.t-corpo { font-size: var(--tipo-corpo-tamanho); line-height: var(--tipo-corpo-altura); font-weight: var(--tipo-corpo-peso); }
+.t-apoio { font-size: var(--tipo-apoio-tamanho); line-height: var(--tipo-apoio-altura); font-weight: var(--tipo-apoio-peso); }
+.t-rotulo { font-size: var(--tipo-rotulo-tamanho); line-height: var(--tipo-rotulo-altura); font-weight: var(--tipo-rotulo-peso); }
+.t-rotulo-p { font-size: var(--tipo-rotulo-pequeno-tamanho); line-height: var(--tipo-rotulo-pequeno-altura); font-weight: var(--tipo-rotulo-pequeno-peso); }
+.sec { color: var(--cor-texto-secundario); }
+
+/* ---------- Estrutura de tela ---------- */
+.barra-topo { display: flex; align-items: center; gap: var(--espaco-3); min-height: 64px; padding: var(--espaco-3) var(--espaco-5); position: sticky; top: 0; background: var(--cor-superficie); z-index: 2; }
+.barra-topo .espaco { flex: 1; }
+.pad { padding: 0 var(--espaco-5); }
+.coluna { display: flex; flex-direction: column; gap: var(--espaco-4); }
+.linha { display: flex; align-items: center; gap: var(--espaco-3); }
+.linha.topo { align-items: flex-start; }
+.quebra { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espaco-3) var(--espaco-4); }
+.lista { display: flex; flex-direction: column; gap: var(--espaco-4); padding: 0 var(--espaco-5) var(--espaco-8); }
+.secao { padding-top: var(--espaco-5); }
+.secao h2 { margin: 0; }
+
+.botao-icone { min-width: var(--alvo-toque-minimo); min-height: var(--alvo-toque-minimo); display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; border-radius: 999px; cursor: pointer; color: var(--cor-texto); }
+.botao-principal { width: 100%; min-height: var(--alvo-botao-principal-altura); border: 0; border-radius: var(--raio-total); background: var(--marca-primaria); color: var(--marca-sobre-primaria); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--espaco-3); padding: var(--espaco-3) var(--espaco-7); font-size: var(--tipo-rotulo-tamanho); line-height: var(--tipo-rotulo-altura); font-weight: var(--tipo-rotulo-peso); }
+.botao-principal[disabled] { background: var(--cor-superficie-container-alta); color: var(--cor-texto-secundario); cursor: not-allowed; }
+.botao-texto { min-height: var(--alvo-toque-minimo); border: 0; background: transparent; color: var(--marca-primaria); cursor: pointer; padding: var(--espaco-3) var(--espaco-5); border-radius: var(--raio-total); font-size: var(--tipo-rotulo-tamanho); line-height: var(--tipo-rotulo-altura); font-weight: var(--tipo-rotulo-peso); }
+.botao-contorno { min-height: var(--alvo-toque-minimo); border: 1px solid var(--cor-contorno); background: transparent; color: var(--cor-texto); cursor: pointer; padding: var(--espaco-3) var(--espaco-6); border-radius: var(--raio-total); font-size: var(--tipo-rotulo-tamanho); line-height: var(--tipo-rotulo-altura); font-weight: var(--tipo-rotulo-peso); }
+.chip-cep { min-height: var(--alvo-toque-minimo); display: inline-flex; align-items: center; gap: var(--espaco-2); padding: 0 var(--espaco-4); border: 1px solid var(--cor-contorno); border-radius: var(--raio-sm); background: transparent; color: var(--cor-texto); cursor: pointer; font-size: var(--tipo-rotulo-tamanho); font-weight: var(--tipo-rotulo-peso); }
+.chip-cep svg { color: var(--cor-texto-secundario); }
+.rodape-fixo { position: sticky; bottom: 0; background: var(--cor-superficie); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-3); z-index: 2; }
+:focus-visible { outline: 3px solid var(--marca-primaria); outline-offset: 2px; }
+
+/* ---------- Componentes do diferencial ---------- */
+.cartao { display: block; width: 100%; text-align: left; padding: 0; border: 1px solid var(--cor-contorno-suave); border-radius: var(--raio-lg); background: var(--cor-superficie-cartao); overflow: hidden; cursor: pointer; color: var(--cor-texto); }
+.cartao .corpo { padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-3); }
+.faixa-condicao { display: flex; align-items: center; gap: var(--espaco-3); background: var(--cor-condicao-container); color: var(--cor-sobre-condicao-container); border-left: 4px solid var(--cor-condicao-borda); padding: var(--espaco-3) var(--espaco-4); }
+.chip-economia { display: inline-flex; align-items: center; gap: var(--espaco-2); background: var(--cor-economia-container); color: var(--cor-sobre-economia-container); border-radius: var(--raio-sm); padding: var(--espaco-2) var(--espaco-3); }
+.etiqueta-exc { display: inline-flex; align-items: center; gap: var(--espaco-2); background: var(--marca-primaria-container); color: var(--marca-sobre-primaria-container); border-radius: var(--raio-total); padding: var(--espaco-1) var(--espaco-3); align-self: flex-start; }
+.etiqueta-exc svg { width: 16px; height: 16px; }
+.selo { display: flex; align-items: center; gap: var(--espaco-3); color: var(--cor-prova); }
+.icone-produto { width: 56px; height: 56px; flex: 0 0 56px; border-radius: var(--raio-md); background: var(--cor-prova-container); color: var(--cor-sobre-prova-container); display: flex; align-items: center; justify-content: center; }
+.icone-produto svg { width: var(--icone-categoria); height: var(--icone-categoria); }
+.regua { width: 100%; }
+.regua .trilho { position: relative; height: 20px; }
+.regua .trilho .fundo, .regua .trilho .cheio { position: absolute; top: 7px; height: 6px; border-radius: 999px; }
+.regua.grande .trilho { height: 28px; }
+.regua.grande .trilho .fundo, .regua.grande .trilho .cheio { top: 9px; height: 10px; }
+.regua .fundo { left: 0; right: 0; background: var(--cor-contorno-suave); }
+.regua .cheio { left: 0; background: var(--cor-prova-regua); }
+.regua .losango { position: absolute; top: 50%; width: 14px; height: 14px; background: var(--cor-superficie-cartao); border: 2px solid var(--cor-texto); transform: translate(-50%, -50%) rotate(45deg); }
+.regua .hoje { position: absolute; top: 50%; width: 18px; height: 18px; border-radius: 50%; background: var(--cor-prova); border: 3px solid var(--cor-superficie-cartao); transform: translate(-50%, -50%); }
+.regua .rotulos { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0 var(--espaco-3); }
+.regua .rotulos .h { color: var(--cor-prova); }
+.linha-apoio { display: flex; align-items: center; gap: var(--espaco-3); color: var(--cor-texto-secundario); }
+.anuncio { display: block; width: 100%; text-align: left; border: 1.5px dashed var(--cor-anuncio-borda); background: var(--cor-anuncio-container); color: var(--cor-sobre-anuncio-container); border-radius: var(--raio-md); padding: var(--espaco-5); cursor: pointer; }
+.anuncio .coluna { gap: var(--espaco-2); }
+.item-remedio { display: flex; align-items: center; gap: var(--espaco-4); width: 100%; min-height: var(--alvo-toque-minimo); padding: var(--espaco-4) 0; border: 0; border-bottom: 1px solid var(--cor-contorno-suave); background: transparent; color: var(--cor-texto); text-align: left; cursor: pointer; }
+.esqueleto { border: 1px solid var(--cor-contorno-suave); border-radius: var(--raio-lg); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-4); }
+.esqueleto i { display: block; background: var(--cor-esqueleto); border-radius: var(--raio-xs); }
+.estado { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--espaco-4); padding: var(--espaco-9) var(--espaco-7); }
+.estado svg.i.g { color: var(--cor-prova); }
+.estado.erro svg.i.g { color: var(--cor-erro); }
+.progresso { width: 100%; height: 6px; background: var(--cor-prova-container); border-radius: 999px; overflow: hidden; }
+.progresso span { display: block; height: 100%; background: var(--cor-prova); }
+.faixa-aviso { display: flex; align-items: center; gap: var(--espaco-3); padding: var(--espaco-3) var(--espaco-5); }
+.faixa-aviso.cond { background: var(--cor-condicao-container); color: var(--cor-sobre-condicao-container); }
+.faixa-aviso.neutra { background: var(--cor-superficie-container-alta); color: var(--cor-texto); }
+.faixa-aviso .botao-texto { color: inherit; padding: var(--espaco-3); }
+.faixa-erro { background: var(--cor-erro-container); color: var(--cor-sobre-erro-container); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-2); }
+.prova { background: var(--cor-prova-container); color: var(--cor-sobre-prova-container); border-radius: var(--raio-lg); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-4); }
+.prova .check { display: flex; gap: var(--espaco-3); align-items: flex-start; }
+.prova .check svg { color: var(--cor-prova); }
+.prova .caixa { background: var(--cor-superficie-cartao); color: var(--cor-texto); border-radius: var(--raio-md); padding: var(--espaco-4); display: flex; flex-direction: column; gap: var(--espaco-3); }
+.prova .botao-contorno { color: var(--cor-sobre-prova-container); border-color: var(--cor-sobre-prova-container); align-self: flex-start; }
+.grafico { width: 100%; height: 140px; display: block; }
+.dias { margin: 0; padding: 0; list-style: none; }
+.dias li { display: flex; justify-content: space-between; border-bottom: 1px solid var(--cor-contorno-suave); padding: var(--espaco-2) 0; font-variant-numeric: tabular-nums; }
+.retorno { background: var(--cor-superficie-container); border-radius: var(--raio-lg); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-3); }
+
+/* ---------- Primeiro uso ---------- */
+.passo { min-height: 100%; display: flex; flex-direction: column; }
+.passo .conteudo { flex: 1; padding: var(--espaco-7) var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-5); }
+.categoria { display: flex; align-items: center; gap: var(--espaco-4); width: 100%; min-height: var(--alvo-toque-minimo); padding: var(--espaco-4); border-radius: var(--raio-md); border: 1px solid var(--cor-contorno-suave); background: var(--cor-superficie-cartao); color: var(--cor-texto); cursor: pointer; text-align: left; }
+.categoria .sec { color: var(--cor-texto-secundario); }
+.categoria[aria-checked="true"] { border: 2px solid var(--marca-primaria); background: var(--marca-primaria-container); color: var(--marca-sobre-primaria-container); }
+.categoria[aria-checked="true"] .sec { color: var(--marca-sobre-primaria-container); }
+.categoria .marca-sel { color: var(--cor-contorno); }
+.categoria[aria-checked="true"] .marca-sel { color: var(--marca-primaria); }
+.campo { display: flex; flex-direction: column; gap: var(--espaco-2); }
+.campo input { min-height: 56px; font: inherit; font-size: var(--tipo-titulo-secao-tamanho); padding: 0 var(--espaco-4); border: 1px solid var(--cor-contorno); border-radius: var(--raio-xs); background: var(--cor-superficie-cartao); color: var(--cor-texto); font-variant-numeric: tabular-nums; }
+.campo.erro input { border: 2px solid var(--cor-erro); }
+.campo .msg-erro { color: var(--cor-erro); display: flex; gap: var(--espaco-2); align-items: center; }
+.caixa-info { background: var(--cor-superficie-container); border-radius: var(--raio-md); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-2); }
+
+/* ---------- Navegação inferior ---------- */
+.navegacao { flex: 0 0 auto; display: flex; background: var(--cor-superficie-container); padding: var(--espaco-3) 0 var(--espaco-4); }
+.navegacao button { flex: 1; min-height: 64px; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; gap: var(--espaco-1); cursor: pointer; color: var(--cor-texto-secundario); font-size: var(--tipo-rotulo-tamanho); font-weight: var(--tipo-rotulo-peso); line-height: var(--tipo-rotulo-altura); }
+.navegacao button .pilula { width: 64px; height: 32px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
+.navegacao button[aria-current="page"] { color: var(--cor-texto); }
+.navegacao button[aria-current="page"] .pilula { background: var(--marca-primaria-container); color: var(--marca-sobre-primaria-container); }
+
+/* ---------- Folha e diálogo ---------- */
+.veu { position: absolute; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; z-index: 10; }
+.folha { width: 100%; max-height: 90%; overflow-y: auto; background: var(--cor-superficie-cartao); border-radius: var(--raio-xl) var(--raio-xl) 0 0; padding: var(--espaco-3) var(--espaco-5) var(--espaco-7); display: flex; flex-direction: column; gap: var(--espaco-4); }
+.folha .alca { width: 32px; height: 4px; border-radius: 2px; background: var(--cor-contorno); align-self: center; margin-bottom: var(--espaco-3); }
+.veu.centro { align-items: center; justify-content: center; padding: var(--espaco-7); }
+.dialogo { background: var(--cor-superficie-cartao); border-radius: var(--raio-xl); padding: var(--espaco-7); display: flex; flex-direction: column; gap: var(--espaco-4); max-width: 320px; }
+.dialogo .acoes { display: flex; justify-content: flex-end; gap: var(--espaco-2); flex-wrap: wrap; }
+.dialogo.sistema { background: var(--sistema-dialogo); color: var(--sistema-cartao-texto); }
+.dialogo.sistema .botao-texto { color: #0B57D0; }
+
+/* ---------- Ajustes ---------- */
+.item-ajuste { display: flex; align-items: center; gap: var(--espaco-3); width: 100%; min-height: var(--alvo-toque-minimo); padding: var(--espaco-3) 0; border: 0; background: transparent; color: var(--cor-texto); text-align: left; cursor: pointer; }
+.item-ajuste .coluna { gap: 0; flex: 1; }
+.radio { display: flex; align-items: center; gap: var(--espaco-4); min-height: var(--alvo-toque-minimo); width: 100%; border: 0; background: transparent; color: var(--cor-texto); cursor: pointer; text-align: left; padding: 0; }
+.radio .bola { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--cor-texto-secundario); display: flex; align-items: center; justify-content: center; margin: 0 var(--espaco-2); }
+.radio[aria-checked="true"] .bola { border-color: var(--marca-primaria); }
+.radio[aria-checked="true"] .bola::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--marca-primaria); }
+hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var(--espaco-7) 0 var(--espaco-3); }
+.perigo { color: var(--cor-erro); }
+
+/* ---------- Tela de bloqueio (simulação do sistema) ---------- */
+.bloqueio { min-height: 100%; background: linear-gradient(180deg, var(--sistema-fundo-2), var(--sistema-fundo)); color: var(--sistema-texto); padding: var(--espaco-8) var(--espaco-4) var(--espaco-7); display: flex; flex-direction: column; gap: var(--espaco-4); }
+.bloqueio .relogio { font-size: 72px; line-height: 80px; font-weight: 300; text-align: center; font-variant-numeric: tabular-nums; }
+.bloqueio .data { text-align: center; color: var(--sistema-texto-2); font-size: 16px; margin-bottom: var(--espaco-5); }
+.notif { background: var(--sistema-cartao); color: var(--sistema-cartao-texto); border-radius: 24px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.notif .cab { display: flex; align-items: center; gap: 8px; font-size: calc(12px * var(--escala-fonte)); line-height: calc(16px * var(--escala-fonte)); color: var(--sistema-cartao-texto-2); }
+.notif .cab .mini { width: 20px; height: 20px; border-radius: 50%; background: #00696B; color: #fff; display: flex; align-items: center; justify-content: center; }
+.notif .cab .mini svg { width: 14px; height: 14px; fill: currentColor; }
+.notif .cab .esp { flex: 1; }
+.notif .cab .expandir { min-width: 48px; min-height: 48px; margin: -12px -12px -12px 0; border: 0; background: transparent; cursor: pointer; color: var(--sistema-cartao-texto-2); border-radius: 999px; }
+.notif .miolo { display: flex; gap: 12px; min-height: 48px; border: 0; background: transparent; padding: 0; text-align: left; color: inherit; cursor: pointer; width: 100%; }
+.notif .miolo .txt { flex: 1; min-width: 0; }
+.notif .titulo { font-size: calc(15px * var(--escala-fonte)); line-height: calc(20px * var(--escala-fonte)); font-weight: 600; }
+.notif .texto { font-size: calc(14px * var(--escala-fonte)); line-height: calc(20px * var(--escala-fonte)); color: var(--sistema-cartao-texto-2); }
+.notif .grande { white-space: pre-line; }
+.notif .icone-grande { width: 40px; height: 40px; border-radius: 8px; background: #E3E8FF; color: #0F2468; display: flex; align-items: center; justify-content: center; flex: 0 0 40px; }
+.notif .icone-grande svg { width: 26px; height: 26px; fill: currentColor; }
+.notif .foto { height: 150px; border-radius: 12px; background: repeating-linear-gradient(45deg, #DDE3E0, #DDE3E0 10px, #E8EDEA 10px, #E8EDEA 20px); display: flex; align-items: center; justify-content: center; color: #3F4847; font-size: 13px; text-align: center; padding: 8px; }
+.notif .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+.notif .acoes button { min-height: 48px; border: 0; background: transparent; color: #00696B; font-weight: 600; font-size: 14px; cursor: pointer; padding: 0 8px; border-radius: 999px; }
+.notif .linhas { margin: 0; padding: 0; list-style: none; font-size: 14px; line-height: 20px; }
+.contador { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--sistema-texto-2); text-align: right; }
+
+.fora-do-app { position: absolute; inset: 0; background: var(--sistema-fundo); color: var(--sistema-texto); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 32px; text-align: center; z-index: 20; }
+.fora-do-app .botao-principal { max-width: 260px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .tela > * { animation: aparecer var(--duracao-curta) var(--curva-padrao); }
+}
+@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<!-- icones:inicio (Material Symbols Rounded, Apache 2.0) -->
+<symbol id="i-verified" viewBox="0 -960 960 960"><path d="m437-433-73-76q-9-10-22-10t-23 9q-10 10-10 23t10 23l97 96q9 9 21 9t21-9l183-182q9-9 9-22t-10-22q-9-8-21.5-7.5T598-593L437-433ZM332-84l-62-106-124-25q-11-2-18.5-12t-5.5-21l14-120-79-92q-8-8-8-20t8-20l79-91-14-120q-2-11 5.5-21t18.5-12l124-25 62-107q6-10 17-14t22 1l109 51 109-51q11-5 22-1.5t17 13.5l63 108 123 25q11 2 18.5 12t5.5 21l-14 120 79 91q8 8 8 20t-8 20l-79 92 14 120q2 11-5.5 21T814-215l-123 25-63 107q-6 10-17 13.5T589-71l-109-51-109 51q-11 5-22 1t-17-14Zm41-55 107-45 110 45 67-100 117-30-12-119 81-92-81-94 12-119-117-28-69-100-108 45-110-45-67 100-117 28 12 119-81 94 81 92-12 121 117 28 70 100Zm107-341Z"/></symbol>
+<symbol id="i-trending_down" viewBox="0 -960 960 960"><path d="M780-300 539-541 414-416q-16.93 17-41.97 17Q347-399 330-416L102-644q-9-9-9-21.5t9-21.5q9-9 21.5-9t21.5 9l226 227 125-125q16.93-17 41.97-17Q563-602 580-585l241 241v-94q0-12.33 9-20.66 9-8.34 21.23-8.34t20.5 8.34Q880-450.33 880-438v168q0 12.75-8.62 21.37Q862.75-240 850-240H683q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h97Z"/></symbol>
+<symbol id="i-info" viewBox="0 -960 960 960"><path d="M504.5-288.63q8.5-8.62 8.5-21.37v-180q0-12.75-8.68-21.38-8.67-8.62-21.5-8.62-12.82 0-21.32 8.62-8.5 8.63-8.5 21.38v180q0 12.75 8.68 21.37 8.67 8.63 21.5 8.63 12.82 0 21.32-8.63Zm-1-314.57q9.5-9.2 9.5-22.8 0-14.45-9.48-24.22-9.48-9.78-23.5-9.78t-23.52 9.78Q447-640.45 447-626q0 13.6 9.48 22.8 9.48 9.2 23.5 9.2t23.52-9.2ZM480.27-80q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></symbol>
+<symbol id="i-local_shipping" viewBox="0 -960 960 960"><path d="M140.5-195.42Q106-229.83 106-279H70q-12.75 0-21.37-8.63Q40-296.25 40-309v-431q0-24 18-42t42-18h519q24.75 0 42.38 17.62Q679-764.75 679-740v107h75q14.25 0 27 6.37 12.75 6.38 21 17.63l112 149q3 3.75 4.5 8.25T920-442v133q0 12.75-8.62 21.37Q902.75-279 890-279h-41q0 49-34.38 83.5t-83.5 34.5q-49.12 0-83.62-34.42Q613-229.83 613-279H342q0 49-34.38 83.5t-83.5 34.5q-49.12 0-83.62-34.42ZM265-238q17-17 17-41t-17-41q-17-17-41-17t-41 17q-17 17-17 41t17 41q17 17 41 17t41-17ZM100-339h22q17-27 43.04-43t58-16q31.96 0 58.46 16.5T325-339h294v-401H100v401Zm672 101q17-17 17-41t-17-41q-17-17-41-17t-41 17q-17 17-17 41t17 41q17 17 41 17t41-17Zm-93-187h186L754-573h-75v148ZM360-540Z"/></symbol>
+<symbol id="i-storefront" viewBox="0 -960 960 960"><path d="M179-120q-24 0-42-18t-18-42v-339q-28-24-37-59t2-70l43-135q8-27 28-42t46-15h553q28 0 49 15.5t29 41.5l44 135q11 35 1.5 70T840-519v339q0 24-18 42t-42 18H179Zm391-430q29 0 49-19t16-46l-25-165H510v165q0 26 17 45.5t43 19.5Zm-187 0q28 0 47.5-19t19.5-46v-165H350l-25 165q-4 26 14 45.5t44 19.5Zm-182 0q24 0 41.5-16.5T263-607l26-173H189l-46 146q-10 31 8 57.5t50 26.5Zm557 0q32 0 50.5-26t8.5-58l-46-146H671l26 173q3 24 20.5 40.5T758-550ZM179-180h601v-311q1 1-6.5 1H758q-25 0-47.5-10.5T666-533q-16 20-40 31.5T573-490q-30 0-51.5-8.5T480-527q-15 18-38 27.5t-52 9.5q-31 0-55-11t-41-32q-24 21-47 32t-46 11h-13.5q-6.5 0-8.5-1v311Zm601 0H179h601Z"/></symbol>
+<symbol id="i-schedule" viewBox="0 -960 960 960"><path d="M513-492v-171q0-13-8.5-21.5T483-693q-13 0-21.5 8.5T453-663v183q0 6 2 11t6 10l144 149q9 10 22.5 9.5T650-310q9-9 9-22t-9-22L513-492ZM480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-82 31.5-155t86-127.5Q252-817 325-848.5T480-880q82 0 155 31.5t127.5 86Q817-708 848.5-635T880-480q0 82-31.5 155t-86 127.5Q708-143 635-111.5T480-80Zm0-400Zm0 340q140 0 240-100t100-240q0-140-100-240T480-820q-140 0-240 100T140-480q0 140 100 240t240 100Z"/></symbol>
+<symbol id="i-notifications" viewBox="0 -960 960 960"><path d="M190-200q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h50v-304q0-84 49.5-150.5T420-798v-22q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v22q81 17 130.5 83.5T720-564v304h50q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H190Zm290-302Zm0 422q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM300-260h360v-304q0-75-52.5-127.5T480-744q-75 0-127.5 52.5T300-564v304Z"/></symbol>
+<symbol id="i-notifications_off" viewBox="0 -960 960 960"><path d="M679-200H190q-13 0-21.5-8.5T160-230q0-13 8.5-21.5T190-260h50v-304q0-33 8-65t25-61l45 45q-9 19-13.5 39.5T300-564v304h319L96-784q-9-9-9-21t9-21q9-9 21-9t21 9l684 685q9 9 9 21t-9 21q-9 9-21 9t-21-9L679-200ZM540-798q81 17 130.5 83.5T720-564v163q0 15-9.5 22.5T690-371q-11 0-20.5-7.5T660-401v-163q0-75-52.5-127.5T480-744q-27 0-52.5 8T380-713q-12 8-26 7.5T331-717q-8-10-8-21.5t10-19.5q19-14 41-24.5t46-15.5v-22q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v22Zm-80 378Zm20 340q-31 0-54.5-18T402-145q0-7 4.5-11t11.5-4h124q7 0 11.5 4t4.5 11q0 29-23.5 47T480-80Zm28-461Z"/></symbol>
+<symbol id="i-sell" viewBox="0 -960 960 960"><path d="M863-404 557-97q-9 8.5-20.25 12.75T514.25-80Q503-80 492-84.5T472-97L98-472q-8-8-13-18.96-5-10.95-5-23.04v-306q0-24.75 17.63-42.38Q115.25-880 140-880h307q12.07 0 23.39 4.87Q481.7-870.25 490-862l373 373q9.39 9 13.7 20.25 4.3 11.25 4.3 22.5t-4.5 22.75Q872-412 863-404ZM516-138l306-307-375-375H140v304l376 378ZM245-664q21 0 36.5-15.5T297-716q0-21-15.5-36.5T245-768q-21 0-36.5 15.5T193-716q0 21 15.5 36.5T245-664Zm236 185Z"/></symbol>
+<symbol id="i-tune" viewBox="0 -960 960 960"><path d="M435.5-128.63Q427-137.25 427-150v-165q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v53h323q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H487v52q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63ZM150-202q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h187q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150Zm165.5-174.63Q307-385.25 307-398v-52H150q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h157v-54q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v166q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63ZM457-450q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h353q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H457Zm144.5-173.63Q593-632.25 593-645v-165q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v52h157q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H653v53q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63ZM150-698q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h353q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H150Z"/></symbol>
+<symbol id="i-open_in_new" viewBox="0 -960 960 960"><path d="M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h249q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H180v600h600v-249q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v249q0 24-18 42t-42 18H180Zm600-617L403-360q-9 9-21 8.5t-21-9.5q-9-9-9-21t9-21l377-377H549q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h261q12.75 0 21.38 8.62Q840-822.75 840-810v261q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-188Z"/></symbol>
+<symbol id="i-arrow_back" viewBox="0 -960 960 960"><path d="m274-450 227 227q9 9 9 21t-9 21q-9 9-21 9t-21-9L181-459q-5-5-7-10t-2-11q0-6 2-11t7-10l278-278q9-9 21-9t21 9q9 9 9 21t-9 21L274-510h496q13 0 21.5 8.5T800-480q0 13-8.5 21.5T770-450H274Z"/></symbol>
+<symbol id="i-share" viewBox="0 -960 960 960"><path d="M686-80q-47.5 0-80.75-33.25T572-194q0-8 5-34L278-403q-16.28 17.34-37.64 27.17Q219-366 194-366q-47.5 0-80.75-33T80-480q0-48 33.25-81T194-594q24 0 45 9.3 21 9.29 37 25.7l301-173q-2-8-3.5-16.5T572-766q0-47.5 33.25-80.75T686-880q47.5 0 80.75 33.25T800-766q0 47.5-33.25 80.75T686-652q-23.27 0-43.64-9Q622-670 606-685L302-516q3 8 4.5 17.5t1.5 18q0 8.5-1 16t-3 15.5l303 173q16-15 36.09-23.5 20.1-8.5 43.07-8.5Q734-308 767-274.75T800-194q0 47.5-33.25 80.75T686-80Zm.04-60q22.96 0 38.46-15.54 15.5-15.53 15.5-38.5 0-22.96-15.54-38.46-15.53-15.5-38.5-15.5-22.96 0-38.46 15.54-15.5 15.53-15.5 38.5 0 22.96 15.54 38.46 15.53 15.5 38.5 15.5Zm-492-286q22.96 0 38.46-15.54 15.5-15.53 15.5-38.5 0-22.96-15.54-38.46-15.53-15.5-38.5-15.5-22.96 0-38.46 15.54-15.5 15.53-15.5 38.5 0 22.96 15.54 38.46 15.53 15.5 38.5 15.5ZM724.5-727.54q15.5-15.53 15.5-38.5 0-22.96-15.54-38.46-15.53-15.5-38.5-15.5-22.96 0-38.46 15.54-15.5 15.53-15.5 38.5 0 22.96 15.54 38.46 15.53 15.5 38.5 15.5 22.96 0 38.46-15.54ZM686-194ZM194-480Zm492-286Z"/></symbol>
+<symbol id="i-location_on" viewBox="0 -960 960 960"><path d="M480-159q133-121 196.5-219.5T740-552q0-118-75.5-193T480-820q-109 0-184.5 75T220-552q0 75 65 173.5T480-159Zm-21.5 55.5Q448-107 440-115q-42-38-91-87.5T258-309q-42-57-70-119t-28-124q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 62-28 124t-70 119q-42 57-91 106.5T520-115q-8 8-18.5 11.5T480-100q-11 0-21.5-3.5ZM480-560Zm49.5 49.5Q550-531 550-560t-20.5-49.5Q509-630 480-630t-49.5 20.5Q410-589 410-560t20.5 49.5Q451-490 480-490t49.5-20.5Z"/></symbol>
+<symbol id="i-event_busy" viewBox="0 -960 960 960"><path d="m480-318-78 79q-9 9-21 9t-21-9q-9-9-9-21.5t9-21.5l78-78-79-78q-9-9-9-21t9-21q9-9 21.5-9t21.5 9l78 78 78-79q9-9 21-9t21 9q9 9 9 21.5t-9 21.5l-78 78 79 78q9 9 9 21t-9 21q-9 9-21.5 9t-21.5-9l-78-78ZM180-80q-24 0-42-18t-18-42v-620q0-24 18-42t42-18h65v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q310-861.6 310-848v28h340v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q715-861.6 715-848v28h65q24 0 42 18t18 42v620q0 24-18 42t-42 18H180Zm0-60h600v-430H180v430Zm0-490h600v-130H180v130Zm0 0v-130 130Z"/></symbol>
+<symbol id="i-cloud_off" viewBox="0 -960 960 960"><path d="M248-171q-88 0-148-59T40-377q0-80 50.5-134T217-577q2-14 6.5-31.5T236-640L91-785q-9-9-9-21t9-21q9-9 21-9t21 9l707 707q9 9 9 21t-9 21q-9 9-21.5 9T797-78l-94-93H248Zm0-60h397L285-591q-11 15-14.5 34t-3.5 37h-19q-62 0-105 39.5t-43 101q0 61.5 43 105T248-231Zm216-181Zm390 210-47-47q25-17 39-38t14-50q0-43-31-73.5T755-441h-67v-81q0-88-61-147.5T478.47-729q-28.47 0-60.97 9T358-691l-42-42q36-29 77.5-42.5T478-789q111 0 190.5 79T748-520v21q72-1 122 45t50 117q0 35-16.5 73.5T854-202ZM583-470Z"/></symbol>
+<symbol id="i-error" viewBox="0 -960 960 960"><path d="M503.5-289.48q9.5-9.48 9.5-23.5t-9.48-23.52q-9.48-9.5-23.5-9.5t-23.52 9.48q-9.5 9.48-9.5 23.5t9.48 23.52q9.48 9.5 23.5 9.5t23.52-9.48Zm1-152.15q8.5-8.62 8.5-21.37v-193q0-12.75-8.68-21.38-8.67-8.62-21.5-8.62-12.82 0-21.32 8.62-8.5 8.63-8.5 21.38v193q0 12.75 8.68 21.37 8.67 8.63 21.5 8.63 12.82 0 21.32-8.63ZM480.27-80q-82.74 0-155.5-31.5Q252-143 197.5-197.5t-86-127.34Q80-397.68 80-480.5t31.5-155.66Q143-709 197.5-763t127.34-85.5Q397.68-880 480.5-880t155.66 31.5Q709-817 763-763t85.5 127Q880-563 880-480.27q0 82.74-31.5 155.5Q817-252 763-197.68q-54 54.31-127 86Q563-80 480.27-80Zm.23-60Q622-140 721-239.5t99-241Q820-622 721.19-721T480-820q-141 0-240.5 98.81T140-480q0 141 99.5 240.5t241 99.5Zm-.5-340Z"/></symbol>
+<symbol id="i-campaign" viewBox="0 -960 960 960"><path d="M850-450h-90q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h90q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5ZM677-274q8-10 19.83-12 11.82-2 22.17 6l73 54q10 8 12 19.83 2 11.82-6 22.17-8 10-19.83 12-11.82 2-22.17-6l-73-54q-10-8-12-19.83-2-11.82 6-22.17Zm115-460-70 53q-10.35 8-22.17 6Q688-677 680-687q-8-10-6-22t12-20l70-53q10.35-8 22.17-6Q790-786 798-776q8 10 6 22t-12 20ZM210-360h-70q-24.75 0-42.37-17.63Q80-395.25 80-420v-120q0-24.75 17.63-42.38Q115.25-600 140-600h180l155-93q15-9 30-.06 15 8.93 15 26.06v374q0 17.13-15 26.06-15 8.94-30-.06l-155-93h-50v130q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-130Zm250 14v-268l-124 74H140v120h196l124 74Zm100 0v-268q27 24 43.5 58.5T620-480q0 41-16.5 75.5T560-346ZM300-480Z"/></symbol>
+<symbol id="i-check_circle" viewBox="0 -960 960 960"><path d="m421-389-98-98q-9-9-22-9t-23 10q-9 9-9 22t9 22l122 123q9 9 21 9t21-9l239-239q10-10 10-23t-10-23q-10-9-23.5-8.5T635-603L421-389Zm59 309q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-156t86-127Q252-817 325-848.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82-31.5 155T763-197.5q-54 54.5-127 86T480-80Zm0-60q142 0 241-99.5T820-480q0-142-99-241t-241-99q-141 0-240.5 99T140-480q0 141 99.5 240.5T480-140Zm0-340Z"/></symbol>
+<symbol id="i-radio_button_unchecked" viewBox="0 -960 960 960"><path d="M480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-156t86-127Q252-817 325-848.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82-31.5 155T763-197.5q-54 54.5-127 86T480-80Zm0-60q142 0 241-99.5T820-480q0-142-99-241t-241-99q-141 0-240.5 99T140-480q0 141 99.5 240.5T480-140Z"/></symbol>
+<symbol id="i-hourglass_top" viewBox="0 -960 960 960"><path d="M308-140h344v-127q0-72-50-121.5T480-438q-72 0-122 49.5T308-267v127ZM190-80q-13 0-21.5-8.5T160-110q0-13 8.5-21.5T190-140h58v-127q0-71 40-129t106-84q-66-27-106-85t-40-129v-126h-58q-13 0-21.5-8.5T160-850q0-13 8.5-21.5T190-880h580q13 0 21.5 8.5T800-850q0 13-8.5 21.5T770-820h-58v126q0 71-40 129t-106 85q66 26 106 84t40 129v127h58q13 0 21.5 8.5T800-110q0 13-8.5 21.5T770-80H190Z"/></symbol>
+<symbol id="i-chevron_right" viewBox="0 -960 960 960"><path d="M530-481 353-658q-9-9-8.5-21t9.5-21q9-9 21.5-9t21.5 9l198 198q5 5 7 10t2 11q0 6-2 11t-7 10L396-261q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l176-176Z"/></symbol>
+<symbol id="i-home" viewBox="0 -960 960 960"><path d="M220-180h150v-220q0-12.75 8.63-21.38Q387.25-430 400-430h160q12.75 0 21.38 8.62Q590-412.75 590-400v220h150v-390L480-765 220-570v390Zm-60 0v-390q0-14.25 6.38-27 6.37-12.75 17.62-21l260-195q15.68-12 35.84-12Q500-825 516-813l260 195q11.25 8.25 17.63 21 6.37 12.75 6.37 27v390q0 24.75-17.62 42.37Q764.75-120 740-120H560q-12.75 0-21.37-8.63Q530-137.25 530-150v-220H430v220q0 12.75-8.62 21.37Q412.75-120 400-120H220q-24.75 0-42.37-17.63Q160-155.25 160-180Zm320-293Z"/></symbol>
+<symbol id="i-shopping_basket" viewBox="0 -960 960 960"><path d="M206-120q-20 0-36.5-12T148-164L38-562q-4-14 5-26t24-12h202l185-270q5-6 11-9.5t14-3.5q8 0 14 3.5t11 9.5l184 270h206q15 0 24 12t5 26L812-164q-5 20-21.5 32T754-120H206Zm0-60h548l101-360H106l100 360Zm316.5-137.5Q540-335 540-360t-17.5-42.5Q505-420 480-420t-42.5 17.5Q420-385 420-360t17.5 42.5Q455-300 480-300t42.5-17.5ZM342-600h273L479-800 342-600Zm139 240Z"/></symbol>
+<symbol id="i-egg" viewBox="0 -960 960 960"><path d="M281.5-201.5Q200-283 200-400q0-77 25.5-155t66-141.5Q332-760 382-800t98-40q49 0 98.5 40t90 103.5Q709-633 734.5-555T760-400q0 117-81.5 198.5T480-120q-117 0-198.5-81.5ZM650-230.2q70-70.2 70-169.8 0-66-22.5-136.5t-58.17-128.84q-35.68-58.33-78-96.5Q519-800 480-800t-81.5 37.5q-42.5 37.5-78 96t-58 129.5Q240-466 240-400q0 99.6 70 169.8Q380-160 480-160t170-70.2ZM505-241q8.5 0 14.25-6t5.75-14q0-8-5.75-14T505-281q-58.33 0-99.17-40.83Q365-362.67 365-421q0-8.5-6-14.25T345-441q-8 0-14 5.75T325-421q0 74.7 52.65 127.35Q430.3-241 505-241Zm-25-239Z"/></symbol>
+<symbol id="i-sanitizer" viewBox="0 -960 960 960"><path d="M680-650q-20 0-35-15t-15-35q0-16.52 14.5-38.26T669-772q5-5 11-5t11 5q10.4 12.03 24.7 33.52Q730-717 730-700q0 20-14.58 35-14.59 15-35.42 15Zm110 280q-37 0-63.5-26.5T700-460q0-32 26-75t46-68q7.05-8 18.03-8 10.97 0 17.97 8 20 25 46 68t26 75q0 37-26.1 63.5T790-370Zm-430 40v50q0 12.75 8.68 21.37 8.67 8.63 21.5 8.63 12.82 0 21.32-8.63 8.5-8.62 8.5-21.37v-50h50q12.75 0 21.38-8.68 8.62-8.67 8.62-21.5 0-12.82-8.62-21.32-8.63-8.5-21.38-8.5h-50v-50q0-12.75-8.68-21.38-8.67-8.62-21.5-8.62-12.82 0-21.32 8.62-8.5 8.63-8.5 21.38v50h-50q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5h50ZM220-140h340v-350q0-71-49.5-120.5t-120-49.5Q320-660 270-610.5T220-490v350Zm0 0h340-340Zm0 60q-24 0-42-18t-18-42v-350q0-86 57-150.19T360-718v-102h-60q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h210q24 0 45.5 5t41.5 16q8 4 13 11.55 5 7.55 5 16.61 0 12.84-9.07 21.34-9.08 8.5-21.93 8.5-3 0-16-4-14-7-28-11t-30-4h-90v102q86 13.62 143 77.81T620-490v350q0 24-18 42t-42 18H220Z"/></symbol>
+<symbol id="i-brush" viewBox="0 -960 960 960"><path d="M215-117q-33.83 0-66.92-11.5Q115-140 90-166q35-12 50-35t15-62q0-43.75 30.68-74.38Q216.35-368 260.18-368q43.82 0 74.32 30.62Q365-306.75 365-263q0 64-43.5 105T215-117Zm0-60q35 0 62.5-25t27.5-61q0-20-12.5-32.5T260-308q-20 0-32.5 12.5T215-263q0 39-8.5 57.5T175-183q6 1 20 3.5t20 2.5Zm230-177-90-95 376-376q14-14 31-14.5t32 14.5l29 29q15 15 14.5 32.5T823-732L445-354Zm-185 91Z"/></symbol>
+<symbol id="i-child_care" viewBox="0 -960 960 960"><path d="M552-515q-13-13-13-32t13-32q13-13 32-13t32 13q13 13 13 32t-13 32q-13 13-32 13t-32-13Zm-209 0q-13-13-13-32t13-32q13-13 32-13t32 13q13 13 13 32t-13 32q-13 13-32 13t-32-13Zm35 199q-46-30-72-79h348q-26 49-72 79t-102 30q-56 0-102-30Zm-37.5 167.5Q275-177 226-226t-77.5-114.5Q120-406 120-480t28.5-139.5Q177-685 226-734t114.5-77.5Q406-840 480-840t139.5 28.5Q685-783 734-734t77.5 114.5Q840-554 840-480t-28.5 139.5Q783-275 734-226t-114.5 77.5Q554-120 480-120t-139.5-28.5Zm351-119Q780-355 780-478t-87-215q-87-92-215-92h-18q-7 0-18 1-2 8-3.5 19t-1.5 19q0 25 16.5 41.5T495-688q12 0 20-1.5t15-1.5q10 0 17 5t7 15q0 16-15 24.5t-44 8.5q-46 0-77-31t-31-77q0-5 .5-13t2.5-13q-91 33-150.5 110T180-482q0 123 88.5 212.5T480-180q123 0 211.5-87.5ZM480-482Z"/></symbol>
+<symbol id="i-cleaning_services" viewBox="0 -960 960 960"><path d="M180-40q-24.75 0-42.37-17.63Q120-75.25 120-100v-230q0-78.85 55.57-134.42Q231.15-520 310-520h60v-340q0-24.75 17.63-42.38Q405.25-920 430-920h100q24.75 0 42.38 17.62Q590-884.75 590-860v340h60q78.85 0 134.42 55.58Q840-408.85 840-330v230q0 24.75-17.62 42.37Q804.75-40 780-40H180Zm0-60h105v-130q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v130h105v-130q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v130h105v-130q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v130h105v-230q0-54.17-37.92-92.08Q704.17-460 650-460H310q-54.17 0-92.08 37.92Q180-384.17 180-330v230Zm350-420v-340H430v340h100Zm0 0H430h100Z"/></symbol>
+<symbol id="i-spa" viewBox="0 -960 960 960"><path d="M452-84q-69-12-136-47.5t-119.5-95Q144-286 112-370T80-565v-10q0-11 8.5-19.5T108-603h10q53 0 113 20.5T337-530q8-79 40-163.5T455-845q10-14 25-14t25 14q46 67 78 151.5T623-530q46-30 106-51.5T842-603h10q11 0 19.5 8.5T880-575v10q0 111-32 195t-84.5 143.5Q711-167 644-131.5T508-84q-11 2-28 2t-28-2Zm36-57q-11-185-108.5-281T141-542q-2 0 0 0 13 191 113 286.5T488-141q1 1-.5.5t.5-.5Zm-93-351q23 20 46.5 50t37.5 56q14-26 38.5-56t47.5-50q5-67-20.5-138T480-775q-1-1 0 0-40 75-65 145t-20 138Zm118 170q12 38 21 76.5t14 87.5q47-17 93-45.5t83.5-74.5q37.5-46 63-111T819-542q0-2 0 0-106 17-187 75.5T513-322Z"/></symbol>
+<symbol id="i-medication" viewBox="0 -960 960 960"><path d="M440-380v72q0 17 11.74 28 11.73 11 28.5 11Q497-269 508-280.67q11-11.66 11-28.33v-71h74q16.67 0 28.33-11.74Q633-403.47 633-420.24q0-16.76-11.67-28.26Q609.67-460 593-460h-74v-72q0-17-11-28t-27.76-11q-16.77 0-28.5 11Q440-549 440-532v72h-73q-16.67 0-28.33 11.74Q327-436.53 327-419.76q0 16.76 11.67 28.26Q350.33-380 367-380h73ZM260-120q-24.75 0-42.37-17.63Q200-155.25 200-180v-479q0-24.75 17.63-42.38Q235.25-719 260-719h440q24.75 0 42.38 17.62Q760-683.75 760-659v479q0 24.75-17.62 42.37Q724.75-120 700-120H260Zm0-60h440v-479H260v479Zm10-600q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h421q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H270Zm-10 121v479-479Z"/></symbol>
+<symbol id="i-keyboard_arrow_down" viewBox="0 -960 960 960"><path d="M469-358q-5-2-10-7L261-563q-9-9-8.5-21.5T262-606q9-9 21.5-9t21.5 9l175 176 176-176q9-9 21-8.5t21 9.5q9 9 9 21.5t-9 21.5L501-365q-5 5-10 7t-11 2q-6 0-11-2Z"/></symbol>
+<symbol id="i-keyboard_arrow_up" viewBox="0 -960 960 960"><path d="M480-554 304-378q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l197-197q9-9 21-9t21 9l198 198q9 9 9 21t-9 21q-9 9-21.5 9t-21.5-9L480-554Z"/></symbol>
+<symbol id="i-lock" viewBox="0 -960 960 960"><path d="M220-80q-24.75 0-42.37-17.63Q160-115.25 160-140v-434q0-24.75 17.63-42.38Q195.25-634 220-634h70v-96q0-78.85 55.61-134.42Q401.21-920 480.11-920q78.89 0 134.39 55.58Q670-808.85 670-730v96h70q24.75 0 42.38 17.62Q800-598.75 800-574v434q0 24.75-17.62 42.37Q764.75-80 740-80H220Zm0-60h520v-434H220v434Zm314.5-162.03Q557-324.06 557-355q0-30-22.67-54.5t-54.5-24.5q-31.83 0-54.33 24.5t-22.5 55q0 30.5 22.67 52.5t54.5 22q31.83 0 54.33-22.03ZM350-634h260v-96q0-54.17-37.88-92.08-37.88-37.92-92-37.92T388-822.08q-38 37.91-38 92.08v96ZM220-140v-434 434Z"/></symbol>
+<symbol id="i-close" viewBox="0 -960 960 960"><path d="M480-438 270-228q-9 9-21 9t-21-9q-9-9-9-21t9-21l210-210-210-210q-9-9-9-21t9-21q9-9 21-9t21 9l210 210 210-210q9-9 21-9t21 9q9 9 9 21t-9 21L522-480l210 210q9 9 9 21t-9 21q-9 9-21 9t-21-9L480-438Z"/></symbol>
+<symbol id="i-signal_cellular_alt" viewBox="0 -960 960 960"><path d="M214.5-174.58Q200-189.17 200-210v-140q0-20.83 14.62-35.42Q229.24-400 250.12-400q20.88 0 35.38 14.58Q300-370.83 300-350v140q0 20.83-14.62 35.42Q270.76-160 249.88-160q-20.88 0-35.38-14.58Zm250 0Q450-189.17 450-210v-340q0-20.83 14.62-35.42Q479.24-600 500.12-600q20.88 0 35.38 14.58Q550-570.83 550-550v340q0 20.83-14.62 35.42Q520.76-160 499.88-160q-20.88 0-35.38-14.58Zm250 0Q700-189.17 700-210v-540q0-20.83 14.62-35.42Q729.24-800 750.12-800q20.88 0 35.38 14.58Q800-770.83 800-750v540q0 20.83-14.62 35.42Q770.76-160 749.88-160q-20.88 0-35.38-14.58Z"/></symbol>
+<symbol id="i-wifi" viewBox="0 -960 960 960"><path d="M417-154q-27-27-27-63t27-63q27-27 63-27t63 27q27 27 27 63t-27 63q-27 27-63 27t-63-27Zm209-378.5Q694-505 757-451q14 12 15 30.5T759-388q-14 14-32 13t-33-13q-53-44-106.5-63T480-470q-54 0-107.5 19T266-388q-15 12-33 13t-32-13q-14-14-13-32.5t15-30.5q63-54 131-81.5T480-560q78 0 146 27.5Zm95.5-219Q835-703 926-622q14 13 15.5 31.5T929-558q-14 14-33.5 13.5T861-558q-83-70-178-111t-203-41q-108 0-203 41T99-558q-15 13-34 13.5T32-558q-14-14-13-32.5T34-622q91-81 204.5-129.5T480-800q128 0 241.5 48.5Z"/></symbol>
+<symbol id="i-battery_full" viewBox="0 -960 960 960"><path d="M310-80q-12.75 0-21.37-8.63Q280-97.25 280-110v-676q0-12.75 8.63-21.38Q297.25-816 310-816h90v-34q0-12.75 8.63-21.38Q417.25-880 430-880h100q12.75 0 21.38 8.62Q560-862.75 560-850v34h90q12.75 0 21.38 8.62Q680-798.75 680-786v676q0 12.75-8.62 21.37Q662.75-80 650-80H310Z"/></symbol>
+<!-- icones:fim -->
+</svg>
+
+<main class="pagina">
+  <section class="painel" aria-label="Controles do protótipo">
+    <h1>Protótipo economae</h1>
+    <p>Quadro de 390 × 844. Toque nas telas para navegar, ou escolha a tela e o estado aqui.</p>
+
+    <label for="sel-tela">Tela</label>
+    <select id="sel-tela"></select>
+
+    <label for="sel-estado">Estado</label>
+    <select id="sel-estado"></select>
+
+    <label id="rot-tema">Tema</label>
+    <div class="linha" role="group" aria-labelledby="rot-tema">
+      <button class="opcao" data-tema="claro" aria-pressed="true">Claro</button>
+      <button class="opcao" data-tema="escuro" aria-pressed="false">Escuro</button>
+    </div>
+
+    <label id="rot-fonte">Tamanho da fonte do sistema</label>
+    <div class="linha" role="group" aria-labelledby="rot-fonte">
+      <button class="opcao" data-escala="1" aria-pressed="true">100%</button>
+      <button class="opcao" data-escala="1.3" aria-pressed="false">130%</button>
+      <button class="opcao" data-escala="2" aria-pressed="false">200%</button>
+    </div>
+
+    <label id="rot-avisos">Avisos no celular</label>
+    <div class="linha" role="group" aria-labelledby="rot-avisos">
+      <button class="opcao" data-avisos="1" aria-pressed="true">Ligados</button>
+      <button class="opcao" data-avisos="0" aria-pressed="false">Desligados</button>
+    </div>
+
+    <label>Atalhos</label>
+    <ul class="atalhos">
+      <li><button data-atalho="bloqueio:N1">Notificação</button></li>
+      <li><button data-atalho="boasVindas:padrao">Primeiro uso</button></li>
+      <li><button data-atalho="ofertas:com">Ofertas</button></li>
+      <li><button data-atalho="ofertas:nada">Nada hoje</button></li>
+      <li><button data-atalho="ofertas:medindo">Começando a medir</button></li>
+      <li><button data-atalho="detalhe:fralda">Leve 3 pague 2</button></li>
+      <li><button data-atalho="detalhe:encerrada">Oferta encerrada</button></li>
+    </ul>
+
+    <div class="nota" id="nota" aria-live="polite"></div>
+    <p class="aviso-exemplo"><strong>Dados de exemplo.</strong> Marcas, lojas e preços são fictícios, iguais aos de <code>android/.../modelo/Exemplos.kt</code>. Os textos são os de <code>ux/UX_COPY.md</code>.</p>
+  </section>
+
+  <div class="quadro-envoltorio">
+    <div class="celular" id="celular" data-tema="claro" data-fonte="1">
+      <div class="barra-status" aria-hidden="true"><span>14:12</span><span class="icones"><svg><use href="#i-signal_cellular_alt"/></svg><svg><use href="#i-wifi"/></svg><svg><use href="#i-battery_full"/></svg></span></div>
+      <div class="tela" id="tela" tabindex="-1" aria-live="polite"></div>
+      <nav class="navegacao" id="navegacao" aria-label="Navegação principal"></nav>
+    </div>
+  </div>
+</main>
+
+<script>
+"use strict";
+// ======================= Dados de exemplo (espelham Exemplos.kt) =======================
+const HOJE = "28/09";
+function serie(normal, menor, maior, semente) {
+  let x = BigInt(semente); const out = [];
+  for (let atras = 89; atras >= 1; atras--) {
+    x = (x * 1103515245n + 12345n) & 0x7fffffffn;
+    const variacao = (Number(x % 1000n) / 1000 - 0.5) * 0.12;
+    const bruto = Math.trunc(normal * (1 + variacao));
+    const valor = (atras >= 55 && atras <= 60) ? maior : Math.min(Math.max(bruto, menor + 100), maior);
+    const d = new Date(2026, 8, 28 - atras);
+    out.push({ dia: String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0"), c: valor });
+  }
+  return out;
+}
+const CAT = {
+  mercearia: { rot: "Mercearia", ex: "Arroz, café, óleo", ic: "shopping_basket" },
+  pereciveis: { rot: "Frios e hortifrúti", ex: "Queijo, frutas, carne", ic: "egg" },
+  higiene_intima: { rot: "Higiene íntima", ex: "Absorvente, sabonete íntimo", ic: "sanitizer" },
+  maquiagem: { rot: "Maquiagem", ex: "Base, batom, rímel", ic: "brush" },
+  higiene_bebe: { rot: "Bebê", ex: "Fralda, lenço, pomada", ic: "child_care" },
+  limpeza: { rot: "Limpeza", ex: "Sabão, detergente, desinfetante", ic: "cleaning_services" },
+  cuidados_pessoais: { rot: "Cuidados pessoais", ex: "Protetor solar, shampoo, hidratante", ic: "spa" },
+  medicamentos_isentos: { rot: "Remédios sem receita", ex: "Analgésico, antiácido (sem aviso)", ic: "medication" },
+};
+function oferta(o) { o.prova.serie = serie(o.prova.normal, o.prova.menor, o.prova.maior, o.prova.semente); return o; }
+const OF = {
+  protetor: oferta({ id: "protetor", nome: "Protetor Solare FPS 50 Facial", emb: { q: 0.05, u: "l", rot: "50 ml" }, cat: "cuidados_pessoais", loja: "Drogaria Central", preco: 3990, cond: null, prova: { normal: 5990, menor: 4290, maior: 6490, dias: 180, semente: 7 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "exc" }),
+  fralda: oferta({ id: "fralda", nome: "Fralda Bebê Seco G", emb: { q: 34, u: "un", rot: "34 unidades" }, cat: "higiene_bebe", loja: "Farmácia Vida", preco: 8070, cond: { tipo: "leve_pague", leve: 3, pague: 2 }, prova: { normal: 7990, menor: 6290, maior: 8490, dias: 180, semente: 11 }, cob: { tipo: "entrega", prazo: 2 }, conferido: "13:55", nivel: "exc" }),
+  shampoo: oferta({ id: "shampoo", nome: "Shampoo Capilar+ Hidratação", emb: { q: 0.4, u: "l", rot: "400 ml" }, cat: "cuidados_pessoais", loja: "Drogaria Central", preco: 1890, cond: null, prova: { normal: 2690, menor: 1830, maior: 2890, dias: 94, semente: 3 }, cob: { tipo: "confirmar" }, conferido: "14:10", nivel: "boa" }),
+  hidratante: oferta({ id: "hidratante", nome: "Hidratante Pele Leve Corporal", emb: { q: 0.4, u: "l", rot: "400 ml" }, cat: "cuidados_pessoais", loja: "Farmácia Vida", preco: 2490, cond: { tipo: "cartao", programa: "Vida Mais" }, prova: { normal: 3490, menor: 2590, maior: 3690, dias: 180, semente: 5 }, cob: { tipo: "retirada", km: 1.2 }, conferido: "13:55", nivel: "boa" }),
+  paracetamol: oferta({ id: "paracetamol", nome: "Paracetamol 750 mg", emb: { q: 20, u: "un", rot: "20 comprimidos" }, cat: "medicamentos_isentos", loja: "Drogaria Central", preco: 990, cond: null, prova: { normal: 1450, menor: 1090, maior: 1590, dias: 180, semente: 9 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "boa", remedio: true }),
+};
+OF.caiu = { ...OF.protetor, id: "caiu", preco: 3490, anterior: 3990 };
+OF.encerrada = { ...OF.protetor, id: "encerrada", encerrada: { dia: "28/09", hora: "16:40", voltou: 5990 } };
+OF.mudou = { ...OF.protetor, id: "mudou", mudou: { preco: 4490, hora: "15:20" } };
+OF.retirada = { ...OF.protetor, id: "retirada", cob: { tipo: "retirada", km: 1.2 } };
+OF.sabonete = { ...OF.encerrada, id: "sabonete", nome: "Sabonete Líquido Suave", emb: { q: 0.25, u: "l", rot: "250 ml" } };
+const ANUNCIO = { anunciante: "Mercado Exemplo", texto: "Cesta de limpeza com 15% de desconto no app do Mercado Exemplo." };
+const RESUMO = { conferidos: 1284, aprovadas: 2 };
+
+// ======================= Regras (espelham OfertaUi, Prova.kt, TextosNotificacao.kt) =======================
+function milhar(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+// Espaço não separável: "R$" nunca fica numa linha e o número na outra.
+function reais(c) { const neg = c < 0; c = Math.abs(Math.round(c)); return (neg ? "-" : "") + "R$\u00A0" + milhar(Math.floor(c / 100)) + "," + String(c % 100).padStart(2, "0"); }
+function km(d) { return d.toFixed(1).replace(".", ",") + " km"; }
+function pct(f) { return Math.round(f * 100) + "%"; }
+function fmtCep(d) { return d.length <= 5 ? d : d.slice(0, 5) + "-" + d.slice(5, 8); }
+const compraMin = (o) => o.cond?.tipo === "leve_pague" ? o.cond.leve : o.cond?.tipo === "quantidade_minima" ? o.cond.quantidade : 1;
+const total = (o) => o.cond?.tipo === "leve_pague" ? o.preco * o.cond.pague : o.cond?.tipo === "quantidade_minima" ? o.preco * o.cond.quantidade : o.preco;
+const efetivo = (o) => Math.round(total(o) / compraMin(o));
+const economia = (o) => (o.prova.normal - efetivo(o)) * compraMin(o);
+function selo(o) { return { tipo: efetivo(o) <= o.prova.menor ? "menor" : "quase", dias: o.prova.dias >= 180 ? null : o.prova.dias }; }
+function textoSelo(o) { const s = selo(o); if (s.tipo === "menor") return s.dias == null ? "Menor preço em 6 meses" : `Menor preço em ${s.dias} dias de medição`; return s.dias == null ? "Quase o menor preço em 6 meses" : `Quase o menor preço em ${s.dias} dias`; }
+const periodo = (o) => selo(o).dias == null ? "6 meses" : `${selo(o).dias} dias`;
+function posicoes(o) { const min = Math.min(o.prova.menor, efetivo(o)), max = Math.max(o.prova.maior, o.prova.normal), f = Math.max(max - min, 1); return { min, max, normal: (o.prova.normal - min) / f, hoje: (efetivo(o) - min) / f }; }
+function textoCondicao(o) {
+  const c = o.cond; if (!c) return null;
+  if (c.tipo === "leve_pague") return `Leve ${c.leve}, pague ${c.pague} — ${reais(total(o))} levando ${c.leve}`;
+  if (c.tipo === "quantidade_minima") return `Preço comprando ${c.quantidade} — ${reais(total(o))} no total`;
+  if (c.tipo === "cartao") return `Só com o cartão ${c.programa}`;
+  if (c.tipo === "app") return `Só no app da ${o.loja}`;
+}
+function textoCobertura(c) { return c.tipo === "entrega" ? `Entrega no seu CEP em até ${c.prazo} dias` : c.tipo === "confirmar" ? "Entrega no seu CEP · frete a confirmar na loja" : `Retire na loja a ${km(c.km)}`; }
+function porUnidade(o) {
+  const e = efetivo(o);
+  if (o.emb.u === "l") return `${reais(Math.round(e * 0.1 / o.emb.q))} por 100 ml`;
+  if (o.emb.u === "kg") return `${reais(Math.round(e * 0.1 / o.emb.q))} por 100 g`;
+  return `${reais(Math.round(e / o.emb.q))} por unidade`;
+}
+function tituloNotif(o) {
+  const montar = (nome) => o.cond?.tipo === "leve_pague" ? `${reais(total(o))} por ${o.cond.leve} · ${nome}` : `${reais(o.preco)} · ${nome}`;
+  if (montar(o.nome).length <= 30) return montar(o.nome);
+  const espaco = 30 - montar("").length - 1;
+  if (espaco < 3) return montar("").replace(/[ ·]+$/, "");
+  let corte = o.nome.slice(0, espaco);
+  if (o.nome[espaco] !== " " && corte.includes(" ")) corte = corte.slice(0, corte.lastIndexOf(" "));
+  return montar(corte.trimEnd() + "…");
+}
+function textoNotif(o) {
+  const e = reais(economia(o)); const c = [];
+  if (o.anterior) c.push(`Caiu mais: era ${reais(o.anterior)} no último aviso`);
+  if (o.cond?.tipo === "leve_pague") c.push(`Leve ${o.cond.leve}, pague ${o.cond.pague} · economia de ${e}`);
+  if (o.cond?.tipo === "quantidade_minima") c.push(`Comprando ${o.cond.quantidade} · economia de ${e}`);
+  if (o.cond?.tipo === "cartao") { c.push(`Com cartão ${o.cond.programa} · ${e} a menos`); c.push(`Só com cartão da loja · ${e} a menos`); }
+  if (o.cond?.tipo === "app") { c.push(`Só no app da ${o.loja} · ${e} a menos`); c.push(`Só com cartão da loja · ${e} a menos`); }
+  if (!o.cond && o.cob.tipo === "retirada") c.push(`Retire a ${km(o.cob.km)} · ${e} a menos`);
+  const s = selo(o);
+  if (s.tipo === "menor" && s.dias == null) c.push(`Menor preço em 6 meses: ${e} a menos`, `Menor em 6 meses: ${e} a menos`);
+  else if (s.tipo === "menor") c.push(`Menor preço em ${s.dias} dias: ${e} a menos`);
+  else if (s.dias == null) c.push(`Quase o menor em 6 meses: ${e} a menos`);
+  c.push(`${e} abaixo do normal da loja`);
+  return c.find((t) => t.length <= 40) || c[c.length - 1].slice(0, 39) + "…";
+}
+function expandidoNotif(o) {
+  const s = selo(o);
+  return [
+    textoNotif(o),
+    `Preço normal nesta loja: ${reais(o.prova.normal)}.`,
+    s.tipo === "menor" ? (s.dias == null ? "Menor preço dos últimos 6 meses." : `Menor preço em ${s.dias} dias de medição.`) : "Perto do menor preço dos últimos 6 meses.",
+    o.cob.tipo === "entrega" ? `Entrega no seu CEP em até ${o.cob.prazo} dias.` : o.cob.tipo === "confirmar" ? "Entrega no seu CEP. Frete a confirmar na loja." : `Retire na loja a ${km(o.cob.km)}.`,
+    `Conferido às ${o.conferido}. Você segue ${CAT[o.cat].rot}.`,
+  ].join("\n");
+}
+function descricao(o) {
+  const p = [];
+  if (o.nivel === "exc") p.push("Excepcional.");
+  const tc = textoCondicao(o); if (tc) p.push(tc + ".");
+  p.push(`${o.nome}, ${o.emb.rot}, na ${o.loja}.`);
+  p.push(reais(efetivo(o)) + (compraMin(o) > 1 ? " cada." : "."));
+  p.push(`Preço normal nesta loja: ${reais(o.prova.normal)}.`);
+  p.push(`Economia de ${reais(economia(o))}.`);
+  p.push(textoSelo(o) + ".");
+  p.push(textoCobertura(o.cob) + ".");
+  p.push(`Conferido às ${o.conferido}.`);
+  return p.join(" ");
+}
+
+// ======================= Estado do protótipo =======================
+const E = {
+  tela: "bloqueio", estado: "N1", tema: "claro", escala: 1, avisos: true,
+  categorias: new Set(["cuidados_pessoais", "higiene_bebe", "limpeza"]), cep: "01310100", cepDigitado: "", cepTentou: false,
+  limite: 3, expandida: false, verDias: false, folha: null, dialogo: null, pilha: [], destacar: null, foraDoApp: null, retorno: false, obrigado: false,
+};
+const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+const ic = (n, cls = "i") => `<svg class="${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+
+// ======================= Componentes =======================
+function htmlRegua(o, grande) {
+  const p = posicoes(o);
+  const desc = `Nos últimos ${periodo(o)}, o preço foi de ${reais(p.min)} a ${reais(p.max)}. O normal é ${reais(o.prova.normal)}. Hoje está ${reais(efetivo(o))}.`;
+  return `<div class="regua${grande ? " grande" : ""}" role="img" aria-label="${esc(desc)}">
+    <div class="trilho"><span class="fundo"></span><span class="cheio" style="width:${p.normal * 100}%"></span>
+      <span class="losango" style="left:${p.normal * 100}%"></span><span class="hoje" style="left:clamp(9px, ${p.hoje * 100}%, calc(100% - 9px))"></span></div>
+    <div class="rotulos t-apoio" aria-hidden="true"><span class="h">hoje ${reais(efetivo(o))}</span><span class="sec">normal ${reais(o.prova.normal)}</span></div>
+  </div>`;
+}
+function htmlPreco(o, destaque) {
+  const levando = compraMin(o) > 1 ? ` levando ${compraMin(o)}` : "";
+  return `<div class="quebra"><span class="linha" style="align-items:baseline;gap:var(--espaco-2)"><span class="${destaque ? "t-preco-destaque" : "t-preco-cartao"}">${reais(efetivo(o))}</span>${compraMin(o) > 1 ? '<span class="t-apoio sec">cada</span>' : ""}</span>
+    <span class="chip-economia t-economia">${ic("trending_down", "i p")}${reais(economia(o))} a menos${levando}</span></div>
+    <div class="t-preco-normal">Preço normal nesta loja: ${reais(o.prova.normal)}</div>`;
+}
+function htmlCartao(o) {
+  const tc = textoCondicao(o);
+  return `<button class="cartao" data-abrir="${o.id}" aria-label="${esc(descricao(o))}">
+    ${tc ? `<div class="faixa-condicao t-rotulo">${ic("info", "i p")}<span>${esc(tc)}</span></div>` : ""}
+    <div class="corpo" aria-hidden="true">
+      <div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto">${ic(CAT[o.cat].ic)}</div>
+        <div class="coluna" style="gap:var(--espaco-1);flex:1;min-width:0">
+          ${o.nivel === "exc" ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}
+          <span class="t-nome">${esc(o.nome)} · ${esc(o.emb.rot)}</span><span class="t-apoio sec">${esc(o.loja)}</span></div></div>
+      ${htmlPreco(o, false)}
+      <div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
+      ${htmlRegua(o, false)}
+      <div class="linha-apoio t-apoio">${ic(o.cob.tipo === "retirada" ? "storefront" : "local_shipping", "i p")}<span>${textoCobertura(o.cob)}</span></div>
+      <div class="linha-apoio t-apoio">${ic("schedule", "i p")}<span>Conferido às ${o.conferido}</span></div>
+    </div></button>`;
+}
+function htmlAnuncio() {
+  return `<button class="anuncio" data-acao="anuncio" aria-label="${esc("Anúncio. " + ANUNCIO.anunciante + ". " + ANUNCIO.texto)}"><div class="coluna" aria-hidden="true">
+    <span class="linha t-rotulo">${ic("campaign", "i p")}Anúncio · ${ANUNCIO.anunciante}</span>
+    <span class="t-corpo">${ANUNCIO.texto}</span><span class="t-apoio">Anúncio pago. Não passou pela nossa conferência.</span></div></button>`;
+}
+function htmlRemedios(lista) {
+  if (!lista.length) return "";
+  return `<div class="secao"><h2 class="t-titulo-secao">Remédios sem receita</h2><p class="t-apoio sec" style="margin:4px 0 0">Lista de preços. Remédio não recebe aviso.</p></div>
+    <div>${lista.map((o) => `<button class="item-remedio" data-abrir="${o.id}" aria-label="${esc(`${o.nome} · ${o.emb.rot}, ${o.loja}, ${reais(o.preco)}`)}"><span class="coluna" style="gap:0;flex:1"><span class="t-nome">${o.nome} · ${o.emb.rot}</span><span class="t-apoio sec">${o.loja}</span></span><span class="t-titulo-secao">${reais(o.preco)}</span></button>`).join("")}</div>
+    <p class="t-apoio sec" style="margin:0">SE PERSISTIREM OS SINTOMAS, O MÉDICO DEVERÁ SER CONSULTADO.</p>`;
+}
+const esqueleto = () => `<div class="esqueleto" aria-hidden="true"><div class="linha" style="gap:var(--espaco-4)"><i style="width:56px;height:56px"></i><div class="coluna" style="flex:1;gap:var(--espaco-3)"><i style="width:80%;height:16px"></i><i style="width:40%;height:14px"></i></div></div><i style="width:50%;height:32px"></i><i style="width:100%;height:6px;border-radius:999px"></i></div>`;
+function htmlEstado(icone, titulo, texto, acao, dataAcao, erro, extra = "") {
+  return `<div class="estado${erro ? " erro" : ""}">${ic(icone, "i g")}<h2 class="t-titulo-tela">${titulo}</h2>${texto ? `<p class="t-corpo sec" style="margin:0">${texto}</p>` : ""}${extra}${acao ? `<button class="botao-principal" style="width:auto" data-acao="${dataAcao}">${acao}</button>` : ""}</div>`;
+}
+function faixaAvisos() {
+  return E.avisos ? "" : `<div class="faixa-aviso cond" role="status">${ic("notifications_off")}<span class="t-apoio" style="flex:1">Os avisos estão desligados. Você só vê as ofertas abrindo o app.</span><button class="botao-texto t-rotulo" data-acao="ligar-avisos">Ligar avisos</button></div>`;
+}
+function topo(titulo, voltar, extra = "") {
+  return `<div class="barra-topo">${voltar ? `<button class="botao-icone" data-acao="voltar" aria-label="Voltar">${ic("arrow_back")}</button>` : ""}${titulo ? `<h1 class="t-titulo-tela">${titulo}</h1>` : ""}<span class="espaco"></span>${extra}</div>`;
+}
+
+// ======================= Telas =======================
+const TELAS = {
+  bloqueio: {
+    nome: "Notificação (tela de bloqueio)",
+    estados: { N1: "N1 · incondicional, sem foto", N2: "N2 · com foto", N3: "N3 · leve 3 pague 2", N4: "N4 · só com cartão da loja", N5: "N5 · caiu mais desde o último aviso", N6: "N6 · retirada na loja", N7: "N7 · duas ao mesmo tempo (grupo)" },
+    nota: {
+      _: "A notificação é a tela principal (princípio 1). Título ≤ 30 caracteres começando pelo preço; texto ≤ 40 com a prova. Toque no corpo abre o detalhe; o botão de seta expande. Contador abaixo mostra os caracteres. Evidência: diretriz Android de notificação; R5, R7, R11.",
+      N3: "A condição abre o texto recolhido e o título mostra o que sai do bolso (R$ 161,40 por 3). Princípio 4; reclamação R10.",
+      N5: "A deduplicação só libera novo aviso se o preço caiu mais 5% (DECISIONS 25). O texto diz isso para não parecer repetido (U13).",
+      N7: "Duas ofertas no mesmo minuto viram um grupo, não uma rajada (R5).",
+    },
+    render(est) {
+      const mapa = { N1: OF.protetor, N2: OF.protetor, N3: OF.fralda, N4: OF.hidratante, N5: OF.caiu, N6: OF.retirada };
+      const notif = (o, foto) => {
+        const t = tituloNotif(o), x = textoNotif(o);
+        return `<article class="notif" aria-label="Notificação de economae">
+          <div class="cab"><span class="mini">${ic("sell")}</span><span>economae · ${o.loja} · agora</span><span class="esp"></span>
+            <button class="expandir" data-acao="expandir" aria-expanded="${E.expandida}" aria-label="${E.expandida ? "Recolher" : "Expandir"} notificação">${ic(E.expandida ? "keyboard_arrow_up" : "keyboard_arrow_down")}</button></div>
+          <button class="miolo" data-abrir="${o.id}"><span class="txt"><div class="titulo">${esc(t)}</div><div class="texto ${E.expandida ? "grande" : ""}">${esc(E.expandida ? expandidoNotif(o) : x)}</div></span>
+            ${E.expandida && foto ? "" : `<span class="icone-grande">${ic(CAT[o.cat].ic)}</span>`}</button>
+          ${E.expandida && foto ? `<div class="foto">Foto do produto (quando a fonte fornecer — S-09)</div>` : ""}
+          ${E.expandida ? `<div class="acoes"><button data-acao="loja" data-id="${o.id}">Ver na loja</button><button data-acao="ajustar" data-cat="${o.cat}">Ajustar avisos</button></div>` : ""}
+        </article><div class="contador" aria-hidden="true">título ${[...t].length}/30 · texto ${[...x].length}/40</div>`;
+      };
+      let corpo;
+      if (est === "N7") {
+        const itens = [OF.protetor, OF.fralda];
+        corpo = E.expandida ? itens.map((o) => notif(o, false)).join("") :
+          `<article class="notif"><div class="cab"><span class="mini">${ic("sell")}</span><span>economae · agora</span><span class="esp"></span><button class="expandir" data-acao="expandir" aria-expanded="false" aria-label="Expandir notificações">${ic("keyboard_arrow_down")}</button></div>
+            <button class="miolo" data-acao="ir" data-destino="ofertas:com"><span class="txt"><div class="titulo">2 ofertas excepcionais</div><ul class="linhas">${itens.map((o) => `<li>${esc(tituloNotif(o))}</li>`).join("")}</ul></span></button></article>`;
+      } else corpo = notif(mapa[est], est === "N2");
+      return `<div class="bloqueio"><div class="relogio">14:12</div><div class="data">segunda-feira, 28 de setembro</div>${corpo}</div>`;
+    },
+  },
+  boasVindas: {
+    nome: "Primeiro uso 1 · Boas-vindas", estados: { padrao: "Padrão" },
+    nota: { _: "Promessa em uma frase, sem carrossel e sem conta (R1). O botão secundário explica a conferência sem jargão." },
+    render() {
+      return passo("Só avisamos quando a promoção é de verdade.", "Comparamos com o preço que a própria loja cobrou nos últimos meses. Se não for o menor, a gente não avisa.",
+        `<div style="color:var(--cor-prova)">${ic("verified", "i g")}</div>`, `<button class="botao-principal" data-acao="ir" data-destino="categorias:algumas">Começar</button><button class="botao-texto" data-acao="como">Como a gente confere</button>`);
+    },
+  },
+  categorias: {
+    nome: "Primeiro uso 2 · Categorias", estados: { algumas: "Com escolhas", nenhuma: "Nenhuma escolhida" },
+    nota: { _: "Notifica só o que a pessoa escolher (R11). Estado dito por ícone e texto, não só por cor (A02). Remédio avisa que não recebe aviso (DECISIONS 28)." },
+    render(est) {
+      if (est === "nenhuma" && E._ultimo !== "categorias:nenhuma") E.categorias = new Set();
+      const n = E.categorias.size;
+      const lista = Object.entries(CAT).map(([k, c]) => {
+        const sel = E.categorias.has(k);
+        return `<button class="categoria" role="checkbox" aria-checked="${sel}" data-cat-alternar="${k}">${ic(c.ic)}<span class="coluna" style="gap:0;flex:1"><span class="t-nome">${c.rot}</span><span class="t-apoio sec">${c.ex}</span></span><span class="marca-sel">${ic(sel ? "check_circle" : "radio_button_unchecked")}</span></button>`;
+      }).join("");
+      return passo("O que você costuma comprar?", "Escolha uma ou mais. Só avisamos sobre o que você escolher.", `<div class="coluna" style="gap:var(--espaco-3)">${lista}</div>`,
+        `<button class="botao-principal" ${n ? "" : "disabled"} data-acao="ir" data-destino="cep:vazio">${n ? `Continuar com ${n}` : "Escolha pelo menos uma"}</button>`);
+    },
+  },
+  cep: {
+    nome: "Primeiro uso 3 · CEP", estados: { vazio: "Vazio", incompleto: "Incompleto (erro)", fora: "Fora de SP", valido: "Válido" },
+    nota: { _: "Só CEP, nunca localização do aparelho (R12; 0001:29). Fora de SP não é erro: guardamos e avisamos quando chegar (U22).", incompleto: "Erro com cor, ícone e texto; o campo diz o que falta (A02).", fora: "Região inicial é o estado de SP (DECISIONS 19)." },
+    render(est) {
+      if (E._ultimo !== "cep:" + est) { E.cepDigitado = { vazio: "", incompleto: "0131", fora: "20040002", valido: "01310100" }[est]; E.cepTentou = est === "incompleto" || est === "fora"; }
+      const d = E.cepDigitado, valido = d.length === 8, sp = valido && +d >= 1000000 && +d <= 19999999;
+      const erro = E.cepTentou && !valido, fora = E.cepTentou && valido && !sp;
+      return passo("Qual é o seu CEP?", "Serve só para saber quais lojas entregam para você. Não pedimos endereço nem localização.",
+        `<div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-cep">CEP</label><input id="campo-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${fmtCep(d)}" aria-invalid="${erro}" aria-describedby="${erro ? "erro-cep" : ""}">
+         ${erro ? `<span id="erro-cep" class="msg-erro t-apoio">${ic("error", "i p")}O CEP tem 8 números.</span>` : ""}</div>
+         ${fora ? `<div class="caixa-info" role="status"><h2 class="t-titulo-secao">Ainda não chegamos aí</h2><p class="t-corpo sec" style="margin:0">Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.</p></div>` : ""}`,
+        `<button class="botao-principal" data-acao="cep-continuar">${fora ? "Me avise quando chegar" : "Continuar"}</button><button class="botao-texto" data-acao="nada">Não sei meu CEP</button>`);
+    },
+  },
+  permissao: {
+    nome: "Primeiro uso 4 · Permissão de aviso", estados: { padrao: "Antes de pedir", negada: "Depois de negar" },
+    nota: { _: "Pedido em contexto, disparado por um botão, com a notificação de exemplo desenhada (diretriz Android; U03). \"Quero receber avisos\" abre o diálogo do sistema (simulado).", negada: "Negar não bloqueia nada: as ofertas continuam no app (F5)." },
+    render(est) {
+      const o = OF.protetor;
+      return passo("Quer receber o aviso quando aparecer?", est === "negada" ? "Tudo bem. As ofertas continuam aqui no app. Se mudar de ideia, é só ir em Ajustes." : "No máximo 3 por dia, nunca de madrugada, nunca propaganda. Você muda isso quando quiser.",
+        `<p class="t-rotulo sec" style="margin:0">Um aviso é assim:</p><div class="caixa-info" aria-label="Exemplo de aviso"><span class="t-rotulo-p sec">economae · ${o.loja}</span><span class="t-nome">${esc(tituloNotif(o))}</span><span class="t-apoio sec">${esc(textoNotif(o))}</span></div>`,
+        `<button class="botao-principal" data-acao="pedir-permissao">Quero receber avisos</button><button class="botao-texto" data-acao="ir" data-destino="ofertas:com">Agora não</button>`);
+    },
+  },
+  ofertas: {
+    nome: "Ofertas", principal: true,
+    estados: { com: "Com ofertas", carregando: "Carregando", nada: "Nada passou no teste hoje", medindo: "Começando a medir", semCategoria: "Sem categoria", semCep: "Sem CEP", fora: "Fora da região", erro: "Erro sem cópia salva", offline: "Sem internet (cópia salva)", retorno: "Voltou da loja" },
+    nota: {
+      _: "Resumo do dia no topo, Excepcionais (avisadas) e Boas ofertas separadas por seção e etiqueta com ícone, anúncio só a partir da 3ª posição e com forma própria (princípio 9), remédios em formato de lista (RDC 96/2008).",
+      nada: "Ausência de oferta é funcionalidade (princípio 5): os números do dia provam a curadoria (U06).",
+      medindo: "Partida a frio explicada com contagem (U02). Sem 14 dias de histórico nada é avisado.",
+      carregando: "Esqueleto estático, sem brilho animado (custo em aparelho de entrada, S-01).",
+      offline: "Última cópia salva com a hora (princípio 7).",
+      retorno: "Ao voltar da loja, uma pergunta opcional fecha o ciclo (U23).",
+    },
+    render(est) {
+      let corpo;
+      const cepChip = E.cep ? `<div class="pad"><button class="chip-cep" data-acao="ir" data-destino="cep:valido" aria-label="CEP ${fmtCep(E.cep)}. Toque para trocar.">${ic("location_on", "i p")}CEP ${fmtCep(E.cep)}</button></div>` : "";
+      const lista = (ofertas) => {
+        const exc = ofertas.filter((o) => o.nivel === "exc"), boas = ofertas.filter((o) => o.nivel !== "exc");
+        const itens = [];
+        if (exc.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Excepcionais</h2><p class="t-apoio sec" style="margin:4px 0 0">Menor preço dos últimos meses. Estas a gente avisa.</p></div>`, ...exc.map(htmlCartao));
+        if (boas.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Boas ofertas</h2><p class="t-apoio sec" style="margin:4px 0 0">Também conferidas, mas não tão fortes para avisar.</p></div>`, ...boas.map(htmlCartao));
+        // Anúncio antes da 3ª oferta (PROPOSTA 4.6).
+        let n = 0, pos = itens.findIndex((h) => h.startsWith('<button class="cartao"') && ++n === 3);
+        if (pos > 0) itens.splice(pos, 0, htmlAnuncio());
+        return itens.join("");
+      };
+      if (est === "retorno" && E._ultimo !== "ofertas:retorno") { E.retorno = true; E.obrigado = false; }
+      const retorno = est === "retorno" ? `<div class="retorno" role="region" aria-label="Pergunta sobre o preço">${E.obrigado ? `<span class="t-corpo">Obrigado. Isso ajuda a conferir as próximas.</span>` : `<span class="t-nome">O preço na loja bateu?</span><div class="quebra"><button class="botao-contorno" data-acao="obrigado">Sim</button><button class="botao-contorno" data-acao="obrigado">Não</button><button class="botao-texto" data-acao="obrigado">Não comprei</button></div>`}</div>` : "";
+      const resumo = `<p class="t-apoio sec" style="margin:var(--espaco-2) 0 0">Hoje conferimos ${milhar(RESUMO.conferidos)} preços nas suas categorias. ${RESUMO.aprovadas} passaram no teste.</p>`;
+      switch (est) {
+        case "carregando": corpo = `<div class="lista" aria-label="Carregando ofertas">${esqueleto()}${esqueleto()}${esqueleto()}</div>`; break;
+        case "nada": corpo = `<div class="lista">${htmlEstado("verified", "Nada passou no teste hoje", `Conferimos ${milhar(RESUMO.conferidos)} preços nas suas categorias. Nenhum era o menor dos últimos meses. Quando for, a gente avisa.`)}
+          <div class="secao"><h2 class="t-titulo-secao">Boas ofertas</h2><p class="t-apoio sec" style="margin:4px 0 0">Também conferidas, mas não tão fortes para avisar.</p></div>${htmlCartao(OF.shampoo)}${htmlRemedios([OF.paracetamol])}</div>`; break;
+        case "medindo": corpo = htmlEstado("hourglass_top", "Começando a medir", "Para saber se um preço está baixo de verdade, precisamos de pelo menos 14 dias de preço de cada produto. Faltam 8 dias.", null, null, false,
+          `<div class="progresso" role="progressbar" aria-valuemin="0" aria-valuemax="14" aria-valuenow="6" aria-label="6 de 14 dias"><span style="width:${6 / 14 * 100}%"></span></div><span class="t-rotulo" style="color:var(--cor-prova)">6 de 14 dias</span>`); break;
+        case "semCategoria": corpo = htmlEstado("tune", "Você não segue nenhuma categoria", null, "Escolher categorias", "ir-categorias"); break;
+        case "semCep": corpo = htmlEstado("home", "Falta o seu CEP", "Serve só para saber quais lojas entregam para você. Não pedimos endereço nem localização.", "Continuar", "ir-cep"); break;
+        case "fora": corpo = htmlEstado("location_on", "Ainda não chegamos aí", "Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.", "Me avise quando chegar", "nada"); break;
+        case "erro": corpo = htmlEstado("error", "Não deu para carregar as ofertas", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true); break;
+        case "offline": corpo = `<div class="faixa-aviso neutra" role="status">${ic("cloud_off")}<span class="t-apoio" style="flex:1">Sem internet. Mostrando as ofertas das 09:12.</span><button class="botao-texto" data-acao="tentar">Tentar de novo</button></div><div class="lista">${resumo}${lista([OF.protetor, OF.fralda, OF.shampoo, OF.hidratante])}${htmlRemedios([OF.paracetamol])}</div>`; break;
+        default: corpo = `<div class="lista">${retorno}${resumo}${lista([OF.protetor, OF.fralda, OF.shampoo, OF.hidratante])}${htmlRemedios([OF.paracetamol])}</div>`;
+      }
+      const semCep = est === "semCep";
+      return topo("Ofertas", false) + (semCep ? "" : cepChip) + faixaAvisos() + corpo;
+    },
+  },
+  detalhe: {
+    nome: "Detalhe da oferta",
+    estados: { protetor: "Ativa, incondicional", fralda: "Leve 3 pague 2", hidratante: "Só com cartão + retirada", shampoo: "Quase o menor, histórico de 94 dias", caiu: "Caiu mais desde o aviso", mudou: "Preço mudou depois do aviso", encerrada: "Encerrada", paracetamol: "Remédio sem receita", carregando: "Carregando", erro: "Erro", offline: "Sem internet" },
+    nota: {
+      _: "Ordem de leitura: o que mudou → condição → produto → preço → prova → cobertura → ação (A07). A prova fica na primeira dobra, não numa aba (R13). O botão \"Ver na loja\" avisa que sai do app. Link de afiliado declarado (CDC art. 36).",
+      fralda: "O preço grande é o efetivo por pacote (comparável ao normal); o total a pagar está na faixa de condição (U09).",
+      encerrada: "Se acabou desde o aviso, isso vem antes de tudo e o botão muda (R8).",
+      mudou: "Mudança de preço aparece antes do preço (R9).",
+      shampoo: "Com 94 dias de histórico, o selo diz \"94 dias\", nunca \"6 meses\" (princípio de honestidade do dado).",
+      paracetamol: "Remédio: formato de lista de preço, advertência obrigatória, sem selo nem régua (RDC 96/2008; S-27).",
+    },
+    render(est) {
+      if (est === "carregando") return topo("", true) + `<div class="lista">${esqueleto()}</div>`;
+      if (est === "erro") return topo("", true) + htmlEstado("cloud_off", "Não deu para carregar as ofertas", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true);
+      const o = OF[est === "offline" ? "protetor" : est] || OF.protetor;
+      const tc = textoCondicao(o), s = selo(o);
+      const abaixo = reais(o.prova.normal - efetivo(o));
+      let h = topo("", true, `<button class="botao-icone" data-acao="nada" aria-label="Compartilhar">${ic("share")}</button>`);
+      if (est === "offline") h += `<div class="faixa-aviso neutra" role="status">${ic("cloud_off")}<span class="t-apoio">Sem internet. Mostrando as ofertas das ${o.conferido}.</span></div>`;
+      if (o.encerrada) h += `<div class="faixa-erro" role="status"><span class="linha t-titulo-secao">${ic("event_busy")}Esta oferta acabou</span><span class="t-corpo">Acabou em ${o.encerrada.dia} às ${o.encerrada.hora}. O preço voltou para ${reais(o.encerrada.voltou)}.</span></div>`;
+      if (o.mudou) h += `<div class="faixa-condicao t-rotulo" role="status">${ic("info", "i p")}<span>O preço mudou para ${reais(o.mudou.preco)} às ${o.mudou.hora}.</span></div>`;
+      if (tc) h += `<div class="faixa-condicao t-rotulo">${ic("info", "i p")}<span>${esc(tc)}</span></div>`;
+      h += `<div class="pad coluna" style="padding-top:var(--espaco-5);padding-bottom:var(--espaco-5)">
+        <div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto" style="width:64px;height:64px;flex-basis:64px">${ic(CAT[o.cat].ic)}</div><div class="coluna" style="gap:var(--espaco-1);flex:1">
+          ${o.nivel === "exc" && !o.remedio ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}
+          <h1 class="t-titulo-secao">${esc(o.nome)}</h1><span class="t-apoio sec">Embalagem: ${o.emb.rot}</span><span class="t-apoio sec">${o.loja}</span></div></div>`;
+      if (o.remedio) {
+        h += `<div class="t-preco-destaque">${reais(o.preco)}</div><p class="t-rotulo" style="margin:0">SE PERSISTIREM OS SINTOMAS, O MÉDICO DEVERÁ SER CONSULTADO.</p>`;
+      } else {
+        h += htmlPreco(o, true) + `<div class="t-apoio sec">${porUnidade(o)}</div>`;
+        const dias = o.prova.serie.slice().reverse().slice(0, 30);
+        h += `<section class="prova" aria-labelledby="tit-prova"><h2 id="tit-prova" class="t-titulo-secao">Por que é promoção de verdade</h2>
+          <div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
+          <div class="check t-corpo">${ic("check_circle")}<span>${compraMin(o) > 1 ? `Cada uma sai ${abaixo} abaixo` : `Está ${abaixo} abaixo`} do preço normal desta loja, que é a média do que ela cobrou nos últimos 30 dias.</span></div>
+          <div class="check t-corpo">${ic("check_circle")}<span>${s.tipo === "menor" ? `É o menor preço desta loja em ${periodo(o)}.` : `Está a ${pct((efetivo(o) - o.prova.menor) / o.prova.menor)} do menor preço desta loja em ${periodo(o)}.`}</span></div>
+          <div class="check t-corpo">${ic("check_circle")}<span>A loja não aumentou o preço antes da promoção.</span></div>
+          <div class="caixa">${htmlRegua(o, true)}<span class="t-rotulo">Preço nesta loja, últimos 90 dias</span>${grafico(o)}
+            <button class="botao-texto" style="align-self:flex-start;padding-left:0" data-acao="ver-dias" aria-expanded="${E.verDias}">${E.verDias ? "Esconder preços dia a dia" : "Ver preços dia a dia"}</button>
+            ${E.verDias ? `<ul class="dias t-apoio">${dias.map((d) => `<li><span>${d.dia}</span><span>${reais(d.c)}</span></li>`).join("")}</ul>` : ""}</div>
+          <button class="botao-contorno" data-acao="como">Como a gente confere</button></section>`;
+      }
+      h += `<div class="linha-apoio t-apoio">${ic(o.cob.tipo === "retirada" ? "storefront" : "local_shipping", "i p")}<span>${textoCobertura(o.cob)}</span></div>
+        <div class="linha-apoio t-apoio">${ic("schedule", "i p")}<span>Conferido às ${o.conferido}. O preço e o estoque podem mudar na loja.</span></div>
+        <p class="t-apoio sec" style="margin:0">O economae pode ganhar uma comissão se você comprar por este link. Isso não muda o preço nem a escolha das ofertas.</p></div>`;
+      h += `<div class="rodape-fixo">${o.encerrada ? `<button class="botao-principal" data-acao="ir" data-destino="ofertas:com">Ver ofertas de hoje</button>` : `<button class="botao-principal" data-acao="loja" data-id="${o.id}" aria-label="Ver na ${o.loja}. Abre fora do app.">Ver na ${o.loja}${ic("open_in_new", "i p")}</button>`}</div>`;
+      return h;
+    },
+  },
+  avisos: {
+    nome: "Avisos", principal: true,
+    estados: { lista: "Com avisos", vazio: "Vazio", carregando: "Carregando", erro: "Erro" },
+    nota: { _: "Tudo o que já foi avisado, por dia, com Ativa/Encerrada em texto. Existe porque a notificação some (\"Só mostram 4 notificações, não consigo ver as anteriores\", Promobit, 1★). Encerrada não é atenuada: opacidade derrubaria o contraste." },
+    render(est) {
+      let corpo;
+      const etiqueta = (ativa) => `<span class="${ativa ? "chip-economia" : "chip-economia"} t-rotulo" style="${ativa ? "" : "background:var(--cor-superficie-container-alta);color:var(--cor-texto)"}">${ativa ? "" : ic("event_busy", "i p")}${ativa ? "Ativa" : "Encerrada"}</span>`;
+      if (est === "vazio") corpo = htmlEstado("notifications", "Nenhum aviso ainda", "Quando algo excepcional aparecer, fica guardado aqui.");
+      else if (est === "carregando") corpo = `<div class="lista">${esqueleto()}${esqueleto()}</div>`;
+      else if (est === "erro") corpo = htmlEstado("error", "Não deu para carregar seus avisos.", null, "Tentar de novo", "tentar", true);
+      else corpo = `<div class="lista"><div class="secao"><h2 class="t-titulo-secao">Hoje</h2></div>${etiqueta(true)}${htmlCartao(OF.protetor)}${etiqueta(true)}${htmlCartao(OF.fralda)}<div class="secao"><h2 class="t-titulo-secao">Ontem</h2></div>${etiqueta(false)}${htmlCartao(OF.sabonete)}</div>`;
+      return topo("Avisos", false) + faixaAvisos() + corpo;
+    },
+  },
+  ajustes: {
+    nome: "Ajustes", principal: true,
+    estados: { gratuito: "Sem conta, gratuito", premium: "Premium ativo", pendente: "Premium pendente", expirado: "Premium expirado" },
+    nota: { _: "Limite diário (padrão 3) e silêncio (21h–8h) visíveis (U07, S-17). Conta opcional (R1). Apagar dados em dois toques, sem documento (R14). Premium só dá mais CEPs, única regra no código (S-11); o preço vem da Google Play." },
+    render(est) {
+      const plano = { gratuito: "Acompanhe até 3 CEPs", premium: "Premium ativo até 28/10", pendente: "Pagamento em análise pela Google Play", expirado: "Seu premium acabou. Seu primeiro CEP continua valendo." }[est];
+      const item = (t, apoio, acao) => `<button class="item-ajuste" data-acao="${acao || "nada"}"><span class="coluna"><span class="t-nome">${t}</span>${apoio ? `<span class="t-apoio sec">${apoio}</span>` : ""}</span>${ic("chevron_right")}</button>`;
+      const ordem = Object.keys(CAT).sort((a, b) => (a === E.destacar ? -1 : b === E.destacar ? 1 : 0));
+      const cats = ordem.map((k) => { const c = CAT[k], sel = E.categorias.has(k); return `<button class="categoria" role="checkbox" aria-checked="${sel}" data-cat-alternar="${k}">${ic(c.ic)}<span class="coluna" style="gap:0;flex:1"><span class="t-nome">${c.rot}</span><span class="t-apoio sec">${c.ex}</span></span><span class="marca-sel">${ic(sel ? "check_circle" : "radio_button_unchecked")}</span></button>`; }).join("");
+      const limites = [1, 3, 5, null].map((n) => `<button class="radio" role="radio" aria-checked="${E.limite === n}" data-limite="${n}"><span class="bola"></span><span class="t-corpo">${n == null ? "Sem limite" : n + " por dia"}</span></button>`).join("");
+      return topo("Ajustes", false) + faixaAvisos() + `<div class="pad" style="padding-bottom:var(--espaco-8)">
+        <h2 class="t-titulo-secao" style="margin-top:var(--espaco-3)">Avisos</h2>
+        ${item("Avisos no celular", E.avisos ? "Ligados" : "Desligados. Toque para ligar.", "ligar-avisos")}
+        <p class="t-nome" style="margin:var(--espaco-4) 0 0" id="rot-limite">Máximo de avisos por dia</p><div role="radiogroup" aria-labelledby="rot-limite">${limites}</div>
+        ${item("Não avisar entre", "21:00 e 08:00. Avisos desse horário chegam às 08:00, os melhores primeiro.")}
+        <hr class="div"><h2 class="t-titulo-secao" style="margin-bottom:var(--espaco-3)">Categorias que você segue</h2><div class="coluna" style="gap:var(--espaco-3)">${cats}</div>
+        <hr class="div"><h2 class="t-titulo-secao">Seu CEP</h2>${item(fmtCep(E.cep || "01310100"), null, "ir-cep")}${item("Adicionar outro CEP", plano, "premium")}
+        <hr class="div"><h2 class="t-titulo-secao">Conta</h2><p class="t-corpo sec">Suas escolhas ficam só neste celular. Entre para não perder se trocar de aparelho.</p><button class="botao-contorno" data-acao="nada">Entrar com Google</button>
+        <hr class="div">${item("Como a gente confere", null, "como")}${item("Termos de uso")}${item("Privacidade")}
+        <button class="botao-texto perigo" style="padding-left:0" data-acao="apagar">Apagar meus dados</button></div>`;
+    },
+  },
+};
+function passo(titulo, texto, conteudo, botoes) {
+  return `<div class="passo"><div class="conteudo"><h1 class="t-titulo-tela">${titulo}</h1>${texto ? `<p class="t-corpo sec" style="margin:0">${texto}</p>` : ""}${conteudo}</div><div class="rodape-fixo">${botoes}</div></div>`;
+}
+function grafico(o) {
+  const pts = o.prova.serie.map((d) => d.c).concat(efetivo(o));
+  const min = Math.min(...pts), max = Math.max(...pts), f = Math.max(max - min, 1), W = 300, H = 140, m = 8;
+  const x = (i) => (W * i) / (pts.length - 1), y = (c) => m + (H - 2 * m) * (1 - (c - min) / f);
+  const d = pts.map((c, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(c).toFixed(1)}`).join(" ");
+  const yn = y(o.prova.normal);
+  return `<svg class="grafico" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="${W}" y1="${yn}" y2="${yn}" stroke="var(--cor-texto-secundario)" stroke-dasharray="6 5" stroke-width="1.5" vector-effect="non-scaling-stroke"/><path d="${d}" fill="none" stroke="var(--cor-contorno)" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${x(pts.length - 1) - 6}" cy="${y(pts[pts.length - 1])}" r="6" fill="var(--cor-prova)"/></svg>`;
+}
+
+// ======================= Folhas e diálogos =======================
+function htmlSobreposicao() {
+  if (E.folha === "como") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-como" data-parar><span class="alca"></span><h2 id="tit-como" class="t-titulo-tela">Como a gente confere uma promoção</h2>
+    ${["Todo dia, anotamos o preço de cada produto em cada loja.", "Só avisamos quando o preço está pelo menos 25% abaixo do normal da loja. Para comida que estraga, 35%.", "O preço precisa ser o menor dos últimos 6 meses, ou bem perto dele.", "Se a loja aumentou o preço pouco antes para depois “baixar”, a gente descarta.", "Se o frete come a economia, a gente descarta.", "Precisamos de pelo menos 14 dias de preço de um produto para saber se ele está barato."].map((t) => `<div class="linha topo t-corpo"><span style="color:var(--cor-prova)">${ic("check_circle")}</span><span>${t}</span></div>`).join("")}
+    <button class="botao-principal" data-acao="fechar">Entendi</button></div></div>`;
+  if (E.folha === "premium") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-premium" data-parar><span class="alca"></span><h2 id="tit-premium" class="t-titulo-tela">Acompanhe até 3 CEPs</h2>
+    <p class="t-corpo sec" style="margin:0">Para quem compra para casa, para o trabalho ou para a família em outro endereço.</p><p class="t-titulo-secao" style="margin:0">[preço da Google Play] por mês</p><p class="t-apoio sec" style="margin:0">Renova sozinho. Cancele quando quiser na Google Play.</p>
+    <button class="botao-principal" data-acao="fechar">Assinar por [preço da Google Play]</button></div></div>`;
+  if (E.dialogo === "apagar") return `<div class="veu centro"><div class="dialogo" role="alertdialog" aria-modal="true" aria-labelledby="tit-apagar"><h2 id="tit-apagar" class="t-titulo-secao">Apagar seus dados?</h2><p class="t-corpo" style="margin:0">Vamos apagar suas categorias, seus CEPs, seus avisos e sua conta, se tiver. Isso não pode ser desfeito.</p>
+    <div class="acoes"><button class="botao-texto" data-acao="fechar">Cancelar</button><button class="botao-texto perigo" data-acao="apagado">Apagar</button></div></div></div>`;
+  if (E.dialogo === "sistema") return `<div class="veu centro"><div class="dialogo sistema" role="alertdialog" aria-modal="true" aria-labelledby="tit-sis"><h2 id="tit-sis" style="font-size:18px;line-height:24px;margin:0">Permitir que <b>economae</b> envie notificações?</h2><p style="margin:0;font-size:13px">(Diálogo do sistema Android, simulado)</p>
+    <div class="acoes"><button class="botao-texto" data-acao="permitir">Permitir</button><button class="botao-texto" data-acao="negar">Não permitir</button></div></div></div>`;
+  if (E.foraDoApp) return `<div class="fora-do-app"><p style="font-size:18px;margin:0">Você saiu do app para o site da ${esc(OF[E.foraDoApp]?.loja || "loja")}.</p><p style="margin:0;color:var(--sistema-texto-2)">(Simulação. No celular, o link de afiliado abre no navegador ou no app da loja.)</p><button class="botao-principal" data-acao="voltar-app">Voltar ao economae</button></div>`;
+  return "";
+}
+
+// ======================= Renderização e navegação =======================
+const $tela = document.getElementById("tela"), $nav = document.getElementById("navegacao"), $cel = document.getElementById("celular");
+const $selTela = document.getElementById("sel-tela"), $selEstado = document.getElementById("sel-estado"), $nota = document.getElementById("nota");
+$selTela.innerHTML = Object.entries(TELAS).map(([k, t]) => `<option value="${k}">${t.nome}</option>`).join("");
+
+function ir(tela, estado, empilhar = true) {
+  if (empilhar && (E.tela !== tela || E.estado !== estado)) E.pilha.push([E.tela, E.estado]);
+  E._ultimo = E.tela + ":" + E.estado;
+  E.tela = tela; E.estado = estado ?? Object.keys(TELAS[tela].estados)[0];
+  E.folha = null; E.dialogo = null; E.foraDoApp = null;
+  if (tela !== "detalhe") E.verDias = false;
+  render(true);
+}
+function render(rolarTopo) {
+  const t = TELAS[E.tela];
+  $cel.dataset.tema = E.tema; $cel.dataset.fonte = String(E.escala); $cel.style.setProperty("--escala-fonte", E.escala);
+  const topoAntes = $tela.scrollTop;
+  $tela.innerHTML = t.render(E.estado) + htmlSobreposicao();
+  E._ultimo = E.tela + ":" + E.estado;
+  if (rolarTopo) $tela.scrollTop = 0; else $tela.scrollTop = topoAntes;
+  $nav.hidden = !t.principal;
+  $nav.innerHTML = t.principal ? [["ofertas", "Ofertas", "sell"], ["avisos", "Avisos", "notifications"], ["ajustes", "Ajustes", "tune"]].map(([k, r, i]) =>
+    `<button data-aba="${k}" ${E.tela === k ? 'aria-current="page"' : ""}><span class="pilula">${ic(i)}</span>${r}</button>`).join("") : "";
+  $selTela.value = E.tela;
+  $selEstado.innerHTML = Object.entries(t.estados).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  $selEstado.value = E.estado;
+  const n = t.nota[E.estado] ? t.nota._ + "\n\n" + t.nota[E.estado] : t.nota._;
+  $nota.innerHTML = `<strong>Por que é assim</strong>${esc(n).replace(/\n\n/g, "<br><br>")}`;
+  document.querySelectorAll("[data-tema]").forEach((b) => b.tagName === "BUTTON" && b.setAttribute("aria-pressed", b.dataset.tema === E.tema));
+  document.querySelectorAll("[data-escala]").forEach((b) => b.setAttribute("aria-pressed", +b.dataset.escala === E.escala));
+  document.querySelectorAll("[data-avisos]").forEach((b) => b.setAttribute("aria-pressed", (b.dataset.avisos === "1") === E.avisos));
+  history.replaceState(null, "", `#tela=${E.tela}&estado=${E.estado}`);
+  const input = document.getElementById("campo-cep");
+  if (input) input.addEventListener("input", (ev) => { E.cepDigitado = ev.target.value.replace(/\D/g, "").slice(0, 8); ev.target.value = fmtCep(E.cepDigitado); });
+}
+$selTela.addEventListener("change", () => ir($selTela.value, null));
+$selEstado.addEventListener("change", () => ir(E.tela, $selEstado.value, false));
+document.querySelector(".painel").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.tema) { E.tema = b.dataset.tema; render(); }
+  if (b.dataset.escala) { E.escala = +b.dataset.escala; render(); }
+  if (b.dataset.avisos) { E.avisos = b.dataset.avisos === "1"; render(); }
+  if (b.dataset.atalho) { const [t, e] = b.dataset.atalho.split(":"); ir(t, e); }
+});
+$nav.addEventListener("click", (ev) => { const b = ev.target.closest("[data-aba]"); if (b) ir(b.dataset.aba, null); });
+$tela.addEventListener("click", (ev) => {
+  const alvo = ev.target.closest("[data-abrir],[data-acao],[data-cat-alternar],[data-limite]");
+  if (!alvo) return;
+  if (alvo.dataset.parar !== undefined && !ev.target.closest("[data-acao]")) return;
+  if (alvo.dataset.abrir) {
+    const id = alvo.dataset.abrir;
+    ir("detalhe", ({ caiu: "caiu", retirada: "protetor", sabonete: "encerrada" })[id] || id); return;
+  }
+  if (alvo.dataset.catAlternar) { const k = alvo.dataset.catAlternar; E.categorias.has(k) ? E.categorias.delete(k) : E.categorias.add(k); render(); return; }
+  if (alvo.dataset.limite !== undefined) { E.limite = alvo.dataset.limite === "null" ? null : +alvo.dataset.limite; render(); return; }
+  const a = alvo.dataset.acao;
+  if (a === "fechar" && ev.target.closest(".folha,.dialogo") && !ev.target.closest("[data-acao='fechar'].botao-principal,[data-acao='fechar'].botao-texto")) return;
+  switch (a) {
+    case "ir": { const [t, e] = alvo.dataset.destino.split(":"); ir(t, e); break; }
+    case "voltar": { const p = E.pilha.pop(); if (p) ir(p[0], p[1], false); else ir("ofertas", "com", false); break; }
+    case "expandir": E.expandida = !E.expandida; render(); break;
+    case "como": E.folha = "como"; render(); break;
+    case "premium": E.folha = "premium"; render(); break;
+    case "apagar": E.dialogo = "apagar"; render(); break;
+    case "apagado": E.categorias = new Set(); E.cep = ""; ir("ofertas", "semCategoria"); break;
+    case "fechar": E.folha = null; E.dialogo = null; render(); break;
+    case "ver-dias": E.verDias = !E.verDias; render(); break;
+    case "ajustar": E.destacar = alvo.dataset.cat; ir("ajustes", "gratuito"); break;
+    case "loja": E.foraDoApp = alvo.dataset.id || "protetor"; render(); break;
+    case "voltar-app": E.foraDoApp = null; E.retorno = true; E.obrigado = false; ir("ofertas", "retorno"); break;
+    case "obrigado": E.obrigado = true; render(); break;
+    case "pedir-permissao": E.dialogo = "sistema"; render(); break;
+    case "permitir": E.avisos = true; ir("ofertas", "com"); break;
+    case "negar": E.avisos = false; E.dialogo = null; ir("permissao", "negada", false); break;
+    case "ligar-avisos": E.dialogo = "sistema"; render(); break;
+    case "ir-categorias": ir("ajustes", "gratuito"); break;
+    case "ir-cep": ir("cep", "vazio"); break;
+    case "cep-continuar": {
+      E.cepTentou = true; const d = E.cepDigitado;
+      if (d.length === 8 && +d >= 1000000 && +d <= 19999999) { E.cep = d; ir("permissao", "padrao"); }
+      else if (d.length === 8 && E._foraConfirmado === d) { E.cep = d; ir("ofertas", "fora"); }
+      else { if (d.length === 8) E._foraConfirmado = d; render(); }
+      break;
+    }
+    case "anuncio": case "tentar": case "nada": default: break;
+  }
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && (E.folha || E.dialogo)) { E.folha = null; E.dialogo = null; render(); } });
+
+// Estado inicial pelo endereço (#tela=...&estado=...), para compartilhar um estado exato.
+(function () {
+  const p = new URLSearchParams(location.hash.slice(1));
+  const t = p.get("tela"), e = p.get("estado");
+  if (t && TELAS[t]) { E.tela = t; E.estado = e && TELAS[t].estados[e] ? e : Object.keys(TELAS[t].estados)[0]; }
+  render(true);
+})();
+</script>
+</body>
+</html>
