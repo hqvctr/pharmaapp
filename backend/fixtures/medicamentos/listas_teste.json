@@ -1,0 +1,13 @@
+{
+  "_aviso": "Lista SÓ PARA TESTE. Não é a referência oficial. A real vem da lista de preços CMED e da Portaria SVS/MS 344/98.",
+  "versao": "teste-2026-09-28",
+  "referencia": [
+    { "gtin": "7891000000011", "principioAtivo": "PARACETAMOL", "isentoPrescricao": true },
+    { "gtin": "7891000000028", "principioAtivo": "DIPIRONA MONOIDRATADA;CAFEÍNA", "isentoPrescricao": true },
+    { "gtin": "7891000000035", "principioAtivo": "AMOXICILINA", "isentoPrescricao": false },
+    { "gtin": "7891000000042", "principioAtivo": "CLONAZEPAM", "isentoPrescricao": false },
+    { "gtin": "7891000000059", "principioAtivo": "CODEÍNA + PARACETAMOL", "isentoPrescricao": true }
+  ],
+  "substanciasControladas": ["clonazepam", "codeina", "tramadol", "sibutramina"],
+  "termosBloqueados": ["tarja preta", "tarja vermelha", "venda sob prescrição", "retenção de receita", "receita controlada", "psicotrópico"]
+}

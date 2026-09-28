@@ -24,6 +24,10 @@
       "medicamentos_isentos":  { "limiarQueda": 0.25, "perecivel": false }
     }
   },
+  "deduplicacao": {
+    "quedaAdicionalMinima": 0.05,
+    "fatorRetornoAoNormal": 0.95
+  },
   "cobertura": {
     "raioRetiradaKm": 5,
     "custoDeslocamentoPorKmCentavos": 80

@@ -5,7 +5,13 @@
 **Confirmado pelo responsável:** impacto de cronograma das 14 observações aceito; interpretações 12, 13,
 14 e 17 do DECISIONS confirmadas; nome `economae`; região estado de SP; TIPO A = Mercado Livre.
 
-**Propostas aguardando aprovação** — versão revisada em 2026-09-28 (a primeira versão tinha
+**Atualização (2026-09-28, depois):** orçamento zero. P2–P5 aprovadas. P4 implementada em
+`backend/src/normalizador/medicamentos.ts` e P5 em `backend/src/avaliador/deduplicacao.ts`, ambas puras
+e testadas (`npm test`: 58 testes). P2 fica para quando a primeira API for vinculada. Pendentes: P1
+(leitura de "14 observações" como 14 dias), P6 e a escolha da fonte TIPO A (Mercado Livre ou
+rede de afiliados de farmácia).
+
+**Propostas** — versão revisada em 2026-09-28 (a primeira versão tinha
 erros; ver conversa da sessão):
 - P1. Coleta a cada 2 h (config por fonte). `price_history` grava a primeira observação de cada dia
   e toda mudança de preço; nunca "só quando muda" (dia sem linha sumiria da contagem). O avaliador

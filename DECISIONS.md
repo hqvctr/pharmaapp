@@ -24,3 +24,8 @@ Uma linha por decisão, com a alternativa descartada. Não reabrir sem fato novo
 | 18 | 2 | Nome do app: **economae** (provisório; nome só em config e flavor, nunca espalhado no código). | — |
 | 19 | 2 | Região inicial: estado de São Paulo (CEPs 01000-000 a 19999-999). | Uma cidade só (Ribeirão Preto): cobertura menor para fonte TIPO A nacional. |
 | 20 | 2 | Fonte TIPO A inicial: Mercado Livre. | Amazon (API condicionada a vendas prévias), Awin/Rakuten (aprovação por anunciante). |
+| 21 | 2 | Orçamento zero: só serviços com camada gratuita; nada de API paga (ex.: Google Geocoding). Postgres e Redis rodam no mesmo host, sem serviço gerenciado. | Serviços gerenciados pagos. |
+| 22 | 2 | [aprovada] P2 — credencial por fonte e por tenant, cifrada no Postgres (AES-256-GCM, `node:crypto`), renovação sob lock, apps separados para dev e produção. Implementação junto com a primeira API vinculada. | Variável de ambiente global com refresh token (quebra com multi-tenant e com token de uso único). |
+| 23 | 2 | [aprovada] P3 — CEP → coordenada pelo CEP Aberto, depois de ler os termos; cache por CEP; necessário só com loja física. | Google Geocoding (pago; termos restringem cache). |
+| 24 | 2 | [aprovada] P4 — triagem de medicamento em todo produto, falha fechada; bloqueia também promoção por quantidade em isento de prescrição (RDC 96/2008). | Bloqueio só na categoria de medicamentos. |
+| 25 | 2 | [aprovada] P5 — deduplicação por (tenant, família, loja): novo alerta só com queda adicional de 5%, subida de decisão, ou promoção anterior encerrada. | Renotificar a cada 7 dias (promoção longa viraria spam). |
