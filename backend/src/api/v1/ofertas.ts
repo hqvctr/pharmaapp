@@ -11,7 +11,7 @@ export const obterConfiguracao: Handler = async (req) => {
   const app = req.tenant.config.app;
   return {
     nome: app.nome,
-    termos: app.termos,
+    documentos: app.documentos,
     categorias: Object.entries(app.rotulosCategorias).map(([id, nome]) => ({ id, nome })),
     regiao: { nome: app.regiao.nome },
     planos: app.planos,
@@ -39,7 +39,8 @@ export function visaoOferta(l: repo.LinhaOferta, config: ConfigTenant): Record<s
     validaAte: iso(l.validaAte),
     decisao: l.alerta.decisao,
     score: l.alerta.score,
-    medicamento: l.produto.categoria === config.medicamentos.categoria,
+    avisos: config.nbcal.categoriasComAviso.includes(l.produto.categoria) ? [config.nbcal.aviso] : [],
+    imagemUrl: l.imagemUrl,
     linkAfiliado: l.linkAfiliado,
     alertadaEm: l.alerta.criadoEm.toISOString(),
     coletadaEm: l.coletadaEm.toISOString(),

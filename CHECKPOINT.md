@@ -1,5 +1,46 @@
 # Checkpoint
 
+## Revisão da fase 3 — foco em mães, da gestação aos primeiros anos (2026-09-28)
+
+**Pedido do responsável:** o app mostrava categorias demais (mercearia, perecíveis, limpeza da casa...).
+O foco é desconto para mães em produtos para os filhos, da gestação aos primeiros anos. Revisar o
+projeto e achar falhas no contrato, no `X-Tenant`, nos termos e na privacidade.
+
+**O que mudou (critérios das fases 1, 2 e 3 passando; 129 testes)**
+- Categorias do tenant: só `fraldas_lencos`, `higiene_cuidados_bebe`, `alimentacao_infantil` e
+  `gestacao_pos_parto` (decisão 44). Mapa da Lomadee e gravações sintéticas ajustados.
+- Medicamento sai do app, mesmo isento (decisão 45, substitui a 28). A triagem da P4 continua.
+- **NBCAL (Lei 11.265/2006):** fórmula infantil, mamadeira, bico, chupeta e protetor de mamilo são
+  bloqueados na triagem; alimento infantil sai com a advertência do Ministério da Saúde (decisão 46).
+  O critério da fase 2 confere o bloqueio de uma mamadeira e de uma fórmula.
+- Contrato (`openapi/v1.json`):
+  - `avisos` no lugar de `medicamento`;
+  - `documentos.termos` e `documentos.privacidade`, separados;
+  - `imagemUrl` (migration `0004`);
+  - regra de evolução por acréscimo, com respostas tolerantes a campo novo;
+  - `Retry-After` documentado;
+  - teto do `limite` e ordem do histórico explicados (decisões 48 e 49).
+- `X-Tenant`:
+  - respostas com `Cache-Control: no-store` e `Vary: X-Tenant, Authorization`;
+  - o limite por IP não se multiplica mais trocando o cabeçalho (decisão 50).
+- Fixtures do motor com config própria (decisão 47).
+- `docs/juridico/termos-e-privacidade.md`: inventário real dos dados e o que os textos precisam cobrir.
+
+**Falhas encontradas que dependem do responsável** (detalhe no BACKLOG, itens "revisão 3")
+1. Sem filtro por **tamanho de fralda**, a categoria de fraldas vira spam. Recomendo filtro opcional por
+   tamanho, sem pedir data de nascimento.
+2. A categoria "Gestação e pós-parto" revela gravidez por inferência: é dado sensível. Os textos legais
+   e o consentimento precisam tratar disso.
+3. A lista NBCAL e o alcance da lei (composto lácteo, foto da embalagem, "leve 3 pague 2" em papinha)
+   precisam de validação jurídica.
+4. Termos e política não existem; público 18+, link de afiliado, Marco Civil (logs por 6 meses), página
+   web de exclusão exigida pelo Google Play.
+5. O premium baseado em "mais CEPs" é fraco para esse público.
+6. O slug `padrao` iria no app publicado; renomear para `economae` antes da fase 4.
+
+**Próximo passo:** o mesmo da fase 3 — aprovação do contrato revisado e das decisões 44–50, depois a
+Fase 4.
+
 ## Fase 3 — API do app: contrato, autenticação, preferências, feed e detalhe (PRONTA; contrato aguarda aprovação)
 
 **Critério de pronto:** `./scripts/pronto-fase3.sh`. Num banco descartável (`pronto_fase3`), o pipeline da
@@ -32,7 +73,8 @@ locais, por um substituto do comando `docker compose` fora do repositório. O `d
 API nova não foi exercitado (ver BACKLOG).
 
 **Precisa do responsável**
-1. Aprovar o contrato `backend/openapi/v1.json` (congela a v1 para as telas do app). Pontos para olhar:
+1. Aprovar o contrato `backend/openapi/v1.json` (congela a v1 para as telas do app; revisado depois,
+   ver seção acima). Pontos para olhar:
    login por código + Google (decisão 34, escolha do BACKLOG da fase 0), cabeçalho `X-Tenant`,
    o que o feed mostra (decisão 39) e os preços por embalagem (decisão 41).
 2. Escolher o provedor de e-mail com camada gratuita; sem ele a API não sobe em produção.

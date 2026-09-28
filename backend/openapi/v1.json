@@ -3,7 +3,7 @@
   "info": {
     "title": "economae API",
     "version": "1.0.0",
-    "description": "Contrato entre o app Android e o backend. Gerado de backend/src/api/v1/definicoes.ts por `npm run contrato`; o teste falha se este arquivo divergir do código. Dinheiro sempre em centavos inteiros. Toda rota exige o cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer."
+    "description": "Contrato entre o app Android e o backend. Gerado de backend/src/api/v1/definicoes.ts por `npm run contrato`; o teste falha se este arquivo divergir do código. Dinheiro sempre em centavos inteiros. Toda rota exige o cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer. Evolução da v1: o servidor só acrescenta (campos, valores de enum, códigos de erro); o cliente ignora campo desconhecido, trata valor de enum desconhecido como o caso genérico e decide pelo código do erro, não pela mensagem. Respostas da v1 vêm com Cache-Control: no-store e Vary: X-Tenant, Authorization."
   },
   "security": [
     {
@@ -92,8 +92,7 @@
                   },
                   "required": [
                     "validadeMinutos"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -110,6 +109,14 @@
           },
           "429": {
             "description": "Limite de tentativas; ver Retry-After. Códigos: LIMITE_EXCEDIDO.",
+            "headers": {
+              "Retry-After": {
+                "description": "Segundos até poder tentar de novo.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -201,6 +208,14 @@
           },
           "429": {
             "description": "Limite de tentativas; ver Retry-After. Códigos: TENTATIVAS_ESGOTADAS.",
+            "headers": {
+              "Retry-After": {
+                "description": "Segundos até poder tentar de novo.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -725,6 +740,7 @@
             "name": "limite",
             "in": "query",
             "required": false,
+            "description": "O tenant tem teto próprio (hoje 50); acima dele a página vem menor.",
             "schema": {
               "type": "integer",
               "minimum": 1,
@@ -902,24 +918,21 @@
           "nome": {
             "type": "string"
           },
-          "termos": {
+          "documentos": {
             "type": "object",
             "properties": {
-              "versao": {
-                "type": "string"
+              "termos": {
+                "$ref": "#/components/schemas/Documento"
               },
-              "url": {
-                "type": [
-                  "string",
-                  "null"
-                ]
+              "privacidade": {
+                "$ref": "#/components/schemas/Documento"
               }
             },
             "required": [
-              "versao",
-              "url"
+              "termos",
+              "privacidade"
             ],
-            "additionalProperties": false
+            "description": "Termos: o usuário aceita a versão (PUT /v1/eu/termos). Privacidade: informada com link e versão."
           },
           "categorias": {
             "type": "array",
@@ -936,8 +949,7 @@
               "required": [
                 "id",
                 "nome"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "regiao": {
@@ -949,8 +961,7 @@
             },
             "required": [
               "nome"
-            ],
-            "additionalProperties": false
+            ]
           },
           "planos": {
             "type": "object",
@@ -964,8 +975,7 @@
                 },
                 "required": [
                   "maxCeps"
-                ],
-                "additionalProperties": false
+                ]
               },
               "premium": {
                 "type": "object",
@@ -976,15 +986,13 @@
                 },
                 "required": [
                   "maxCeps"
-                ],
-                "additionalProperties": false
+                ]
               }
             },
             "required": [
               "gratuito",
               "premium"
-            ],
-            "additionalProperties": false
+            ]
           },
           "limiteDiarioMaximo": {
             "type": "integer"
@@ -1002,20 +1010,18 @@
             "required": [
               "email",
               "google"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
           "nome",
-          "termos",
+          "documentos",
           "categorias",
           "regiao",
           "planos",
           "limiteDiarioMaximo",
           "login"
-        ],
-        "additionalProperties": false
+        ]
       },
       "DetalheOferta": {
         "type": "object",
@@ -1057,8 +1063,7 @@
                 "required": [
                   "quantidade",
                   "unidade"
-                ],
-                "additionalProperties": false
+                ]
               }
             },
             "required": [
@@ -1066,8 +1071,7 @@
               "marca",
               "categoria",
               "embalagem"
-            ],
-            "additionalProperties": false
+            ]
           },
           "loja": {
             "type": "object",
@@ -1095,8 +1099,7 @@
               "nome",
               "rede",
               "tipo"
-            ],
-            "additionalProperties": false
+            ]
           },
           "precoCentavos": {
             "type": "integer",
@@ -1132,8 +1135,7 @@
             "required": [
               "centavos",
               "unidade"
-            ],
-            "additionalProperties": false
+            ]
           },
           "condicao": {
             "type": [
@@ -1163,8 +1165,7 @@
             "required": [
               "status",
               "centavos"
-            ],
-            "additionalProperties": false
+            ]
           },
           "validaAte": {
             "type": [
@@ -1186,8 +1187,19 @@
             "minimum": 0,
             "maximum": 100
           },
-          "medicamento": {
-            "type": "boolean"
+          "avisos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Textos obrigatórios por lei (ex.: advertência do Ministério da Saúde da NBCAL). O app exibe junto da oferta, sem alterar nem ocultar."
+          },
+          "imagemUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Foto do produto hospedada pela loja (https)."
           },
           "linkAfiliado": {
             "type": "boolean",
@@ -1229,9 +1241,9 @@
               "required": [
                 "dia",
                 "precoEquivalenteCentavos"
-              ],
-              "additionalProperties": false
-            }
+              ]
+            },
+            "description": "Dias fechados (sem o dia de hoje), do mais antigo ao mais recente, na loja da oferta."
           }
         },
         "required": [
@@ -1248,15 +1260,34 @@
           "validaAte",
           "decisao",
           "score",
-          "medicamento",
+          "avisos",
+          "imagemUrl",
           "linkAfiliado",
           "alertadaEm",
           "coletadaEm",
           "ativa",
           "link",
           "historico"
-        ],
-        "additionalProperties": false
+        ]
+      },
+      "Documento": {
+        "type": "object",
+        "properties": {
+          "versao": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "null enquanto o texto não estiver publicado."
+          }
+        },
+        "required": [
+          "versao",
+          "url"
+        ]
       },
       "Erro": {
         "type": "object",
@@ -1275,14 +1306,12 @@
             "required": [
               "codigo",
               "mensagem"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
           "erro"
-        ],
-        "additionalProperties": false
+        ]
       },
       "Feed": {
         "type": "object",
@@ -1304,8 +1333,7 @@
         "required": [
           "itens",
           "proximoCursor"
-        ],
-        "additionalProperties": false
+        ]
       },
       "ItemFeed": {
         "type": "object",
@@ -1347,8 +1375,7 @@
                 "required": [
                   "quantidade",
                   "unidade"
-                ],
-                "additionalProperties": false
+                ]
               }
             },
             "required": [
@@ -1356,8 +1383,7 @@
               "marca",
               "categoria",
               "embalagem"
-            ],
-            "additionalProperties": false
+            ]
           },
           "loja": {
             "type": "object",
@@ -1385,8 +1411,7 @@
               "nome",
               "rede",
               "tipo"
-            ],
-            "additionalProperties": false
+            ]
           },
           "precoCentavos": {
             "type": "integer",
@@ -1422,8 +1447,7 @@
             "required": [
               "centavos",
               "unidade"
-            ],
-            "additionalProperties": false
+            ]
           },
           "condicao": {
             "type": [
@@ -1453,8 +1477,7 @@
             "required": [
               "status",
               "centavos"
-            ],
-            "additionalProperties": false
+            ]
           },
           "validaAte": {
             "type": [
@@ -1476,8 +1499,19 @@
             "minimum": 0,
             "maximum": 100
           },
-          "medicamento": {
-            "type": "boolean"
+          "avisos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Textos obrigatórios por lei (ex.: advertência do Ministério da Saúde da NBCAL). O app exibe junto da oferta, sem alterar nem ocultar."
+          },
+          "imagemUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Foto do produto hospedada pela loja (https)."
           },
           "linkAfiliado": {
             "type": "boolean",
@@ -1513,13 +1547,13 @@
           "validaAte",
           "decisao",
           "score",
-          "medicamento",
+          "avisos",
+          "imagemUrl",
           "linkAfiliado",
           "alertadaEm",
           "coletadaEm",
           "prazoEntregaDias"
-        ],
-        "additionalProperties": false
+        ]
       },
       "Preferencias": {
         "type": "object",
@@ -1620,8 +1654,7 @@
             "required": [
               "inicio",
               "fim"
-            ],
-            "additionalProperties": false
+            ]
           },
           "limiteDiario": {
             "type": [
@@ -1641,8 +1674,7 @@
           "silencio",
           "limiteDiario",
           "completas"
-        ],
-        "additionalProperties": false
+        ]
       },
       "Sessao": {
         "type": "object",
@@ -1668,8 +1700,7 @@
           "expiraEm",
           "novoUsuario",
           "usuario"
-        ],
-        "additionalProperties": false
+        ]
       },
       "Usuario": {
         "type": "object",
@@ -1697,8 +1728,7 @@
             },
             "required": [
               "maxCeps"
-            ],
-            "additionalProperties": false
+            ]
           },
           "termos": {
             "type": "object",
@@ -1729,8 +1759,7 @@
               "versaoAceita",
               "aceitosEm",
               "pendente"
-            ],
-            "additionalProperties": false
+            ]
           },
           "notificacoes": {
             "type": "object",
@@ -1749,8 +1778,7 @@
             "required": [
               "consentidas",
               "consentidasEm"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
@@ -1760,8 +1788,7 @@
           "limites",
           "termos",
           "notificacoes"
-        ],
-        "additionalProperties": false
+        ]
       }
     }
   }

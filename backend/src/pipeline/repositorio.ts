@@ -96,20 +96,21 @@ export async function gravarOferta(
   const r = await db.query<{ id: string }>(
     `INSERT INTO offers (tenant_id, product_id, store_id, source_id, id_externo, preco_centavos,
                          preco_por_unidade_centavos, condicao, frete_centavos, frete_status, disponivel,
-                         valida_de, valida_ate, link, link_afiliado, coletada_em)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                         valida_de, valida_ate, link, link_afiliado, coletada_em, imagem_url)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
      ON CONFLICT (tenant_id, source_id, id_externo) DO UPDATE SET
        product_id = EXCLUDED.product_id, store_id = EXCLUDED.store_id, preco_centavos = EXCLUDED.preco_centavos,
        preco_por_unidade_centavos = EXCLUDED.preco_por_unidade_centavos, condicao = EXCLUDED.condicao,
        frete_centavos = EXCLUDED.frete_centavos, frete_status = EXCLUDED.frete_status,
        disponivel = EXCLUDED.disponivel, valida_de = EXCLUDED.valida_de, valida_ate = EXCLUDED.valida_ate,
-       link = EXCLUDED.link, link_afiliado = EXCLUDED.link_afiliado, coletada_em = EXCLUDED.coletada_em
+       link = EXCLUDED.link, link_afiliado = EXCLUDED.link_afiliado, coletada_em = EXCLUDED.coletada_em,
+       imagem_url = EXCLUDED.imagem_url
      RETURNING id`,
     [
       ids.tenantId, ids.productId, ids.storeId, ids.sourceId, o.idExterno, o.precoCentavos, precoPorUnidade,
       o.condicao === null ? null : JSON.stringify(o.condicao),
       o.frete.status === 'conhecido' ? o.frete.centavos : null, o.frete.status, o.disponivel,
-      o.validaDe, o.validaAte, o.link, o.linkAfiliado, agora,
+      o.validaDe, o.validaAte, o.link, o.linkAfiliado, agora, o.imagemUrl,
     ],
   );
   return r.rows[0]!.id;

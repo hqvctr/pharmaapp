@@ -1,6 +1,6 @@
 // Definição declarativa das rotas e geração do contrato OpenAPI a partir dela.
 // A mesma definição registra a rota no Fastify, então o contrato não diverge do servidor.
-import { nomeados, type Esquema } from './esquemas.js';
+import { Erro, nomeados, type Esquema } from './esquemas.js';
 
 /**
  * nenhuma: só exige X-Tenant.
@@ -62,11 +62,33 @@ const MENSAGEM_STATUS: Record<number, string> = {
   503: 'Dependência indisponível',
 };
 
-function comRefs(e: unknown, raiz: unknown): unknown {
-  if (Array.isArray(e)) return e.map((x) => comRefs(x, raiz));
+/**
+ * Troca esquemas nomeados por $ref. Em esquema de resposta (tolerante = true) tira o
+ * additionalProperties: false: o servidor continua filtrando a saída, mas o cliente gerado a partir
+ * do contrato não pode quebrar quando a v1 ganhar um campo novo.
+ */
+function comRefs(e: unknown, raiz: unknown, tolerante = false): unknown {
+  if (Array.isArray(e)) return e.map((x) => comRefs(x, raiz, tolerante));
   if (typeof e !== 'object' || e === null) return e;
   if (e !== raiz && nomeados.has(e as Esquema)) return { $ref: `#/components/schemas/${nomeados.get(e as Esquema)}` };
-  return Object.fromEntries(Object.entries(e).map(([k, v]) => [k, comRefs(v, raiz)]));
+  return Object.fromEntries(
+    Object.entries(e)
+      .filter(([k, v]) => !(tolerante && k === 'additionalProperties' && v === false))
+      .map(([k, v]) => [k, comRefs(v, raiz, tolerante)]),
+  );
+}
+
+/** Esquemas nomeados alcançáveis a partir de um esquema (para saber quais são de requisição). */
+function nomeadosEm(e: unknown, achados: Set<Esquema>): Set<Esquema> {
+  if (Array.isArray(e)) e.forEach((x) => nomeadosEm(x, achados));
+  else if (typeof e === 'object' && e !== null) {
+    if (nomeados.has(e as Esquema)) {
+      if (achados.has(e as Esquema)) return achados;
+      achados.add(e as Esquema);
+    }
+    Object.values(e).forEach((v) => nomeadosEm(v, achados));
+  }
+  return achados;
 }
 
 function parametros(onde: 'path' | 'query', esquema: Esquema | undefined): unknown[] {
@@ -86,12 +108,15 @@ export function gerarOpenApi(rotas: readonly DefRota[], versao: string): Record<
     for (const [status, resp] of Object.entries(r.respostas)) {
       respostas[status] = {
         description: resp.descricao,
-        ...(resp.esquema ? { content: { 'application/json': { schema: comRefs(resp.esquema, null) } } } : {}),
+        ...(resp.esquema ? { content: { 'application/json': { schema: comRefs(resp.esquema, null, true) } } } : {}),
       };
     }
     for (const [status, codigos] of Object.entries(todosOsErros(r))) {
       respostas[status] = {
         description: `${MENSAGEM_STATUS[Number(status)] ?? 'Erro'}. Códigos: ${codigos.join(', ')}.`,
+        ...(status === '429'
+          ? { headers: { 'Retry-After': { description: 'Segundos até poder tentar de novo.', schema: { type: 'integer' } } } }
+          : {}),
         content: { 'application/json': { schema: { $ref: '#/components/schemas/Erro' } } },
       };
     }
@@ -106,8 +131,16 @@ export function gerarOpenApi(rotas: readonly DefRota[], versao: string): Record<
       responses: Object.fromEntries(Object.entries(respostas).sort(([a], [b]) => Number(a) - Number(b))),
     };
   }
+  const deRequisicao = new Set<Esquema>();
+  for (const r of rotas) [r.corpo, r.query, r.params].forEach((e) => nomeadosEm(e, deRequisicao));
+  // Erro entra por $ref escrito à mão nas respostas de erro.
+  const deResposta = new Set<Esquema>([Erro]);
+  for (const r of rotas) Object.values(r.respostas).forEach((resp) => nomeadosEm(resp.esquema, deResposta));
   const schemas = Object.fromEntries(
-    [...nomeados.entries()].map(([e, nome]) => [nome, comRefs(e, e)] as const).sort(([a], [b]) => (a < b ? -1 : 1)),
+    [...nomeados.entries()]
+      .filter(([e]) => deRequisicao.has(e) || deResposta.has(e))
+      .map(([e, nome]) => [nome, comRefs(e, e, !deRequisicao.has(e))] as const)
+      .sort(([a], [b]) => (a < b ? -1 : 1)),
   );
   return {
     openapi: '3.1.0',
@@ -117,7 +150,10 @@ export function gerarOpenApi(rotas: readonly DefRota[], versao: string): Record<
       description:
         'Contrato entre o app Android e o backend. Gerado de backend/src/api/v1/definicoes.ts por `npm run contrato`; ' +
         'o teste falha se este arquivo divergir do código. Dinheiro sempre em centavos inteiros. Toda rota exige o ' +
-        'cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer.',
+        'cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer. Evolução da v1: o servidor só acrescenta ' +
+        '(campos, valores de enum, códigos de erro); o cliente ignora campo desconhecido, trata valor de enum ' +
+        'desconhecido como o caso genérico e decide pelo código do erro, não pela mensagem. Respostas da v1 vêm com ' +
+        'Cache-Control: no-store e Vary: X-Tenant, Authorization.',
     },
     security: [{ sessao: [] }],
     paths,

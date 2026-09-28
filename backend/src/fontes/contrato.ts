@@ -17,6 +17,8 @@ export interface OfertaBruta {
   lojaIdExterno: string;
   link: string;
   linkAfiliado: boolean;
+  /** Foto do produto (https) ou null. */
+  imagemUrl: string | null;
   disponivel: boolean;
   validaDe: Date | null;
   validaAte: Date | null;

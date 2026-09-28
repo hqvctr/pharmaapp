@@ -237,6 +237,7 @@ export interface LinhaOferta {
   validaAte: Date | null;
   link: string;
   linkAfiliado: boolean;
+  imagemUrl: string | null;
   coletadaEm: Date;
   produto: { nome: string; marca: string | null; categoria: string; familiaChave: string; quantidade: number; unidade: Unidade };
   loja: { id: string; nome: string; rede: string; tipo: 'online' | 'fisica' };
@@ -268,7 +269,7 @@ const OFERTA_ATIVA = `(
 
 const SELECT_OFERTA = `
   SELECT o.id AS oferta_id, o.preco_centavos, o.condicao, o.frete_status, o.frete_centavos, o.valida_ate, o.link,
-         o.link_afiliado, o.coletada_em,
+         o.link_afiliado, o.coletada_em, o.imagem_url,
          p.nome, p.marca, p.categoria, p.familia_chave, p.quantidade, p.unidade,
          s.id AS loja_id, s.nome AS loja_nome, s.rede, s.tipo AS loja_tipo,
          a.id AS alerta_id, a.criado_em AS alertada_em, a.decisao, a.score, a.preco_referencia_por_unidade,
@@ -295,6 +296,7 @@ function ofertaDaLinha(l: Record<string, any>): LinhaOferta {
     validaAte: l.valida_ate,
     link: l.link,
     linkAfiliado: l.link_afiliado,
+    imagemUrl: l.imagem_url,
     coletadaEm: l.coletada_em,
     produto: {
       nome: l.nome,

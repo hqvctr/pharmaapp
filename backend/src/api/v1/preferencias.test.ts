@@ -3,7 +3,7 @@ import { carregarConfigTenant } from '../../shared/tenantConfig.js';
 import { validarPreferencias, type PreferenciasEntrada } from './preferencias.js';
 
 const { app } = await carregarConfigTenant('padrao');
-const base: PreferenciasEntrada = { categorias: ['limpeza'], ceps: ['01310100'], silencio: { inicio: '22:00', fim: '07:00' }, limiteDiario: 3 };
+const base: PreferenciasEntrada = { categorias: ['fraldas_lencos'], ceps: ['01310100'], silencio: { inicio: '22:00', fim: '07:00' }, limiteDiario: 3 };
 
 describe('validarPreferencias', () => {
   it('aceita preferência válida, inclusive silêncio que atravessa a meia-noite', () => {
@@ -11,7 +11,7 @@ describe('validarPreferencias', () => {
   });
 
   it.each([
-    ['categoria fora da config', { ...base, categorias: ['eletronicos'] }, false, 'CATEGORIA_DESCONHECIDA'],
+    ['categoria fora da config', { ...base, categorias: ['limpeza'] }, false, 'CATEGORIA_DESCONHECIDA'],
     ['CEP do Rio de Janeiro', { ...base, ceps: ['20040002'] }, false, 'CEP_FORA_DA_REGIAO'],
     ['dois CEPs no plano gratuito', { ...base, ceps: ['01310100', '13560000'] }, false, 'LIMITE_DO_PLANO'],
     ['limite diário acima do máximo', { ...base, limiteDiario: 11 }, false, 'LIMITE_DIARIO_INVALIDO'],

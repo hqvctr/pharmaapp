@@ -35,6 +35,15 @@ export function registrarV1(app: FastifyInstance, deps: DepsV1): void {
   app.decorateRequest('tenant', null as never);
   app.decorateRequest('sessao', null);
 
+  // A resposta depende do tenant e da sessão e carrega dado pessoal: proxy ou CDN não pode guardar
+  // nem entregar a resposta de um tenant (ou usuário) para outro.
+  app.addHook('onSend', async (req, reply) => {
+    if (req.url.startsWith('/v1/')) {
+      reply.header('cache-control', 'no-store');
+      reply.header('vary', 'X-Tenant, Authorization');
+    }
+  });
+
   async function resolverTenant(req: FastifyRequest): Promise<void> {
     const slug = req.headers['x-tenant'];
     const tenant = typeof slug === 'string' ? await deps.tenants.resolver(slug) : null;
@@ -56,7 +65,7 @@ export function registrarV1(app: FastifyInstance, deps: DepsV1): void {
   }
 
   async function exigirTermos(req: FastifyRequest): Promise<void> {
-    if (req.sessao?.usuario.termosVersao !== req.tenant.config.app.termos.versao) {
+    if (req.sessao?.usuario.termosVersao !== req.tenant.config.app.documentos.termos.versao) {
       throw new ErroApi(403, 'TERMOS_PENDENTES', 'Aceite a versão vigente dos termos.');
     }
   }

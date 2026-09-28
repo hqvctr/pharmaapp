@@ -12,7 +12,7 @@ async function usuarioAtual(req: Parameters<Handler>[0], deps: Parameters<Handle
 export const obterUsuario: Handler = async (req, _reply, deps) => visaoUsuario(sessaoDe(req).usuario, req.tenant.config.app);
 
 export const aceitarTermos: Handler = async (req, _reply, deps) => {
-  const vigente = req.tenant.config.app.termos.versao;
+  const vigente = req.tenant.config.app.documentos.termos.versao;
   const { versao } = req.body as { versao: string };
   if (versao !== vigente) {
     throw new ErroApi(409, 'TERMOS_DESATUALIZADOS', `A versão vigente dos termos é ${vigente}.`);

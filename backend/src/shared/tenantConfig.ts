@@ -26,9 +26,16 @@ export interface FaixaCepRegiao {
 }
 
 /** Bloco "app": tudo que a API expõe ao aplicativo ou usa para validar o que ele envia. */
+export interface DocumentoLegal {
+  versao: string;
+  /** Null enquanto o texto não estiver publicado (bloqueia a publicação do app; ver BACKLOG). */
+  url: string | null;
+}
+
 export interface ConfigApp {
   nome: string;
-  termos: { versao: string; url: string | null };
+  /** Termos são aceitos pelo usuário; a política de privacidade é informada, com versão. */
+  documentos: { termos: DocumentoLegal; privacidade: DocumentoLegal };
   rotulosCategorias: Record<string, string>;
   regiao: { nome: string; faixasCep: FaixaCepRegiao[] };
   planos: { gratuito: { maxCeps: number }; premium: { maxCeps: number } };
@@ -45,15 +52,41 @@ export interface ConfigApp {
   };
 }
 
+/** Lei 11.265/2006 (NBCAL): produtos cuja promoção comercial é vedada ou exige advertência. */
+export interface ConfigNbcal {
+  base: string;
+  /** Termo no título ou descrição bloqueia a oferta (falha fechada). */
+  termosVedados: string[];
+  /** Categorias cuja oferta só aparece com o aviso abaixo. */
+  categoriasComAviso: string[];
+  aviso: string;
+}
+
 export interface ConfigTenant {
   slug: string;
   fuso: string;
   curadoria: ConfigCuradoria;
   cobertura: ConfigCobertura;
   deduplicacao: ConfigDeduplicacao;
-  medicamentos: { categoria: string; notificar: boolean };
+  /**
+   * categoria: categoria interna que a triagem usa para medicamento (não precisa existir na curadoria).
+   * exibir: false tira todo medicamento do app, mesmo isento de prescrição.
+   */
+  medicamentos: { categoria: string; exibir: boolean; notificar: boolean };
+  nbcal: ConfigNbcal;
   fontes: { lomadee?: ConfigFonteLomadee };
   app: ConfigApp;
+}
+
+function validarConfigNbcal(bruto: unknown, curadoria: ConfigCuradoria): ConfigNbcal {
+  const n = bruto as ConfigNbcal;
+  const textos = (v: unknown): v is string[] => Array.isArray(v) && v.every((t) => typeof t === 'string' && t.trim() !== '');
+  if (!textos(n?.termosVedados) || n.termosVedados.length === 0) throw new Error('Config inválida: nbcal.termosVedados');
+  if (!textos(n.categoriasComAviso) || n.categoriasComAviso.some((c) => curadoria.categorias[c] === undefined)) {
+    throw new Error('Config inválida: nbcal.categoriasComAviso');
+  }
+  if (typeof n.aviso !== 'string' || n.aviso === '') throw new Error('Config inválida: nbcal.aviso');
+  return n;
 }
 
 function inteiroPositivo(nome: string, v: unknown): void {
@@ -63,8 +96,13 @@ function inteiroPositivo(nome: string, v: unknown): void {
 export function validarConfigApp(bruto: unknown, curadoria: ConfigCuradoria): ConfigApp {
   const a = bruto as ConfigApp;
   if (typeof a?.nome !== 'string' || a.nome === '') throw new Error('Config inválida: app.nome');
-  if (typeof a.termos?.versao !== 'string' || a.termos.versao === '') throw new Error('Config inválida: app.termos.versao');
-  if (a.termos.url !== null && typeof a.termos.url !== 'string') throw new Error('Config inválida: app.termos.url');
+  for (const doc of ['termos', 'privacidade'] as const) {
+    const d = a.documentos?.[doc];
+    if (typeof d?.versao !== 'string' || d.versao === '') throw new Error(`Config inválida: app.documentos.${doc}.versao`);
+    if (d.url !== null && !(typeof d.url === 'string' && d.url.startsWith('https://'))) {
+      throw new Error(`Config inválida: app.documentos.${doc}.url deve ser null ou https://`);
+    }
+  }
   // Toda categoria do motor precisa de rótulo, e nenhum rótulo pode apontar para categoria inexistente.
   const categorias = Object.keys(curadoria.categorias).sort();
   const rotulos = Object.keys(a.rotulosCategorias ?? {}).sort();
@@ -101,7 +139,8 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
   const dedup = bruto.deduplicacao as ConfigDeduplicacao;
   if (!(dedup.quedaAdicionalMinima > 0 && dedup.quedaAdicionalMinima < 1)) throw new Error('Config inválida: deduplicacao.quedaAdicionalMinima');
   if (!(dedup.fatorRetornoAoNormal > 0 && dedup.fatorRetornoAoNormal <= 1)) throw new Error('Config inválida: deduplicacao.fatorRetornoAoNormal');
-  if (typeof bruto.medicamentos?.categoria !== 'string' || typeof bruto.medicamentos?.notificar !== 'boolean') {
+  const med = bruto.medicamentos;
+  if (typeof med?.categoria !== 'string' || typeof med.exibir !== 'boolean' || typeof med.notificar !== 'boolean') {
     throw new Error('Config inválida: medicamentos');
   }
   const curadoria = validarConfigCuradoria(bruto.curadoria);
@@ -109,7 +148,10 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
   if (lomadee !== undefined) {
     lomadee.mapaCategorias = Object.fromEntries(
       Object.entries(lomadee.mapaCategorias).map(([k, v]) => {
-        if (curadoria.categorias[v] === undefined) throw new Error(`Config inválida: categoria "${v}" não existe em curadoria`);
+        // A categoria de medicamentos pode ficar fora da curadoria: serve só para a triagem.
+        if (curadoria.categorias[v] === undefined && v !== med.categoria) {
+          throw new Error(`Config inválida: categoria "${v}" não existe em curadoria`);
+        }
         return [normalizarTexto(k), v];
       }),
     );
@@ -120,7 +162,8 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
     curadoria,
     cobertura: validarConfigCobertura(bruto.cobertura),
     deduplicacao: dedup,
-    medicamentos: bruto.medicamentos,
+    medicamentos: med,
+    nbcal: validarConfigNbcal(bruto.nbcal, curadoria),
     fontes: { lomadee },
     app: validarConfigApp(bruto.app, curadoria),
   };

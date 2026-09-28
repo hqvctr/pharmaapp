@@ -57,10 +57,40 @@
       }
     },
     {
+      "id": "A-800",
+      "name": "Mamadeira Anticólica Marca W 260ml",
+      "category": {
+        "id": 0,
+        "name": "Amamentação"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-800",
+      "thumbnail": "https://imagens.exemplo/A-800.jpg",
+      "price": 39.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    },
+    {
+      "id": "A-900",
+      "name": "Fórmula Infantil Marca N 1 800g",
+      "category": {
+        "id": 0,
+        "name": "Alimentação Infantil"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-900",
+      "thumbnail": "",
+      "price": 59.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    },
+    {
       "id": "A-700",
       "name": "Item sem preço",
       "category": {
-        "name": "Cabelos"
+        "name": "Higiene do Bebê"
       },
       "store": {
         "id": 9001

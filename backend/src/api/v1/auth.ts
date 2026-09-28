@@ -16,7 +16,9 @@ export const pedirCodigoEmail: Handler = async (req, reply, deps) => {
   const email = normalizarEmail((req.body as { email: string }).email);
   const agora = deps.agora();
 
-  const porIp = await deps.limitador.consumir(`codigo-ip:${tenant.id}:${req.ip}`, cfg.codigosPorHoraPorIp, 3600);
+  // Por IP, sem o tenant na chave: o X-Tenant é escolhido pelo cliente, e trocar o cabeçalho não pode
+  // multiplicar o limite (a cota do provedor de e-mail é uma só).
+  const porIp = await deps.limitador.consumir(`codigo-ip:${req.ip}`, cfg.codigosPorHoraPorIp, 3600);
   if (!porIp.permitido) throw limiteExcedido(porIp.retryAposSegundos);
 
   const codigo = gerarCodigo();

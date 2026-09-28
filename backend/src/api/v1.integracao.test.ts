@@ -9,6 +9,7 @@ import { migrate } from '../db/migrate.js';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
 import { buildApp } from './app.js';
 import { ResolvedorTenantsDb } from './tenants.js';
+import type { DepsV1 } from './v1/index.js';
 
 const URL_TESTE = process.env.TEST_DATABASE_URL;
 const AUD = 'cliente-web.apps.googleusercontent.com';
@@ -19,22 +20,20 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
   let agora = new Date('2026-09-28T15:00:00Z');
   const codigos = new Map<string, string>();
   const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
-  const app = buildApp({
-    healthChecks: [],
-    v1: {
-      db: pool,
-      tenants: new ResolvedorTenantsDb(pool, async (slug) => {
-        const c = await carregarConfigTenant('padrao');
-        c.app.auth.googleClientIds = slug === 'padrao' ? [AUD] : [];
-        return { ...c, slug };
-      }),
-      email: { enviarCodigo: async (m: MensagemCodigo) => void codigos.set(m.para, m.codigo) },
-      limitador: new LimitadorMemoria(() => agora),
-      chavesGoogle: { chave: async (kid) => (kid === 'k1' ? publicKey : null) },
-      codigoChave: Buffer.from('chave-de-teste-com-mais-de-32-caracteres'),
-      agora: () => agora,
-    },
-  });
+  const deps: DepsV1 = {
+    db: pool,
+    tenants: new ResolvedorTenantsDb(pool, async (slug) => {
+      const c = await carregarConfigTenant('padrao');
+      c.app.auth.googleClientIds = slug === 'padrao' ? [AUD] : [];
+      return { ...c, slug };
+    }),
+    email: { enviarCodigo: async (m: MensagemCodigo) => void codigos.set(m.para, m.codigo) },
+    limitador: new LimitadorMemoria(() => agora),
+    chavesGoogle: { chave: async (kid) => (kid === 'k1' ? publicKey : null) },
+    codigoChave: Buffer.from('chave-de-teste-com-mais-de-32-caracteres'),
+    agora: () => agora,
+  };
+  const app = buildApp({ healthChecks: [], v1: deps });
   const ids: Record<string, string> = {};
 
   type Req = { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; url: string; token?: string; tenant?: string; body?: unknown };
@@ -89,8 +88,13 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
     const r = await req({ url: '/v1/configuracao' });
     expect(r.statusCode).toBe(200);
     expect(r.json()).toMatchObject({ nome: 'economae', login: { email: true, google: true }, planos: { gratuito: { maxCeps: 1 } } });
-    expect(r.json().categorias).toContainEqual({ id: 'limpeza', nome: 'Limpeza' });
-    expect((await req({ url: '/v1/configuracao', tenant: 'nao-existe' })).json().erro.codigo).toBe('TENANT_INVALIDO');
+    expect(r.json().categorias).toContainEqual({ id: 'fraldas_lencos', nome: 'Fraldas e lenços' });
+    expect(r.headers['cache-control']).toBe('no-store');
+    expect(r.headers.vary).toBe('X-Tenant, Authorization');
+    expect(r.json().documentos.privacidade).toEqual({ versao: 'rascunho-2026-09-28', url: null });
+    const semTenant = await req({ url: '/v1/configuracao', tenant: 'nao-existe' });
+    expect(semTenant.json().erro.codigo).toBe('TENANT_INVALIDO');
+    expect(semTenant.headers['cache-control']).toBe('no-store');
   });
 
   it('código por e-mail: errado, certo, reuso', async () => {
@@ -132,6 +136,16 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
     expect(Number(r.headers['retry-after'])).toBeGreaterThan(0);
     agora = new Date(agora.getTime() + H + 1000);
     expect((await req({ method: 'POST', url: '/v1/auth/email/codigo', body: { email } })).statusCode).toBe(202);
+  });
+
+  it('limite por IP vale para todos os tenants juntos', async () => {
+    const limitador = new LimitadorMemoria(() => agora);
+    const outroApp = buildApp({ healthChecks: [], v1: { ...deps, limitador } });
+    const pedir = (tenant: string, i: number) =>
+      outroApp.inject({ method: 'POST', url: '/v1/auth/email/codigo', headers: { 'x-tenant': tenant }, payload: { email: `ip${i}@exemplo.com` } });
+    for (let i = 0; i < 20; i++) expect((await pedir(i % 2 ? 'padrao' : 'outro', i)).statusCode).toBe(202);
+    expect((await pedir('outro', 99)).json().erro.codigo).toBe('LIMITE_EXCEDIDO');
+    await outroApp.close();
   });
 
   it('requisição inválida e sessão ausente', async () => {
@@ -199,10 +213,10 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
     const { token, userId } = await entrarPorCodigo('hugo@exemplo.com');
     await aceitar(token);
     const put = (body: unknown) => req({ method: 'PUT', url: '/v1/preferencias', token, body });
-    const valida = { categorias: ['limpeza', 'cuidados_pessoais'], ceps: ['01310100'], silencio: { inicio: '22:00', fim: '07:00' }, limiteDiario: 3 };
+    const valida = { categorias: ['fraldas_lencos', 'higiene_cuidados_bebe'], ceps: ['01310100'], silencio: { inicio: '22:00', fim: '07:00' }, limiteDiario: 3 };
 
     expect((await put({ ...valida, ceps: ['20040002'] })).json().erro.codigo).toBe('CEP_FORA_DA_REGIAO');
-    expect((await put({ ...valida, categorias: ['eletronicos'] })).json().erro.codigo).toBe('CATEGORIA_DESCONHECIDA');
+    expect((await put({ ...valida, categorias: ['limpeza'] })).json().erro.codigo).toBe('CATEGORIA_DESCONHECIDA');
     expect((await put({ ...valida, ceps: ['01310-100'] })).statusCode).toBe(400);
     const doisCeps = { ...valida, ceps: ['01310100', '13560000'] };
     expect((await put(doisCeps)).json().erro.codigo).toBe('LIMITE_DO_PLANO');
@@ -255,7 +269,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
         await sql(
           `INSERT INTO products (tenant_id, chave_hash, familia_chave, nome, categoria, quantidade, unidade)
            VALUES ($1, $2, $2, $3, $4, 0.2, 'l') RETURNING id`,
-          [tenant, `p${seq}`, `Produto ${seq} 200ml`, o.categoria ?? 'cuidados_pessoais'],
+          [tenant, `p${seq}`, `Produto ${seq} 200ml`, o.categoria ?? 'higiene_cuidados_bebe'],
         )
       ).rows[0].id;
       const coletada = new Date(agora.getTime() - (o.coletadaHa ?? 1) * H);
@@ -299,14 +313,14 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
       const bloqueada = await loja('Loja bloqueada', 'bloqueada', ['01000000', '19999999', 1]);
       ids.ativa = await oferta({ loja: sp });
       ids.duasVezes = await oferta({ loja: sp, alertas: 2 });
-      ids.terceira = await oferta({ loja: sp, categoria: 'limpeza' });
-      ids.medicamento = await oferta({ loja: sp, categoria: 'medicamentos_isentos', decisao: 'somente_feed' });
+      ids.terceira = await oferta({ loja: sp, categoria: 'fraldas_lencos' });
+      ids.papinha = await oferta({ loja: sp, categoria: 'alimentacao_infantil', decisao: 'somente_feed' });
       ids.descartada = await oferta({ loja: sp, decisao: 'descartar' });
       ids.indisponivel = await oferta({ loja: sp, disponivel: false });
       ids.velha = await oferta({ loja: sp, coletadaHa: 7 });
       ids.foraDoCep = await oferta({ loja: rj });
       ids.lojaBloqueada = await oferta({ loja: bloqueada });
-      ids.categoriaNaoEscolhida = await oferta({ loja: sp, categoria: 'maquiagem' });
+      ids.categoriaNaoEscolhida = await oferta({ loja: sp, categoria: 'gestacao_pos_parto' });
       ids.semAlerta = await oferta({ loja: sp, alertas: 0 });
 
       const outraFonte = (
@@ -330,7 +344,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
     });
 
     it('mostra só oferta ativa, na categoria, com entrega para o CEP; uma vez por oferta; paginado', async () => {
-      const prefs = { categorias: ['cuidados_pessoais', 'limpeza', 'medicamentos_isentos'], ceps: ['14010000'], silencio: null, limiteDiario: null };
+      const prefs = { categorias: ['higiene_cuidados_bebe', 'fraldas_lencos', 'alimentacao_infantil'], ceps: ['14010000'], silencio: null, limiteDiario: null };
       expect((await req({ method: 'PUT', url: '/v1/preferencias', token, body: prefs })).statusCode).toBe(200);
 
       const vistos: string[] = [];
@@ -343,7 +357,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
         cursor = r.json().proximoCursor;
         paginas++;
       } while (cursor !== null);
-      expect(vistos.sort()).toEqual([ids.ativa, ids.duasVezes, ids.terceira, ids.medicamento].sort());
+      expect(vistos.sort()).toEqual([ids.ativa, ids.duasVezes, ids.terceira, ids.papinha].sort());
       expect(paginas).toBe(2);
 
       const item = (await req({ url: '/v1/feed', token })).json().itens.find((i: { ofertaId: string }) => i.ofertaId === ids.ativa);
@@ -353,17 +367,17 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
         queda: 0.3333,
         prazoEntregaDias: 2,
         linkAfiliado: true,
-        medicamento: false,
+        avisos: [],
         loja: { nome: 'Loja SP' },
       });
       expect(item).not.toHaveProperty('link');
-      const med = (await req({ url: '/v1/feed?categoria=medicamentos_isentos', token })).json().itens;
-      expect(med.map((i: { ofertaId: string; medicamento: boolean }) => [i.ofertaId, i.medicamento])).toEqual([[ids.medicamento, true]]);
+      const papinhas = (await req({ url: '/v1/feed?categoria=alimentacao_infantil', token })).json().itens;
+      expect(papinhas.map((i: { ofertaId: string; avisos: string[] }) => [i.ofertaId, i.avisos.length])).toEqual([[ids.papinha, 1]]);
     });
 
     it('filtros do feed recusam CEP e categoria fora das preferências', async () => {
       expect((await req({ url: '/v1/feed?cep=01310100', token })).json().erro.codigo).toBe('CEP_NAO_CADASTRADO');
-      expect((await req({ url: '/v1/feed?categoria=maquiagem', token })).json().erro.codigo).toBe('CATEGORIA_NAO_ESCOLHIDA');
+      expect((await req({ url: '/v1/feed?categoria=gestacao_pos_parto', token })).json().erro.codigo).toBe('CATEGORIA_NAO_ESCOLHIDA');
       expect((await req({ url: '/v1/feed?cursor=abc', token })).json().erro.codigo).toBe('CURSOR_INVALIDO');
     });
 
@@ -388,7 +402,7 @@ describe.skipIf(URL_TESTE === undefined)('API v1 contra Postgres', () => {
   it('exclusão de conta apaga dados pessoais', async () => {
     const { token, userId } = await entrarPorCodigo('joao@exemplo.com');
     await aceitar(token);
-    await req({ method: 'PUT', url: '/v1/preferencias', token, body: { categorias: ['limpeza'], ceps: ['01310100'], silencio: null, limiteDiario: null } });
+    await req({ method: 'PUT', url: '/v1/preferencias', token, body: { categorias: ['fraldas_lencos'], ceps: ['01310100'], silencio: null, limiteDiario: null } });
     expect((await req({ method: 'DELETE', url: '/v1/eu', token })).statusCode).toBe(204);
     expect((await req({ url: '/v1/eu', token })).statusCode).toBe(401);
     for (const tabela of ['users WHERE id', 'user_preferences WHERE user_id', 'sessoes WHERE user_id']) {

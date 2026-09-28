@@ -15,14 +15,10 @@
     "confiabilidadeMinimaNotificar": "media",
     "freteMaximoSobreEconomia": 1.0,
     "categorias": {
-      "mercearia":             { "limiarQueda": 0.25, "perecivel": false },
-      "pereciveis":            { "limiarQueda": 0.35, "perecivel": true },
-      "higiene_intima":        { "limiarQueda": 0.25, "perecivel": false },
-      "maquiagem":             { "limiarQueda": 0.25, "perecivel": false },
-      "higiene_bebe":          { "limiarQueda": 0.25, "perecivel": false },
-      "limpeza":               { "limiarQueda": 0.25, "perecivel": false },
-      "cuidados_pessoais":     { "limiarQueda": 0.25, "perecivel": false },
-      "medicamentos_isentos":  { "limiarQueda": 0.25, "perecivel": false }
+      "fraldas_lencos":         { "limiarQueda": 0.25, "perecivel": false },
+      "higiene_cuidados_bebe":  { "limiarQueda": 0.25, "perecivel": false },
+      "alimentacao_infantil":   { "limiarQueda": 0.25, "perecivel": false },
+      "gestacao_pos_parto":     { "limiarQueda": 0.25, "perecivel": false }
     }
   },
   "deduplicacao": {
@@ -30,8 +26,21 @@
     "fatorRetornoAoNormal": 0.95
   },
   "medicamentos": {
-    "categoria": "medicamentos_isentos",
+    "categoria": "medicamentos",
+    "exibir": false,
     "notificar": false
+  },
+  "nbcal": {
+    "base": "Lei 11.265/2006 e Decreto 9.579/2018 (NBCAL). Lista inicial, a validar com assessoria jurídica.",
+    "termosVedados": [
+      "formula infantil", "formulas infantis", "formula de seguimento", "formula para lactentes",
+      "mamadeira", "mamadeiras", "chupeta", "chupetas", "bico de mamadeira", "bico para mamadeira",
+      "bico de silicone", "bicos de silicone", "protetor de mamilo", "protetores de mamilo", "protetor de seio",
+      "aptamil", "nan supreme", "nan comfor", "nan sensitive", "nan pro", "nestogeno", "enfamil", "similac",
+      "novamil", "pregomin", "neocate", "alfare", "aptanutri"
+    ],
+    "categoriasComAviso": ["alimentacao_infantil"],
+    "aviso": "O Ministério da Saúde informa: o aleitamento materno evita infecções e alergias e é recomendado até os 2 (dois) anos de idade ou mais."
   },
   "fontes": {
     "lomadee": {
@@ -39,14 +48,14 @@
       "tamanhoPagina": 100,
       "maxPaginas": 20,
       "mapaCategorias": {
-        "Proteção Solar": "cuidados_pessoais",
-        "Dermocosméticos": "cuidados_pessoais",
-        "Cabelos": "cuidados_pessoais",
-        "Higiene Íntima": "higiene_intima",
-        "Maquiagem": "maquiagem",
-        "Fraldas": "higiene_bebe",
-        "Higiene do Bebê": "higiene_bebe",
-        "Medicamentos": "medicamentos_isentos"
+        "Fraldas": "fraldas_lencos",
+        "Lenços Umedecidos": "fraldas_lencos",
+        "Higiene do Bebê": "higiene_cuidados_bebe",
+        "Proteção Solar Infantil": "higiene_cuidados_bebe",
+        "Alimentação Infantil": "alimentacao_infantil",
+        "Gestantes": "gestacao_pos_parto",
+        "Amamentação": "gestacao_pos_parto",
+        "Medicamentos": "medicamentos"
       }
     }
   },
@@ -56,16 +65,15 @@
   },
   "app": {
     "nome": "economae",
-    "termos": { "versao": "rascunho-2026-09-28", "url": null },
+    "documentos": {
+      "termos": { "versao": "rascunho-2026-09-28", "url": null },
+      "privacidade": { "versao": "rascunho-2026-09-28", "url": null }
+    },
     "rotulosCategorias": {
-      "mercearia": "Mercearia",
-      "pereciveis": "Perecíveis",
-      "higiene_intima": "Higiene íntima",
-      "maquiagem": "Maquiagem",
-      "higiene_bebe": "Bebê",
-      "limpeza": "Limpeza",
-      "cuidados_pessoais": "Cuidados pessoais",
-      "medicamentos_isentos": "Medicamentos sem prescrição"
+      "fraldas_lencos": "Fraldas e lenços",
+      "higiene_cuidados_bebe": "Higiene e cuidados do bebê",
+      "alimentacao_infantil": "Alimentação infantil",
+      "gestacao_pos_parto": "Gestação e pós-parto"
     },
     "regiao": { "nome": "Estado de São Paulo", "faixasCep": [{ "inicio": "01000000", "fim": "19999999" }] },
     "planos": { "gratuito": { "maxCeps": 1 }, "premium": { "maxCeps": 3 } },

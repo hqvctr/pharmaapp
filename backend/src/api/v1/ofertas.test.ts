@@ -13,8 +13,9 @@ const linha: LinhaOferta = {
   validaAte: null,
   link: 'https://exemplo/x',
   linkAfiliado: true,
+  imagemUrl: null,
   coletadaEm: new Date('2026-09-28T12:00:00Z'),
-  produto: { nome: 'Detergente 500ml', marca: null, categoria: 'limpeza', familiaChave: 'f', quantidade: 0.5, unidade: 'l' },
+  produto: { nome: 'Sabonete Líquido Infantil 500ml', marca: null, categoria: 'higiene_cuidados_bebe', familiaChave: 'f', quantidade: 0.5, unidade: 'l' },
   loja: { id: '6f1c2a8e-0000-4000-8000-000000000002', nome: 'Loja', rede: 'Rede', tipo: 'online' },
   alerta: {
     id: '6f1c2a8e-0000-4000-8000-000000000003',
@@ -37,13 +38,14 @@ describe('visaoOferta', () => {
       queda: 0.3333,
       precoPorUnidade: { centavos: 4000, unidade: 'l' },
       condicao: 'Leve 3, pague 2',
-      medicamento: false,
+      avisos: [],
     });
   });
 
-  it('marca medicamento pela categoria configurada', () => {
-    const med = { ...linha, produto: { ...linha.produto, categoria: config.medicamentos.categoria } };
-    expect(visaoOferta(med, config).medicamento).toBe(true);
+  it('alimentação infantil leva a advertência da NBCAL', () => {
+    const papinha = { ...linha, produto: { ...linha.produto, categoria: 'alimentacao_infantil' } };
+    expect(visaoOferta(papinha, config).avisos).toEqual([config.nbcal.aviso]);
+    expect(config.nbcal.aviso).toMatch(/^O Ministério da Saúde informa: o aleitamento materno/);
   });
 });
 

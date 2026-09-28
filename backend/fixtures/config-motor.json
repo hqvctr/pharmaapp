@@ -1,0 +1,60 @@
+{
+  "_aviso": "Config só dos testes do motor de curadoria. O motor é genérico: as categorias aqui não são as do app; as do app ficam em config/tenants/<slug>.json.",
+  "curadoria": {
+    "minObservacoes": 14,
+    "janelaReferenciaDias": 30,
+    "janelaPisoDias": 180,
+    "toleranciaPiso": 0.05,
+    "janelaSubidaDias": 15,
+    "janelaBaseSubidaDias": 30,
+    "subidaMaxima": 0.1,
+    "quedaNotaMaxima": 0.5,
+    "pesosScore": {
+      "queda": 0.4,
+      "piso": 0.2,
+      "raridade": 0.25,
+      "reputacao": 0.15
+    },
+    "scoreMinimoNotificar": 70,
+    "confiabilidadeMinimaNotificar": "media",
+    "freteMaximoSobreEconomia": 1,
+    "categorias": {
+      "mercearia": {
+        "limiarQueda": 0.25,
+        "perecivel": false
+      },
+      "pereciveis": {
+        "limiarQueda": 0.35,
+        "perecivel": true
+      },
+      "higiene_intima": {
+        "limiarQueda": 0.25,
+        "perecivel": false
+      },
+      "maquiagem": {
+        "limiarQueda": 0.25,
+        "perecivel": false
+      },
+      "higiene_bebe": {
+        "limiarQueda": 0.25,
+        "perecivel": false
+      },
+      "limpeza": {
+        "limiarQueda": 0.25,
+        "perecivel": false
+      },
+      "cuidados_pessoais": {
+        "limiarQueda": 0.25,
+        "perecivel": false
+      },
+      "medicamentos_isentos": {
+        "limiarQueda": 0.25,
+        "perecivel": false
+      }
+    }
+  },
+  "cobertura": {
+    "raioRetiradaKm": 5,
+    "custoDeslocamentoPorKmCentavos": 80
+  }
+}

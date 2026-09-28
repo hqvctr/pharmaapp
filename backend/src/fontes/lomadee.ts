@@ -85,6 +85,7 @@ export function parseOferta(item: unknown): OfertaBruta {
     link: texto(o.link, 'link'),
     // Link devolvido pela API de afiliado já é rastreado.
     linkAfiliado: true,
+    imagemUrl: typeof o.thumbnail === 'string' && o.thumbnail.startsWith('https://') ? o.thumbnail : null,
     // Presente na lista de ofertas da loja = disponível.
     disponivel: true,
     validaDe: null,

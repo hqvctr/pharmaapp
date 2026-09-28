@@ -19,7 +19,7 @@ describe('adaptador Lomadee (respostas gravadas)', () => {
     const http = new HttpGravado(path.join(RAIZ, 'fixtures/lomadee/promocao'));
     const r = await new LomadeeAdapter(http, config).coletar();
     expect(http.pedidos).toEqual(['loja-9001-pagina-1.json', 'loja-9001-pagina-2.json', 'loja-9002-pagina-1.json']);
-    expect(r.ofertas).toHaveLength(7);
+    expect(r.ofertas).toHaveLength(9);
     expect(r.ilegiveis).toHaveLength(1);
     expect(r.ilegiveis[0]!.erro).toContain('price');
     expect(r.completa).toBe(true);
@@ -37,6 +37,9 @@ describe('adaptador Lomadee (respostas gravadas)', () => {
     expect(o.precoCentavos).toBe(1990);
     expect(o.lojaIdExterno).toBe('5');
     expect(o.frete).toEqual({ status: 'a_confirmar' });
+    expect(o.imagemUrl).toBeNull();
+    expect(parseOferta({ id: 1, name: 'X', price: 1, link: 'l', thumbnail: 'https://i/x.jpg', category: { name: 'C' }, store: { id: 5 } }).imagemUrl).toBe('https://i/x.jpg');
+    expect(parseOferta({ id: 1, name: 'X', price: 1, link: 'l', thumbnail: 'http://i/x.jpg', category: { name: 'C' }, store: { id: 5 } }).imagemUrl).toBeNull();
   });
 
   it('status diferente de OK interrompe a coleta sem expor o token', async () => {

@@ -36,11 +36,19 @@ export const Erro = nomear(
   objeto({ erro: objeto({ codigo: texto({ description: 'Estável; o app decide por ele.' }), mensagem: texto() }) }),
 );
 
+const Documento = nomear(
+  'Documento',
+  objeto({ versao: texto(), url: textoOuNulo({ description: 'null enquanto o texto não estiver publicado.' }) }),
+);
+
 export const Configuracao = nomear(
   'Configuracao',
   objeto({
     nome: texto(),
-    termos: objeto({ versao: texto(), url: textoOuNulo() }),
+    documentos: {
+      ...objeto({ termos: Documento, privacidade: Documento }),
+      description: 'Termos: o usuário aceita a versão (PUT /v1/eu/termos). Privacidade: informada com link e versão.',
+    },
     categorias: lista(objeto({ id: texto(), nome: texto() })),
     regiao: objeto({ nome: texto() }),
     planos: objeto({
@@ -120,7 +128,10 @@ const camposOferta = {
   validaAte: instanteOuNulo,
   decisao: Decisao,
   score: inteiro({ minimum: 0, maximum: 100 }),
-  medicamento: booleano,
+  avisos: lista(texto(), {
+    description: 'Textos obrigatórios por lei (ex.: advertência do Ministério da Saúde da NBCAL). O app exibe junto da oferta, sem alterar nem ocultar.',
+  }),
+  imagemUrl: textoOuNulo({ description: 'Foto do produto hospedada pela loja (https).' }),
   linkAfiliado: { ...booleano, description: 'true: o app precisa informar que o link é de afiliado.' },
   alertadaEm: instante,
   coletadaEm: instante,
@@ -139,7 +150,7 @@ export const QueryFeed = objeto(
     cep: { ...Cep, description: 'Um dos CEPs do usuário; sem ele, vale qualquer CEP do usuário.' },
     categoria: texto({ description: 'Uma das categorias do usuário.' }),
     cursor: texto({ maxLength: 200 }),
-    limite: inteiro({ minimum: 1, maximum: 100 }),
+    limite: inteiro({ minimum: 1, maximum: 100, description: 'O tenant tem teto próprio (hoje 50); acima dele a página vem menor.' }),
   },
   ['cep', 'categoria', 'cursor', 'limite'],
 );
@@ -155,6 +166,7 @@ export const DetalheOferta = nomear(
         dia: texto({ format: 'date' }),
         precoEquivalenteCentavos: inteiro({ description: 'Menor preço do dia, convertido para esta embalagem.' }),
       }),
+      { description: 'Dias fechados (sem o dia de hoje), do mais antigo ao mais recente, na loja da oferta.' },
     ),
   }),
 );

@@ -66,10 +66,10 @@ export function visaoUsuario(u: repo.LinhaUsuario, app: ConfigApp): Record<strin
     plano,
     limites: { maxCeps: app.planos[plano].maxCeps },
     termos: {
-      versaoVigente: app.termos.versao,
+      versaoVigente: app.documentos.termos.versao,
       versaoAceita: u.termosVersao,
       aceitosEm: iso(u.termosAceitosEm),
-      pendente: u.termosVersao !== app.termos.versao,
+      pendente: u.termosVersao !== app.documentos.termos.versao,
     },
     notificacoes: { consentidas: u.notificacoesConsentidasEm !== null, consentidasEm: iso(u.notificacoesConsentidasEm) },
   };
