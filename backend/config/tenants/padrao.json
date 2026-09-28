@@ -1,5 +1,6 @@
 {
   "slug": "padrao",
+  "fuso": "America/Sao_Paulo",
   "curadoria": {
     "minObservacoes": 14,
     "janelaReferenciaDias": 30,
@@ -27,6 +28,27 @@
   "deduplicacao": {
     "quedaAdicionalMinima": 0.05,
     "fatorRetornoAoNormal": 0.95
+  },
+  "medicamentos": {
+    "categoria": "medicamentos_isentos",
+    "notificar": false
+  },
+  "fontes": {
+    "lomadee": {
+      "baseUrl": "https://api.lomadee.com/",
+      "tamanhoPagina": 100,
+      "maxPaginas": 20,
+      "mapaCategorias": {
+        "Proteção Solar": "cuidados_pessoais",
+        "Dermocosméticos": "cuidados_pessoais",
+        "Cabelos": "cuidados_pessoais",
+        "Higiene Íntima": "higiene_intima",
+        "Maquiagem": "maquiagem",
+        "Fraldas": "higiene_bebe",
+        "Higiene do Bebê": "higiene_bebe",
+        "Medicamentos": "medicamentos_isentos"
+      }
+    }
   },
   "cobertura": {
     "raioRetiradaKm": 5,

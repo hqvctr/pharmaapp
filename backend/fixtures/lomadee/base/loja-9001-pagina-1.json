@@ -1,0 +1,60 @@
+{
+  "_aviso": "SINTÉTICO. Formato presumido da API de Ofertas Lomadee v3; lojas e preços fictícios. Confirmar na vinculação.",
+  "requestInfo": {
+    "status": "OK",
+    "message": "SUCCESS"
+  },
+  "pagination": {
+    "page": 1,
+    "size": 100,
+    "totalSize": 0,
+    "totalPage": 2
+  },
+  "offers": [
+    {
+      "id": "A-100",
+      "name": "Protetor Solar Facial FPS 50 Marca X 50ml",
+      "category": {
+        "id": 0,
+        "name": "Proteção Solar"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-100",
+      "thumbnail": "",
+      "price": 79.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    },
+    {
+      "id": "A-200",
+      "name": "Shampoo Hidratante Marca Y 400ml",
+      "category": {
+        "id": 0,
+        "name": "Cabelos"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-200",
+      "thumbnail": "",
+      "price": 25.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    },
+    {
+      "id": "A-300",
+      "name": "Fone de Ouvido Bluetooth",
+      "category": {
+        "id": 0,
+        "name": "Eletrônicos"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-300",
+      "thumbnail": "",
+      "price": 99.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    }
+  ]
+}

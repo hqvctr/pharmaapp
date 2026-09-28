@@ -1,0 +1,30 @@
+{
+  "_aviso": "SINTÉTICO. Formato presumido da API de Ofertas Lomadee v3; lojas e preços fictícios. Confirmar na vinculação.",
+  "requestInfo": {
+    "status": "OK",
+    "message": "SUCCESS"
+  },
+  "pagination": {
+    "page": 1,
+    "size": 100,
+    "totalSize": 0,
+    "totalPage": 1
+  },
+  "offers": [
+    {
+      "id": "B-100",
+      "name": "Protetor Solar Facial FPS 50 Marca X 50ml",
+      "category": {
+        "id": 0,
+        "name": "Proteção Solar"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-B-100",
+      "thumbnail": "",
+      "price": 82.9,
+      "store": {
+        "id": 9002,
+        "name": "Farmácia Teste 9002"
+      }
+    }
+  ]
+}

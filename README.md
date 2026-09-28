@@ -29,6 +29,10 @@ backend/
   fixtures/          casos versionados do motor de curadoria e da cobertura
   src/api/           servidor HTTP (Fastify)
   src/curadoria/     motor de curadoria e cobertura (módulo puro)
+  src/fontes/        contrato SourceAdapter e adaptadores (Lomadee)
+  src/normalizador/  embalagem, chaves de produto, triagem de medicamento
+  src/avaliador/     histórico diário e deduplicação de alerta
+  src/pipeline/      coleta ponta a ponta e SQL
   src/db/            runner de migration
   src/shared/        leitura de ambiente
 docker-compose.yml   postgres, redis, migrate, api
@@ -44,3 +48,6 @@ Passos disponíveis até agora (a lista cresce a cada fase):
    limiares, pesos do score, categorias e raio/custo de deslocamento. Rodar `./scripts/pronto-fase1.sh`
    continua validando o arquivo padrão; para validar o novo, trocar o caminho no teste ou chamar
    `validarConfigCuradoria` sobre ele.
+3. No mesmo arquivo, ajustar `medicamentos` e `fontes` (mapa de categorias da fonte para as do app).
+4. Cadastrar fontes (`sources`), lojas aprovadas (`stores` + `store_service_areas`) e o vínculo
+   fonte → loja (`store_source_refs`). Modelo em `scripts/fase2/seed.sql`.

@@ -1,0 +1,60 @@
+{
+  "_aviso": "SINTÉTICO. Formato presumido da API de Ofertas Lomadee v3; lojas e preços fictícios. Confirmar na vinculação.",
+  "requestInfo": {
+    "status": "OK",
+    "message": "SUCCESS"
+  },
+  "pagination": {
+    "page": 2,
+    "size": 100,
+    "totalSize": 0,
+    "totalPage": 2
+  },
+  "offers": [
+    {
+      "id": "A-400",
+      "name": "Fralda Marca Z G 36 Unidades",
+      "category": {
+        "id": 0,
+        "name": "Fraldas"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-400",
+      "thumbnail": "",
+      "price": 69.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    },
+    {
+      "id": "A-500",
+      "name": "Dipirona Monoidratada 500mg 10 Comprimidos",
+      "category": {
+        "id": 0,
+        "name": "Medicamentos"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-500",
+      "thumbnail": "",
+      "price": 8.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    },
+    {
+      "id": "A-600",
+      "name": "Clonazepam 2mg Tarja Preta 30 Comprimidos",
+      "category": {
+        "id": 0,
+        "name": "Medicamentos"
+      },
+      "link": "https://redir.lomadee.com/v2/exemplo-A-600",
+      "thumbnail": "",
+      "price": 19.9,
+      "store": {
+        "id": 9001,
+        "name": "Farmácia Teste 9001"
+      }
+    }
+  ]
+}

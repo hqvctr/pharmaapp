@@ -1,5 +1,31 @@
 # Checkpoint
 
+## Fase 2 — uma fonte ponta a ponta (PRONTA)
+
+**Critério de pronto:** `./scripts/pronto-fase2.sh`. Num banco descartável (`pronto_fase2`), roda o
+pipeline 22 vezes sobre respostas gravadas da Lomadee: 13 dias de preço normal, 7 dias com o shampoo
+inflado e duas coletas no dia da promoção. Confere 9 condições no banco e roda `npm test`.
+
+**O que ficou pronto**
+- `src/fontes/contrato.ts`: contrato `SourceAdapter` único. `src/fontes/lomadee.ts`: adaptador TIPO A
+  (paginação por loja aprovada, itens ilegíveis separados, token nunca em mensagem de erro).
+- `src/normalizador/`: embalagem extraída do título, chaves de produto e família, mapa de categorias
+  por tenant, triagem de medicamento (P4) antes de tudo.
+- `src/avaliador/`: histórico diário (P1), deduplicação (P5) sob lock no Postgres.
+- `src/pipeline/`: repositório SQL, orquestrador (uma transação por oferta), comando `coletar`.
+- Migration `0002`: vínculo fonte → loja aprovada, oferta por id externo com última decisão,
+  alerta com cópia de preço, tabela `triagem_bloqueios`.
+- Medicamento só no feed (config `medicamentos.notificar = false`).
+
+**Como rodar:** `./scripts/pronto-fase2.sh`. Comando isolado:
+`node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --gravacoes <dir> --listas-medicamentos <arquivo> [--agora ISO]`.
+
+**Em aberto:** vinculação real da Lomadee (cadastro, P2, formato real da resposta), listas reais de
+medicamentos (CMED e Portaria 344), itens `[fase 2]` do BACKLOG.
+
+**Próximo passo:** Fase 3 — contrato OpenAPI, autenticação, preferências, feed, detalhe de oferta.
+O contrato congelado precisa de aprovação do responsável antes das telas do app.
+
 ## Entre fases 1 e 2 — decisões recebidas e pendentes (2026-09-28)
 
 **Confirmado pelo responsável:** impacto de cronograma das 14 observações aceito; interpretações 12, 13,
