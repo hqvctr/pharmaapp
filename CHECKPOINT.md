@@ -1,5 +1,17 @@
 # Checkpoint
 
+## Google Cloud sem depósito (2026-09-28)
+
+O console do Google Cloud pediu um depósito de R$ 150 (pré-pagamento para ativar o faturamento), que
+não está disponível.
+- **O projeto não precisa de faturamento.** Login com Google e Firebase/FCM no plano Spark funcionam
+  sem ele. O guia (`docs/operacao/google-cloud.md`, seção 3) agora manda criar o projeto pelo console
+  do Firebase, que não pede cartão, e ignorar a oferta de faturamento.
+- **Hospedagem suspensa** (seção 4 do guia): a VM gratuita exige o faturamento. Não bloqueia nada
+  agora; a fase 4 usa o backend local. Decidir antes do teste com usuários reais.
+
+**Próximo passo:** Fase 4. Para ligar o login com Google, falta o ID do cliente Web do projeto.
+
 ## Provedor de e-mail e preparação do Google Cloud (2026-09-28)
 
 **Recebido do responsável:**
@@ -31,10 +43,9 @@ falso com o formato da API documentada.
    do cliente. Não é segredo, entra na config do tenant.
 3. **Domínio próprio** (cerca de R$ 40 por ano): recomendado para o e-mail não cair no spam, para o
    endereço dos termos e para a tela de consentimento do Google.
-4. **Hospedagem:** confirmar a VM `e2-micro` gratuita nos EUA (exige conta de faturamento com cartão e
-   põe os dados fora do Brasil) para eu preparar o deploy de produção.
+4. ~~Hospedagem na VM `e2-micro`~~: suspensa, ver seção acima.
 
-**Próximo passo:** deploy de produção (se a proposta de hospedagem for aprovada) ou Fase 4.
+**Próximo passo:** ver seção acima.
 
 ## Aprovação da fase 3 revisada (2026-09-28)
 

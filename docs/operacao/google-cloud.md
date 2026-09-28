@@ -49,9 +49,15 @@ Alternativas avaliadas: Mailjet (6.000 por mês, 200 por dia, logo no e-mail), R
 
 ## 3. Projeto no Google Cloud: login com Google e, na fase 4, push
 
-Não precisa de conta de faturamento para isso.
+**Não ative o faturamento nem faça o depósito.** O login com Google (tela de consentimento e client
+IDs) e o Firebase no plano Spark (inclusive o push) funcionam sem conta de faturamento. O depósito de
+R$ 150 que o console pede é o pré-pagamento para ativar o faturamento, e o projeto não precisa disso.
+Se o console insistir no teste gratuito ou no faturamento, feche o aviso ou use o caminho abaixo.
 
-1. console.cloud.google.com → **Novo projeto** → nome `economae`.
+1. Caminho mais simples: console.firebase.google.com → **Criar projeto** → nome `economae`, sem Google
+   Analytics. Isso cria o projeto no Google Cloud já ligado ao Firebase, no plano Spark (gratuito),
+   sem pedir cartão. Depois, abrir o mesmo projeto em console.cloud.google.com para os passos 2 a 4.
+   (Alternativa: console.cloud.google.com/projectcreate, e ignorar qualquer oferta de faturamento.)
 2. **Google Auth Platform → Branding (tela de consentimento):** nome do app, e-mail de suporte, logo
    opcional, domínio autorizado (seção 1) e links dos termos e da política quando estiverem publicados.
    Escopos: só `openid`, `email` e `profile`, que não passam por verificação sensível. Enquanto os
@@ -64,11 +70,23 @@ Não precisa de conta de faturamento para isso.
 4. **Clients → Criar cliente → Android** (fase 4): nome do pacote do app e SHA-1 do certificado. Um
    cliente para o certificado de debug e outro para o de release (o SHA-1 da assinatura de apps do
    Google Play aparece no Play Console).
-5. **Firebase** (fase 4): console.firebase.google.com → adicionar Firebase ao projeto `economae`, plano
-   Spark (gratuito). O FCM (push) é gratuito. O app recebe o `google-services.json`; o servidor recebe
+5. **Firebase** (fase 4): se o projeto foi criado pelo Firebase (passo 1), já está pronto; se não,
+   adicionar o Firebase ao projeto `economae`, plano Spark (gratuito). O FCM (push) é gratuito. O app recebe o `google-services.json`; o servidor recebe
    uma conta de serviço com permissão só de envio de mensagens.
 
-## 4. Hospedagem no Google Cloud (proposta, aguarda confirmação)
+## 4. Hospedagem no Google Cloud (suspensa em 2026-09-28)
+
+**Situação:** a VM gratuita exige ativar o faturamento, e no Brasil isso pede um depósito de R$ 150 em
+crédito, que não está disponível. A proposta abaixo fica guardada para quando houver o depósito. O
+crédito não é gasto enquanto o uso ficar dentro do nível gratuito.
+
+Até lá não é preciso hospedar nada: a fase 4 desenvolve o app contra o backend rodando na máquina de
+quem desenvolve (o emulador Android alcança o computador em `http://10.0.2.2:3000`). A hospedagem só
+vira necessidade no teste com usuários reais, que também depende da vinculação real da Lomadee.
+Nessa hora, reavaliar: o depósito no Google Cloud, ou um computador próprio sempre ligado com
+Cloudflare Tunnel (gratuito, sem cartão, exige o domínio da seção 1 no Cloudflare).
+
+### Proposta guardada: VM e2-micro
 
 O nível sempre gratuito do Compute Engine cobre o backend inteiro numa VM, no mesmo desenho da
 decisão 21 (Postgres e Redis no mesmo host):
