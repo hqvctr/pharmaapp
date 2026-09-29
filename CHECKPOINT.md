@@ -1,5 +1,20 @@
 # Checkpoint
 
+## Contas configuradas pelo Cowork (2026-09-29)
+
+Recebido o resultado do prompt `docs/operacao/prompt-cowork.md`:
+- **Login com Google ligado:** client ID Web `984598232826-so1nrq...apps.googleusercontent.com` em
+  `app.auth.googleClientIds`, e `GET /v1/configuracao` passa a responder `login.google = true`. A
+  tela de consentimento está **Em teste**: só o usuário de teste cadastrado entra com Google até
+  publicar. Ainda não testado com um ID token real, o que depende do app da fase 4.
+- **Firebase** adicionado ao projeto `project-79519032-1c32-4dac-a1f`, no plano Spark.
+- **Brevo:** conta Free e remetente verificado. O remetente é um endereço do Gmail, com risco de spam
+  ou recusa (ver BACKLOG); a chave de API só no deploy. O Brevo mede abertura e não deixa desligar:
+  isso foi registrado em `docs/juridico` para a política de privacidade.
+
+**Próximo passo:** Fase 4 (app Android). O client ID Web entra como `serverClientId`, e o client
+Android (nome do pacote + SHA-1) é criado lá.
+
 ## Google Cloud sem depósito (2026-09-28)
 
 O console do Google Cloud pediu um depósito de R$ 150 (pré-pagamento para ativar o faturamento), que

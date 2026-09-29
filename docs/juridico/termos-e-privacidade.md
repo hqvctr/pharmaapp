@@ -75,7 +75,8 @@ API não tem retenção definida (ver BACKLOG). A política deve citar essa guar
 3. O dado sensível por inferência (1.1), dito de forma clara.
 4. Com quem o dado é compartilhado:
    - Brevo (empresa francesa; razão social conforme o contrato), provedor do e-mail do código de login: recebe o e-mail do
-     usuário e o código;
+     usuário e o código, e mede a abertura do e-mail (o painel não permite desligar; existe só o
+     rastreamento anônimo, hoje desligado);
    - Google (login e, na fase 4, push);
    - hospedagem;
    - no clique, a rede de afiliados (Lomadee) e a loja, que tratam o dado pelas políticas delas.

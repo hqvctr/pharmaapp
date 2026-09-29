@@ -11,7 +11,12 @@ Para fazer as seções 2 e 3 com o Cowork no navegador: [prompt-cowork.md](promp
 | O quê | Valor | Onde entra |
 |-------|-------|-----------|
 | ID do projeto no Google Cloud (criado em 2026-09-28) | `project-79519032-1c32-4dac-a1f` | Firebase e envio de push pela API HTTP v1 do FCM (fase 4) |
-| ID do cliente Web (OAuth) | pendente (seção 3, passo 3) | `app.auth.googleClientIds` e `serverClientId` do app |
+| ID do cliente Web (OAuth), `economae-servidor` | `984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com` | `app.auth.googleClientIds` (já configurado) e `serverClientId` do app (fase 4) |
+| Tela de consentimento | criada, status **Em teste**, 1 usuário de teste | só usuários de teste entram com Google até publicar |
+| Firebase | adicionado ao projeto, plano Spark | app Android e push (fase 4) |
+| Brevo | conta Free; remetente verificado é um endereço pessoal do Gmail (nome "economae"); chave de API não gerada | `EMAIL_REMETENTE` no deploy |
+
+Configurado pelo Cowork em 2026-09-29, com o prompt de [prompt-cowork.md](prompt-cowork.md).
 
 ## 1. Domínio (recomendado antes de tudo)
 
