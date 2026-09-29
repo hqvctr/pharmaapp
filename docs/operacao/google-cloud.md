@@ -4,6 +4,8 @@ Passo a passo para quem tem as contas. Nenhuma chave vai para o repositório: to
 variável de ambiente ou pela config do tenant. Planos gratuitos conferidos em 2026-09-28; eles mudam,
 então confira de novo ao criar as contas.
 
+Para fazer as seções 2 e 3 com o Cowork no navegador: [prompt-cowork.md](prompt-cowork.md).
+
 ## Valores já criados
 
 | O quê | Valor | Onde entra |
