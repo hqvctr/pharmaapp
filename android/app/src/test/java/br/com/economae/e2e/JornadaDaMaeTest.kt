@@ -90,7 +90,7 @@ class JornadaDaMaeTest {
         foto("05-feed")
         compose.onAllNodesWithText("Protetor Solar Infantil FPS 50 Marca X 50ml")[0].performClick()
 
-        esperar("Ir para a loja")
+        esperar("Ver na ", substring = true)
         esperar("Link de afiliado", substring = true)
         foto("06-oferta")
         compose.onNodeWithText("Voltar").performClick()

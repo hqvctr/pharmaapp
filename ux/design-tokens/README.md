@@ -56,7 +56,7 @@ Fórmula WCAG 2.x (luminância relativa). Mínimos: 4,5:1 texto; 3:1 componente 
 | `anuncioBorda` sobre `superficie` | 3:1 | 4.23:1 | 5.90:1 | passa |
 | `contorno` sobre `superficieCartao` | 3:1 | 4.59:1 | 5.40:1 | passa |
 | `provaRegua` sobre `superficieCartao` | 3:1 | 8.11:1 | 9.94:1 | passa |
-| `marca.sobrePrimaria` sobre `marca.primaria` | 4.5:1 | 6.50:1 | 7.65:1 | passa |
-| `marca.primaria` sobre `superficie` | 4.5:1 | 6.19:1 | 10.86:1 | passa |
-| `marca.sobrePrimariaContainer` sobre `marca.primariaContainer` | 4.5:1 | 13.09:1 | 7.19:1 | passa |
+| `marca.sobrePrimaria` sobre `marca.primaria` | 4.5:1 | 6.17:1 | 7.74:1 | passa |
+| `marca.primaria` sobre `superficie` | 4.5:1 | 5.88:1 | 10.90:1 | passa |
+| `marca.sobrePrimariaContainer` sobre `marca.primariaContainer` | 4.5:1 | 13.26:1 | 6.91:1 | passa |
 <!-- contraste:fim -->

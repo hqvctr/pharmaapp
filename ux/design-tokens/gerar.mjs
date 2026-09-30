@@ -101,11 +101,12 @@ fs.writeFileSync(path.join(aqui, 'build/tokens.css'), css.join('\n') + '\n');
 const kt = [];
 const argb = (hex) => `Color(0xFF${hex.slice(1).toUpperCase()})`;
 kt.push('// GERADO por ux/design-tokens/gerar.mjs a partir de ux/design-tokens/tokens.json. Não editar à mão.');
-kt.push('package app.promocao.ui.theme');
+kt.push('package br.com.economae.ui.tema');
 kt.push('');
 kt.push('import androidx.compose.runtime.Immutable');
 kt.push('import androidx.compose.ui.graphics.Color');
 kt.push('import androidx.compose.ui.text.font.FontWeight');
+kt.push('import androidx.compose.ui.unit.TextUnit');
 kt.push('import androidx.compose.ui.unit.dp');
 kt.push('import androidx.compose.ui.unit.sp');
 kt.push('');
@@ -125,7 +126,10 @@ for (const tema of TEMAS) {
   kt.push(')');
   kt.push('');
 }
-kt.push('/** Estilos de texto em sp. Ver Type.kt para os TextStyle montados. */');
+kt.push('/** Um estilo de texto dos tokens: tamanho e altura de linha em sp (escalam com a fonte do sistema). */');
+kt.push('data class EstiloToken(val tamanho: TextUnit, val altura: TextUnit, val peso: FontWeight, val tabular: Boolean)');
+kt.push('');
+kt.push('/** Estilos de texto em sp. */');
 kt.push('object TipoTokens {');
 for (const [k, e] of Object.entries(t.tipografia.estilos)) {
   kt.push(`    /** ${e.uso} */`);
@@ -156,7 +160,7 @@ kt.push('');
 kt.push('object Movimento {');
 for (const [k, v] of Object.entries(t.movimento.duracao)) kt.push(`    const val ${k}Ms = ${v}`);
 kt.push('}');
-const destinoKt = path.join(raiz, 'android/app/src/main/java/app/promocao/ui/theme/Tokens.kt');
+const destinoKt = path.join(raiz, 'android/app/src/main/java/br/com/economae/ui/tema/Tokens.kt');
 fs.mkdirSync(path.dirname(destinoKt), { recursive: true });
 fs.writeFileSync(destinoKt, kt.join('\n') + '\n');
 
@@ -187,4 +191,4 @@ if (falhas > 0) {
   console.error(`\n${falhas} par(es) abaixo do mínimo.`);
   process.exit(1);
 }
-console.log('\nGerado: build/tokens.css, build/contraste.md, android/.../ui/theme/Tokens.kt');
+console.log('\nGerado: build/tokens.css, build/contraste.md, android/.../ui/tema/Tokens.kt');

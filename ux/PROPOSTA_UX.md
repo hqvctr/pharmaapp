@@ -444,3 +444,13 @@ As fases 3 e 4 do produto (branch `claude/awesome-noether-jruv6b`, contrato `bac
 - O item do feed não traz nada disso. O selo e a régua do cartão continuam dependendo do acréscimo
   B-02.
 - A tela Avisos precisa de uma rota que liste as entregas do usuário (B-31).
+
+## 15. Implementado no produto real (2026-09-30)
+
+A proposta saiu do protótipo e entrou no código das fases 3 e 4, na mesma branch:
+- API 1.3.0 com `prova`, que alimenta o selo e a régua no feed (B-02).
+- Push com o texto da seção 2 e montado pelo app (só dados); gestação com versão pública (N9).
+- Cartão e detalhe do app com os componentes da seção 4 (`android/.../ui/prova/Prova.kt`).
+- Tokens com a marca framboesa do app; o protótipo foi regenerado com ela.
+
+Registrado como DECISIONS 68–72, a confirmar. O que falta está em BACKLOG_UX (estado de 30/09).

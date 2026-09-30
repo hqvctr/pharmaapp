@@ -5,4 +5,7 @@
     <string name="canal_ofertas_id" translatable="false">ofertas</string>
     <string name="canal_ofertas_nome">Promoções</string>
     <string name="canal_ofertas_descricao">Promoções excepcionais nas categorias e no CEP que você escolheu</string>
+    <!-- Versão pública da notificação de categoria privada (gestação), vista com o celular bloqueado. -->
+    <string name="notificacao_privada_titulo">Nova oferta excepcional</string>
+    <string name="notificacao_privada_texto">Desbloqueie o celular para ver</string>
 </resources>

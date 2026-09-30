@@ -47,6 +47,7 @@ class ContratoTest {
         conferir("ItemFeed", esquema("ItemFeed"), Oferta.serializer(), ignorarNoModelo = setOf("ativa", "link", "historico"))
         conferir("DetalheOferta", esquema("DetalheOferta"), Oferta.serializer(), ignorarNoModelo = setOf("prazoEntregaDias"))
         conferir("ItemFeed.produto", prop(esquema("ItemFeed"), "produto"), Produto.serializer())
+        conferir("ItemFeed.prova", prop(esquema("ItemFeed"), "prova"), Prova.serializer())
         conferir("Erro.erro", prop(esquema("Erro"), "erro"), DetalheErro.serializer())
     }
 

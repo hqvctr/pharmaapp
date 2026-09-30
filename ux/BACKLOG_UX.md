@@ -59,3 +59,15 @@ desenhada e implementada com dados de exemplo, e só funciona de verdade quando 
 | B-33 | **Portar componentes deste `android/` para o app real** (`br.com.economae`): Régua de preço, selo de prova, faixa de condição, chip de economia, estados de silêncio. | O módulo `android/` desta branch foi escrito antes da fase 4 e usa dados de exemplo; o app real está na outra branch. | Decisão de qual base seguir |
 
 B-01 (usuário sem conta) sai do backlog: superado pelas DECISIONS 34 e 38. B-06 (remédio) sai: remédio foi tirado do app (DECISIONS 45).
+
+## Estado em 2026-09-30 (depois do merge das fases 3 e 4)
+
+| # | Estado |
+|---|---|
+| B-02 | **Feito:** `prova` no contrato 1.3.0 (DECISIONS 68). Nome curto do produto (B-05) continua pendente. |
+| B-29 | **Feito:** `app.push.categoriasPrivadas` e versão pública da notificação (DECISIONS 71). Depende da configuração de tela bloqueada do aparelho. |
+| B-32 | **Feito:** texto do push da proposta (DECISIONS 69) e push só de dados (DECISIONS 70). |
+| B-33 | **Feito em parte:** faixa de condição, chip de economia, preço normal sem risco, selo, régua, prova e aviso legal no app real. Faltam: estados "Nada passou no teste hoje" com os números do dia (B-09), "Começando a medir", tela Avisos (B-31), barra inferior com três destinos. |
+| B-34 | **Novo:** ícone do app e da notificação ainda são do sistema (`star_on`). |
+| B-35 | **Novo:** o app não tem teste de captura em fonte a 200% nem em tema escuro; a jornada roda só no claro, a 100%. |
+

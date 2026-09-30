@@ -1,5 +1,34 @@
 # Checkpoint
 
+## UX aplicada ao produto real (2026-09-30)
+
+Merge das fases 3 e 4 (`claude/awesome-noether-jruv6b`) na branch de UX, e as propostas que não
+dependiam do responsável foram implementadas no backend e no app `br.com.economae`. Decisões 68–72
+entraram como **propostas a confirmar**.
+
+**Feito (critérios das fases 3 e 4 passando; 179 testes no backend, 21 no app)**
+- **Prova do desconto na API** (contrato 1.3.0, só acréscimo; migration 0007): `prova` com menor e
+  maior preço do período e dias medidos, no feed e no detalhe. O cenário da fase 3 confere.
+- **Texto do push da proposta:** preço no título, condição ou prova no corpo, aviso da NBCAL inteiro
+  no texto aberto. Testado para nunca passar de 30/40 caracteres.
+- **Push só de dados:** o app monta a notificação sempre (antes, em segundo plano, o sistema desenhava
+  sem o texto aberto e o aviso da NBCAL podia sumir).
+- **Gestação escondida na tela bloqueada** (`app.push.categoriasPrivadas`): versão pública
+  "Nova oferta excepcional". Teste Robolectric.
+- **App:** cartão do feed e detalhe com faixa de condição antes do preço, preço como destaque, economia em
+  reais, "preço normal nesta loja" sem risco, selo de prova ("em 20 dias" quando mediu 20),
+  régua de preço, "Por que é promoção de verdade" e aviso legal com fundo próprio. Botão
+  "Ver na {loja}". Capturas da jornada em `android/app/build/outputs/roborazzi/`.
+- Tokens de design com a marca framboesa do app; `ui/tema/Tokens.kt` gerado.
+- Módulo Android v1 da proposta (dados de exemplo) removido; fica no histórico.
+
+**Continua com o responsável:** confirmar 68–72; a assessoria dizer se o aviso da NBCAL precisa
+aparecer já na notificação fechada (S-32); cópia do feed sem internet (B-30); benefício do premium.
+
+**Verificação neste ambiente:** Postgres 16 e Redis locais e um substituto de `docker compose` fora do
+repositório (sem daemon Docker); Maven Central por espelho do Google (429 no proxy), como na fase 4.
+Nada foi testado em aparelho.
+
 ## Itens 2 e 3 da Fase 4: OAuth Android e teste do app (2026-09-30)
 
 **Item 3, testar o app.** Este ambiente não tem virtualização (sem `/dev/kvm`), então não roda

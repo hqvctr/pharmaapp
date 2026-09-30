@@ -42,3 +42,5 @@ indireta ou parcial), **baixa** (melhor palpite disponível).
 | S-32 | O aviso da NBCAL pode aparecer só na notificação expandida (a recolhida mostra a prova), desde que venha inteiro e esteja no feed e no detalhe. | É o arranjo do despachante da fase 4 (aviso no corpo, depois da primeira linha); a lei exige o aviso, e o Android corta o texto recolhido. Não achei orientação sobre notificação. | baixa | Confirmar com a assessoria jurídica que validou a NBCAL (DECISIONS 46). |
 
 **Atualização (2026-09-30).** S-13 (uso sem conta) foi superada pelas DECISIONS 34 e 38: a API exige sessão e termos aceitos. S-11 (premium = mais CEPs) continua valendo, e o responsável já apontou que o benefício é fraco para este público.
+
+**Atualização (2026-09-30, implementação).** S-31: o Android só mostra a versão pública na tela bloqueada quando o aparelho está configurado para ocultar conteúdo sensível; com "mostrar todo o conteúdo", vale a escolha da pessoa. S-02 (Kotlin + Compose) foi confirmada pela fase 4 (DECISIONS 61).

@@ -70,6 +70,12 @@ data class PreferenciasEnvio(
 @Serializable data class Frete(val status: String, val centavos: Long? = null)
 @Serializable data class PontoHistorico(val dia: String, val precoEquivalenteCentavos: Long)
 
+/**
+ * Prova do desconto (contrato 1.3.0): menor e maior preço desta embalagem na loja no período medido
+ * antes do alerta, e quantos dias foram medidos. Null em alerta antigo.
+ */
+@Serializable data class Prova(val menorPrecoCentavos: Long, val maiorPrecoCentavos: Long, val diasMedidos: Int)
+
 /** Item do feed e detalhe da oferta: o detalhe só acrescenta ativa, link e histórico. */
 @Serializable
 data class Oferta(
@@ -92,6 +98,7 @@ data class Oferta(
     val alertadaEm: String,
     val coletadaEm: String,
     val prazoEntregaDias: Int? = null,
+    val prova: Prova? = null,
     val ativa: Boolean = true,
     val link: String? = null,
     val historico: List<PontoHistorico> = emptyList(),

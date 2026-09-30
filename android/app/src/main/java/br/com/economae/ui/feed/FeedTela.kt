@@ -36,14 +36,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.economae.dados.Oferta
 import br.com.economae.ui.Carregando
-import br.com.economae.ui.percentualAbaixo
-import br.com.economae.ui.reais
+import br.com.economae.ui.prova.AvisoLegal
+import br.com.economae.ui.prova.BlocoPreco
+import br.com.economae.ui.prova.FaixaCondicao
+import br.com.economae.ui.prova.ReguaPreco
+import br.com.economae.ui.prova.SeloProva
+import br.com.economae.ui.prova.textoCondicao
 import coil3.compose.AsyncImage
 
 @Composable
@@ -110,8 +114,8 @@ fun FeedTela(
                     }
                     estado.itens.isEmpty() -> item(key = "vazio") {
                         Text(
-                            "Nenhuma promoção excepcional agora. O app só mostra quando o preço cai de verdade; " +
-                                "quando aparecer, avisamos.",
+                            "Nada passou no teste agora. Só mostramos quando o preço é o menor dos últimos meses; " +
+                                "quando for, a gente avisa.",
                             modifier = Modifier.padding(24.dp),
                         )
                     }
@@ -123,30 +127,46 @@ fun FeedTela(
     }
 }
 
+/**
+ * Cartão de oferta da proposta de UX (seção 4.1). Ordem visual e de leitura: condição → produto →
+ * preço → economia → preço normal → prova → entrega → aviso legal. O cartão inteiro é o alvo.
+ */
 @Composable
 fun CartaoOferta(o: Oferta, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Card(modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            AsyncImage(
-                model = o.imagemUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                // Fundo neutro: sem foto (ou foto que não carregou) não vira buraco em branco.
-                modifier = Modifier.size(88.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
-            )
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(o.produto.nome, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(o.loja.nome, style = MaterialTheme.typography.bodySmall)
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(reais(o.precoEfetivoCentavos), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
-                    Text(reais(o.precoReferenciaCentavos), style = MaterialTheme.typography.bodySmall, textDecoration = TextDecoration.LineThrough)
+    Card(modifier.fillMaxWidth().clickable(onClick = onClick).semantics(mergeDescendants = true) {}) {
+        textoCondicao(o)?.let { FaixaCondicao(it) }
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AsyncImage(
+                    model = o.imagemUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    // Fundo neutro: sem foto (ou foto que não carregou) não vira buraco em branco.
+                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    if (o.decisao == "notificar") Etiqueta("Excepcional")
+                    Text(o.produto.nome, style = MaterialTheme.typography.titleSmall, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    o.produto.tamanhoFralda?.let { Text("Tamanho $it", style = MaterialTheme.typography.labelLarge) }
+                    Text(o.loja.nome, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Text(percentualAbaixo(o.queda), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary)
-                o.condicao?.let { AssistChip(onClick = onClick, label = { Text(it) }) }
-                o.prazoEntregaDias?.let { Text("Entrega em até $it dia(s)", style = MaterialTheme.typography.bodySmall) }
-                // Aviso legal (NBCAL): sempre visível, sem cortar.
-                o.avisos.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary) }
             }
+            BlocoPreco(o, destaque = false)
+            SeloProva(o)
+            ReguaPreco(o)
+            o.prazoEntregaDias?.let { Text("Entrega no seu CEP em até $it dias", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            // Aviso legal (NBCAL): sempre visível, inteiro.
+            o.avisos.forEach { AvisoLegal(it) }
         }
     }
+}
+
+@Composable
+private fun Etiqueta(texto: String) {
+    Text(
+        texto,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = Modifier.clip(RoundedCornerShape(50)).background(MaterialTheme.colorScheme.primaryContainer).padding(horizontal = 8.dp, vertical = 2.dp),
+    )
 }

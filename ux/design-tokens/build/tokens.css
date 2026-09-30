@@ -26,10 +26,10 @@
   --cor-anuncio-borda: #767878;
   --cor-esqueleto: #E1E5E2;
   --cor-scrim: #000000;
-  --marca-primaria: #00696B;
+  --marca-primaria: #A83A56;
   --marca-sobre-primaria: #FFFFFF;
-  --marca-primaria-container: #A6EEEE;
-  --marca-sobre-primaria-container: #002021;
+  --marca-primaria-container: #FFD9DF;
+  --marca-sobre-primaria-container: #3F0019;
   --fonte-familia: system-ui, Roboto, 'Segoe UI', sans-serif;
   --tipo-preco-destaque-tamanho: 40px;
   --tipo-preco-destaque-altura: 48px;
@@ -175,10 +175,10 @@
   --cor-anuncio-borda: #8E9290;
   --cor-esqueleto: #27302E;
   --cor-scrim: #000000;
-  --marca-primaria: #7FD4D4;
-  --marca-sobre-primaria: #003738;
-  --marca-primaria-container: #004F51;
-  --marca-sobre-primaria-container: #A6EEEE;
+  --marca-primaria: #FFB1C1;
+  --marca-sobre-primaria: #65002D;
+  --marca-primaria-container: #882240;
+  --marca-sobre-primaria-container: #FFD9DF;
 }
 @media (prefers-reduced-motion: reduce) {
   :root { --duracao-curta: 0ms; --duracao-media: 0ms; }

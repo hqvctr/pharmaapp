@@ -5,6 +5,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 // Cores da marca, sem cor dinâmica do sistema: framboesa (ação), verde-água (preço e economia).
@@ -44,7 +47,17 @@ private val Escuro = darkColorScheme(
     error = Color(0xFFFFB4AB),
 )
 
+/** Papéis semânticos da proposta de UX (prova, economia, condição, aviso), gerados de ux/design-tokens. */
+val LocalCores = staticCompositionLocalOf { CoresClaras }
+
+object Semantica {
+    val cores: CoresEconomae
+        @Composable @ReadOnlyComposable get() = LocalCores.current
+}
+
 @Composable
 fun EconomaeTema(escuro: Boolean = isSystemInDarkTheme(), conteudo: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (escuro) Escuro else Claro, content = conteudo)
+    CompositionLocalProvider(LocalCores provides if (escuro) CoresEscuras else CoresClaras) {
+        MaterialTheme(colorScheme = if (escuro) Escuro else Claro, content = conteudo)
+    }
 }
