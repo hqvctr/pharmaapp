@@ -1,5 +1,51 @@
 # Checkpoint
 
+## Fase 4 — app Android e push (PRONTA; falta testar no aparelho)
+
+**Critério de pronto:** `./scripts/pronto-fase4.sh` (precisa de `ANDROID_HOME`).
+1. O pipeline alimenta um banco descartável e a API sobe.
+2. `scripts/fase4/cenario.mjs` faz o caminho do app até o push: login, termos, preferências,
+   consentimento e cadastro do aparelho, para três mães.
+3. O despachante real (`FCM_MODO=log`) manda **1** push, só para quem escolheu a categoria e consentiu.
+   Um segundo despacho não repete.
+4. Roda a suíte do backend (173 testes, com integração da API e do despacho) e os testes JVM do app
+   (18), e gera o APK de debug.
+
+Resultado nesta sessão: tudo verde. O lint do Android deu 1 aviso, o `targetSdk` 36 (decisão 65).
+
+**Backend**
+- Contrato **1.2.0**, só com acréscimos, com o teste de compatibilidade contra a 1.0.0 aprovada:
+  - `PUT /v1/dispositivos`: token FCM preso à sessão;
+  - `POST /v1/entregas/{id}/abertura`: registra o toque na notificação.
+- `src/push/`: despacho por tenant com lock (decisões 56–60). Respeita consentimento, termos,
+  categoria, tamanho de fralda, CEP do plano, silêncio e limite do dia. Reserva a entrega antes de
+  enviar. O texto leva preço por embalagem, condição e aviso da NBCAL. O envio é pela API HTTP v1 do
+  FCM com conta de serviço, e token morto sai do banco.
+- Os testes de integração pegaram e corrigiram um bug: o limite diário contava duas vezes os envios
+  da mesma execução.
+
+**App (`android/`)** — Kotlin 2.4, AGP 9.4, Compose BOM 2026.09, módulo único (decisão 61)
+- Telas: entrada (código por e-mail e Google pelo Credential Manager), termos (18+), preferências
+  (categorias, tamanho de fralda, CEPs do plano, silêncio, limite), feed com filtro e paginação,
+  detalhe com gráfico do histórico e aviso de link de afiliado, e conta (alertas com permissão do
+  Android 13+, sair, excluir conta).
+- Push: canal "ofertas" e registro do token ao consentir e a cada abertura. O toque na notificação
+  abre a oferta e registra a abertura. Sem `google-services.json` o app roda sem push (decisão 63).
+- Aviso da NBCAL e rótulo da condição sempre visíveis no feed, no detalhe e na notificação.
+- Teste JVM confere cada modelo Kotlin contra `backend/openapi/v1.json` (decisão 64). Um campo
+  inventado de propósito derrubou o teste.
+
+**Precisa do responsável**
+1. Confirmar o `applicationId` `br.com.economae` (decisão 62): não muda depois de publicar.
+2. Criar o cliente OAuth **Android** e registrar o app no Firebase: passos 4 e 5 de
+   `docs/operacao/google-cloud.md`. O SHA-1 é o do computador onde o app for compilado.
+3. Testar no Android Studio (emulador ou aparelho) com o backend local: este ambiente não tem
+   emulador.
+4. Ícone do app (hoje é o do sistema).
+
+**Próximo passo:** teste no aparelho e ajustes. Depois, hospedagem (suspensa: depósito do Google
+Cloud) e vinculação real da Lomadee, que liberam o teste com usuárias reais.
+
 ## Contas configuradas pelo Cowork (2026-09-29)
 
 Recebido o resultado do prompt `docs/operacao/prompt-cowork.md`:

@@ -81,12 +81,22 @@ Se o console insistir no teste gratuito ou no faturamento, feche o aviso ou use 
    - `backend/config/tenants/economae.json` → `app.auth.googleClientIds` (a API só aceita tokens com
      esta audiência; com a lista vazia, o login com Google fica desligado);
    - o app Android, como `serverClientId` do Credential Manager (fase 4).
-4. **Clients → Criar cliente → Android** (fase 4): nome do pacote do app e SHA-1 do certificado. Um
-   cliente para o certificado de debug e outro para o de release (o SHA-1 da assinatura de apps do
-   Google Play aparece no Play Console).
-5. **Firebase** (fase 4): se o projeto foi criado pelo Firebase (passo 1), já está pronto; se não,
-   adicionar o Firebase ao projeto `economae`, plano Spark (gratuito). O FCM (push) é gratuito. O app recebe o `google-services.json`; o servidor recebe
-   uma conta de serviço com permissão só de envio de mensagens.
+4. **Clients → Criar cliente → Android**, um para cada certificado que assina o app. Sem ele, o
+   login com Google falha no aparelho mesmo com o client ID Web certo.
+   - Debug: nome do pacote `br.com.economae.debug`, SHA-1 do certificado de debug **do computador
+     onde o app é compilado** (cada computador tem o seu):
+     `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
+     (no Windows, `%USERPROFILE%\.android\debug.keystore`).
+   - Release: nome do pacote `br.com.economae`, SHA-1 da "chave de assinatura de apps" que o Play
+     Console mostra depois do primeiro envio.
+5. **Firebase → Configurações do projeto → Seus apps → Adicionar app Android**: registrar
+   `br.com.economae.debug` (e depois `br.com.economae`), baixar o `google-services.json` e salvar em
+   `android/app/google-services.json`. O arquivo fica fora do git (`android/.gitignore`); sem ele o
+   app compila e roda, mas sem push.
+6. **Conta de serviço do FCM** (só no deploy): Firebase → Configurações do projeto → Contas de
+   serviço → Gerar nova chave privada. O JSON vai para o servidor, fora do git, apontado por
+   `FCM_CONTA_SERVICO`, com `FCM_MODO=fcm`. Quem tem esse arquivo manda push em nome do app:
+   guardar como senha.
 
 ## 4. Hospedagem no Google Cloud (suspensa em 2026-09-28)
 

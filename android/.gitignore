@@ -1,0 +1,11 @@
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+.kotlin/
+captures/
+# Configuração do Firebase do app: fica fora do git (ver README).
+app/google-services.json
+*.jks
+*.keystore

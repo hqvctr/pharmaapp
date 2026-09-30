@@ -26,7 +26,8 @@ algumas referências foram feitas de memória.
 | Consentimento de notificação (data) | `users` | enviar push | consentimento (art. 7º, I), revogável no app | até revogar ou excluir a conta |
 | IP | limite de taxa (Redis, 1 h) e log da API | segurança | legítimo interesse; **registro de acesso, ver 1.2** | 6 meses para o registro de acesso |
 | Assinatura premium | `subscriptions` | plano pago (fase 6) | execução de contrato | a definir (fiscal) |
-| Entregas de push (enviada, aberta, clicada) e token do aparelho | `deliveries` e tabela da fase 4 | notificação e métrica | consentimento / legítimo interesse | a definir |
+| Token de push do aparelho (FCM) | `dispositivos`, preso à sessão | enviar os alertas | consentimento (art. 7º, I) | até sair da conta, excluir a conta ou o token deixar de valer |
+| Entregas de push (enviada, aberta) | `deliveries` | limite diário, não repetir alerta, métrica de abertura | consentimento / legítimo interesse | a definir; sai na exclusão da conta |
 
 **O app não coleta:** nome, telefone, endereço completo, CPF, data de nascimento, dados da criança,
 data provável do parto. Recomendação: manter assim (ver 1.1).

@@ -35,6 +35,25 @@ Login em desenvolvimento: `POST /v1/auth/email/codigo` e o código aparece no lo
 
 Critério de pronto de cada fase: `scripts/pronto-faseN.sh`.
 
+## App Android
+
+Pré-requisitos: JDK 17 ou mais novo e o SDK do Android (Android Studio instala os dois).
+
+```bash
+cd android
+./gradlew :app:testDebugUnitTest   # testes JVM, inclui os modelos conferidos contra o contrato
+./gradlew :app:assembleDebug       # APK em app/build/outputs/apk/debug/
+```
+
+O build de debug fala com o backend local: no emulador, `http://10.0.2.2:3000/`; em outro endereço,
+`./gradlew :app:assembleDebug -Peconomae.apiUrl=http://<ip>:3000/`. Login com Google e push precisam
+dos passos 4 e 5 de [docs/operacao/google-cloud.md](docs/operacao/google-cloud.md) (cliente OAuth
+Android e `app/google-services.json`, que fica fora do git). Sem eles o app funciona com login por
+código e sem notificações.
+
+Push no backend: `node backend/dist/push/despachar.js --tenant economae`, depois de cada coleta.
+Em desenvolvimento (`FCM_MODO=log`) as notificações saem no log.
+
 ## Estrutura
 
 ```
@@ -52,6 +71,9 @@ backend/
   src/pipeline/      coleta ponta a ponta e SQL
   src/db/            runner de migration
   src/shared/        leitura de ambiente
+  src/push/          despacho de push (regras, FCM, SQL)
+android/             app Android (Kotlin, Compose), módulo único app/
+docs/                operação (Google Cloud, Brevo, prompt do Cowork) e requisitos jurídicos
 docker-compose.yml   postgres, redis, migrate, api
 ```
 

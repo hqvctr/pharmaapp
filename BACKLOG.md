@@ -4,7 +4,6 @@ Problemas encontrados fora do escopo da fase em andamento. Não são consertados
 
 - [fase 0] A migration 0001 insere o tenant de desenvolvimento (renomeado para `economae` na 0005). Antes de produção, decidir se o seed sai das migrations para um script de provisionamento de tenant.
 - [fase 0] Rotina de retenção de `price_history` (apagar só o que tiver mais de 180 dias) ainda não existe. Entra junto com o coletor (fase 2).
-- [fase 0] Tabela de dispositivos/tokens FCM não existe. Entra na fase 4 (push).
 - [fase 1] Resolução de CEP → coordenada (centróide) para a cobertura por distância: precisa de uma base de CEPs; decidir a fonte na fase 2 ou 3.
 - [fase 2] Conflito na especificação: fonte TIPO E (manual) deveria "fechar buraco de cobertura", mas sem 14 observações o motor descarta. Decisão do responsável pendente.
 - [fase 2] RDC 96/2008 exige advertências na divulgação de preço de medicamento isento. Hoje medicamento não entra no app (decisão 45); só volta a importar se um tenant ligar `medicamentos.exibir`.
@@ -33,3 +32,12 @@ Problemas encontrados fora do escopo da fase em andamento. Não são consertados
 - [revisão 3] Contrato: não há rota para registrar o aparelho no push (fase 4). Entra como acréscimo na v1 (decisão 49), sem quebrar o app.
 - [fase 3] Domínio próprio (cerca de R$ 40/ano) recomendado para a entregabilidade do e-mail, o endereço dos termos e a tela de consentimento do Google. É o segundo custo inevitável, junto com a taxa do Google Play. Decisão do responsável.
 - [fase 3] Hospedagem suspensa (2026-09-28): a VM gratuita do Google Cloud exige ativar o faturamento com depósito de R$ 150, indisponível. Não bloqueia a fase 4 (backend local). Decidir antes do teste com usuários reais: depósito no Google Cloud ou computador próprio com Cloudflare Tunnel (`docs/operacao/google-cloud.md`, seção 4).
+- [fase 4] Para o app funcionar no aparelho faltam: cliente OAuth **Android** (pacote + SHA-1, um por certificado) e o app registrado no Firebase com o `google-services.json` em `android/app/`. Passo a passo em `docs/operacao/google-cloud.md`, seção 3, passos 4 e 5. Sem o primeiro, o login com Google falha; sem o segundo, não há push.
+- [fase 4] `applicationId` `br.com.economae` precisa de confirmação antes de criar os clientes OAuth e de publicar (decisão 62).
+- [fase 4] Ícone do app e ícone da notificação são provisórios (do sistema Android). Precisam de arte.
+- [fase 4] As telas só foram verificadas por compilação, lint e testes JVM (ViewModels, cliente HTTP, contrato). Este ambiente não roda emulador: falta testar no aparelho ou no emulador do Android Studio (login, Google, permissão de notificação, toque na notificação).
+- [fase 4] Despachante sem agendamento: roda por comando. No deploy, rodar depois de cada coleta (a cada 2 h), com `FCM_MODO=fcm` e a conta de serviço (passo 6 do guia).
+- [fase 4] Entrega que falhou por erro temporário do FCM (5xx, rede) fica `falhou` e não é reenviada.
+- [fase 4] Alerta `aguardar_aprovacao` só vira push com `alerts.aprovado_em` preenchido; não existe tela nem comando de aprovação humana.
+- [fase 4] Retenção de `deliveries` (quem recebeu e abriu qual alerta) não definida; entra na política de privacidade.
+- [fase 4] Neste ambiente de nuvem o Maven Central responde 429 ao proxy; o build do Android usou o espelho do Google (`maven-central.storage-download.googleapis.com`) por um init script do Gradle fora do repositório. Em máquina comum não é preciso.
