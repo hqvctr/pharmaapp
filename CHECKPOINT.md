@@ -11,6 +11,9 @@ Conferido antes de usar: o SHA-1 do arquivo é o da chave de debug do projeto, e
 mesmo do `serverClientId` do app. O APK de debug sai com `PUSH_DISPONIVEL = true`, a configuração do
 Firebase embutida e assinatura com o SHA-1 cadastrado.
 
+`./scripts/pronto-fase4.sh` rodou de novo com o Firebase presente e passou inteiro: cenário do push,
+173 testes do backend, testes JVM do app com a jornada contra a API local, e o APK de debug.
+
 **Ainda não visto num Android real:**
 - login com Google (seletor de contas);
 - token FCM e chegada do push, que precisa também do despachante com `FCM_MODO=fcm` e conta de
