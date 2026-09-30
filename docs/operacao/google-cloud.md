@@ -14,9 +14,19 @@ Para fazer as seções 2 e 3 com o Cowork no navegador: [prompt-cowork.md](promp
 | ID do cliente Web (OAuth), `economae-servidor` | `984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com` | `app.auth.googleClientIds` (já configurado) e `serverClientId` do app (fase 4) |
 | Tela de consentimento | criada, status **Em teste**, 1 usuário de teste | só usuários de teste entram com Google até publicar |
 | Firebase | adicionado ao projeto, plano Spark | app Android e push (fase 4) |
+| Cliente OAuth **Android**, `economae-android-debug` | `984598232826-1i256inbmffo8gdkra3m49vmf698u3hv.apps.googleusercontent.com` (pacote `br.com.economae.debug`, SHA-1 da chave de debug do projeto) | nada a configurar no código: o Google confere pacote + SHA-1 do app |
+| App Android no Firebase | `1:984598232826:android:06850797fd477592849343` (pacote `br.com.economae.debug`) | `android/app/google-services.json`, fora do git |
 | Brevo | conta Free; remetente verificado é um endereço pessoal do Gmail (nome "economae"); chave de API não gerada | `EMAIL_REMETENTE` no deploy |
 
-Configurado pelo Cowork em 2026-09-29, com o prompt de [prompt-cowork.md](prompt-cowork.md).
+Configurado pelo Cowork em 2026-09-29 ([prompt-cowork.md](prompt-cowork.md)) e em 2026-09-30
+([prompt-cowork-android.md](prompt-cowork-android.md)).
+
+O `google-services.json` não vai para o git: quem compila o app baixa em Firebase → Configurações do
+projeto → Seus apps → `br.com.economae.debug` e salva em `android/app/`. Ele cobre só o pacote de
+debug; o build de release precisa do app `br.com.economae` registrado também (senão o plugin do
+Google recusa o build). A chave de API que vem nele foi feita para ir dentro do app, mas vale
+restringi-la no Google Cloud (APIs e serviços → Credenciais → a chave "Android key" criada pelo
+Firebase → Restrições de aplicativo: apps Android, pacote + SHA-1).
 
 ## 1. Domínio (recomendado antes de tudo)
 

@@ -1,5 +1,25 @@
 # Checkpoint
 
+## Cliente OAuth Android e Firebase configurados (2026-09-30)
+
+O Cowork rodou `docs/operacao/prompt-cowork-android.md` e devolveu:
+- cliente OAuth Android `984598232826-1i256inbmffo8gdkra3m49vmf698u3hv...`;
+- app `1:984598232826:android:06850797fd477592849343` no Firebase;
+- o `google-services.json`, que ficou em `android/app/`, fora do git.
+
+Conferido antes de usar: o SHA-1 do arquivo é o da chave de debug do projeto, e o cliente Web é o
+mesmo do `serverClientId` do app. O APK de debug sai com `PUSH_DISPONIVEL = true`, a configuração do
+Firebase embutida e assinatura com o SHA-1 cadastrado.
+
+**Ainda não visto num Android real:**
+- login com Google (seletor de contas);
+- token FCM e chegada do push, que precisa também do despachante com `FCM_MODO=fcm` e conta de
+  serviço (BACKLOG).
+
+**Próximo passo:** abrir o app no emulador do Android Studio (imagem com Google Play) com o backend
+local. Seguem pendentes: pacote de release no Firebase e no OAuth, restrição da chave de API,
+hospedagem e vinculação real da Lomadee.
+
 ## Itens 2 e 3 da Fase 4: OAuth Android e teste do app (2026-09-30)
 
 **Item 3, testar o app.** Este ambiente não tem virtualização (sem `/dev/kvm`), então não roda
