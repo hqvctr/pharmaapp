@@ -3,7 +3,7 @@ import type { DefRota } from '../contrato.js';
 import * as E from '../esquemas.js';
 
 // 1.0.0 aprovada em 2026-09-28 (openapi/v1-aprovado.json). Acréscimo sobe o segundo número.
-export const VERSAO_CONTRATO = '1.1.0';
+export const VERSAO_CONTRATO = '1.2.0';
 
 export const rotasV1 = [
   {
@@ -143,6 +143,29 @@ export const rotasV1 = [
     params: E.ParamsOferta,
     respostas: { 200: { descricao: 'Oferta', esquema: E.DetalheOferta } },
     erros: { 404: ['OFERTA_NAO_ENCONTRADA'] },
+  },
+  {
+    operacao: 'registrarDispositivo',
+    metodo: 'PUT',
+    caminho: '/v1/dispositivos',
+    resumo: 'Registra o token de push deste aparelho',
+    descricao:
+      'Chamar depois do login, sempre que o FCM entregar um token novo, e depois de dar consentimento. ' +
+      'O token fica preso à sessão: sair da conta para o push neste aparelho. Idempotente.',
+    auth: 'sessao_termos',
+    corpo: E.RegistroDispositivo,
+    respostas: { 204: { descricao: 'Registrado' } },
+  },
+  {
+    operacao: 'registrarAberturaEntrega',
+    metodo: 'POST',
+    caminho: '/v1/entregas/{id}/abertura',
+    resumo: 'Registra que a notificação foi aberta',
+    descricao: 'O push traz `entregaId` nos dados. Chamar quando o usuário toca na notificação. Idempotente.',
+    auth: 'sessao',
+    params: E.ParamsEntrega,
+    respostas: { 204: { descricao: 'Registrado' } },
+    erros: { 404: ['ENTREGA_NAO_ENCONTRADA'] },
   },
 ] as const satisfies readonly DefRota[];
 

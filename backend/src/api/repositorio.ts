@@ -230,6 +230,35 @@ export async function salvarPreferencias(db: Db, tenantId: string, userId: strin
   );
 }
 
+// ---------- push ----------
+
+/** O mesmo token pode mudar de conta (logout e login de outra pessoa no aparelho): fica com a última. */
+export async function registrarDispositivo(
+  db: Db,
+  d: { tenantId: string; userId: string; sessaoId: string; token: string; plataforma: string; agora: Date },
+): Promise<void> {
+  await db.query(
+    `INSERT INTO dispositivos (tenant_id, user_id, sessao_id, token, plataforma, criado_em, atualizado_em)
+     VALUES ($1, $2, $3, $4, $5, $6, $6)
+     ON CONFLICT (token) DO UPDATE SET tenant_id = EXCLUDED.tenant_id, user_id = EXCLUDED.user_id,
+       sessao_id = EXCLUDED.sessao_id, plataforma = EXCLUDED.plataforma, atualizado_em = EXCLUDED.atualizado_em`,
+    [d.tenantId, d.userId, d.sessaoId, d.token, d.plataforma, d.agora],
+  );
+}
+
+export async function removerDispositivosDaSessao(db: Db, tenantId: string, sessaoId: string): Promise<void> {
+  await db.query('DELETE FROM dispositivos WHERE tenant_id = $1 AND sessao_id = $2', [tenantId, sessaoId]);
+}
+
+/** Primeira abertura vale; devolve false se a entrega não é deste usuário. */
+export async function registrarAbertura(db: Db, tenantId: string, userId: string, entregaId: string, agora: Date): Promise<boolean> {
+  const r = await db.query(
+    `UPDATE deliveries SET aberto_em = coalesce(aberto_em, $4) WHERE tenant_id = $1 AND user_id = $2 AND id = $3`,
+    [tenantId, userId, entregaId, agora],
+  );
+  return r.rowCount === 1;
+}
+
 // ---------- feed e oferta ----------
 
 export interface LinhaOferta {

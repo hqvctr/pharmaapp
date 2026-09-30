@@ -41,6 +41,11 @@ export interface ConfigApp {
   planos: { gratuito: { maxCeps: number }; premium: { maxCeps: number } };
   limiteDiarioMaximo: number;
   feed: { idadeMaximaColetaHoras: number; tamanhoPaginaPadrao: number; tamanhoPaginaMaximo: number };
+  /**
+   * idadeMaximaAlertaHoras: alerta mais velho que isso não vira push (quem estava em silêncio perde).
+   * limiteDiarioPadrao: pushes por dia para quem não escolheu limite.
+   */
+  push: { idadeMaximaAlertaHoras: number; limiteDiarioPadrao: number; canalAndroid: string };
   auth: {
     codigoValidadeMinutos: number;
     codigoTentativas: number;
@@ -124,6 +129,10 @@ export function validarConfigApp(bruto: unknown, curadoria: ConfigCuradoria): Co
   inteiroPositivo('feed.tamanhoPaginaPadrao', a.feed?.tamanhoPaginaPadrao);
   inteiroPositivo('feed.tamanhoPaginaMaximo', a.feed?.tamanhoPaginaMaximo);
   if (a.feed.tamanhoPaginaPadrao > a.feed.tamanhoPaginaMaximo) throw new Error('Config inválida: app.feed.tamanhoPaginaPadrao');
+  inteiroPositivo('push.idadeMaximaAlertaHoras', a.push?.idadeMaximaAlertaHoras);
+  inteiroPositivo('push.limiteDiarioPadrao', a.push?.limiteDiarioPadrao);
+  if (a.push.limiteDiarioPadrao > a.limiteDiarioMaximo) throw new Error('Config inválida: app.push.limiteDiarioPadrao acima do máximo');
+  if (typeof a.push.canalAndroid !== 'string' || a.push.canalAndroid === '') throw new Error('Config inválida: app.push.canalAndroid');
   for (const k of ['codigoValidadeMinutos', 'codigoTentativas', 'codigosPorHora', 'codigosPorHoraPorIp', 'sessaoDias'] as const) {
     inteiroPositivo(`auth.${k}`, a.auth?.[k]);
   }

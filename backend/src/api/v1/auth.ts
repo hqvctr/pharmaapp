@@ -139,5 +139,6 @@ export const entrarComGoogle: Handler = async (req, _reply, deps) => {
 
 export const sair: Handler = async (req, reply, deps) => {
   await repo.revogarSessao(deps.db, req.tenant.id, sessaoDe(req).id, deps.agora());
+  await repo.removerDispositivosDaSessao(deps.db, req.tenant.id, sessaoDe(req).id);
   return reply.code(204).send();
 };

@@ -179,3 +179,9 @@ export const DetalheOferta = nomear(
   }),
 );
 export const ParamsOferta = objeto({ id: uuid });
+
+export const RegistroDispositivo = objeto({
+  token: texto({ minLength: 20, maxLength: 4096, description: 'Token de registro do FCM.' }),
+  plataforma: texto({ enum: ['android'] }),
+});
+export const ParamsEntrega = objeto({ id: uuid });

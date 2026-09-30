@@ -10,6 +10,7 @@ import { DIA_MS, HORA_MS, type DepsV1, type Handler } from './contexto.js';
 import { rotasV1, type OperacaoV1 } from './definicoes.js';
 import * as ofertas from './ofertas.js';
 import * as preferencias from './preferencias.js';
+import * as push from './push.js';
 
 export type { DepsV1 } from './contexto.js';
 
@@ -27,6 +28,8 @@ const handlers: Record<OperacaoV1, Handler> = {
   salvarPreferencias: preferencias.salvarPreferencias,
   listarFeed: ofertas.listarFeed,
   obterOferta: ofertas.obterOferta,
+  registrarDispositivo: push.registrarDispositivo,
+  registrarAberturaEntrega: push.registrarAberturaEntrega,
 };
 
 const BEARER = /^Bearer ([A-Za-z0-9_-]{20,200})$/;

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "economae API",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Contrato entre o app Android e o backend. Gerado de backend/src/api/v1/definicoes.ts por `npm run contrato`; o teste falha se este arquivo divergir do código. Dinheiro sempre em centavos inteiros. Toda rota exige o cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer. Evolução da v1: o servidor só acrescenta (campos, valores de enum, códigos de erro); o cliente ignora campo desconhecido, trata valor de enum desconhecido como o caso genérico e decide pelo código do erro, não pela mensagem. Respostas da v1 vêm com Cache-Control: no-store e Vary: X-Tenant, Authorization."
   },
   "security": [
@@ -874,6 +874,138 @@
           },
           "404": {
             "description": "Não encontrado. Códigos: OFERTA_NAO_ENCONTRADA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/dispositivos": {
+      "put": {
+        "operationId": "registrarDispositivo",
+        "summary": "Registra o token de push deste aparelho",
+        "description": "Chamar depois do login, sempre que o FCM entregar um token novo, e depois de dar consentimento. O token fica preso à sessão: sair da conta para o push neste aparelho. Idempotente.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 4096,
+                    "description": "Token de registro do FCM."
+                  },
+                  "plataforma": {
+                    "type": "string",
+                    "enum": [
+                      "android"
+                    ]
+                  }
+                },
+                "required": [
+                  "token",
+                  "plataforma"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Registrado"
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Proibido. Códigos: TERMOS_PENDENTES.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/entregas/{id}/abertura": {
+      "post": {
+        "operationId": "registrarAberturaEntrega",
+        "summary": "Registra que a notificação foi aberta",
+        "description": "O push traz `entregaId` nos dados. Chamar quando o usuário toca na notificação. Idempotente.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Tenant"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Registrado"
+          },
+          "400": {
+            "description": "Requisição inválida. Códigos: TENANT_INVALIDO, REQUISICAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sem sessão válida. Códigos: SESSAO_INVALIDA.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado. Códigos: ENTREGA_NAO_ENCONTRADA.",
             "content": {
               "application/json": {
                 "schema": {
