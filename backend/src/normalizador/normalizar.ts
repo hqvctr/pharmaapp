@@ -4,11 +4,18 @@ import type { Embalagem } from '../curadoria/tipos.js';
 import type { OfertaBruta } from '../fontes/contrato.js';
 import { extrairEmbalagem, removerEmbalagem } from './embalagem.js';
 import { normalizarTexto, triarMedicamento, type ListasMedicamentos, type CodigoBloqueioMedicamento } from './medicamentos.js';
+import { tamanhoFralda, type TamanhoFralda } from './fralda.js';
+import { triarNbcal } from './nbcal.js';
+
+export type CodigoBloqueio = CodigoBloqueioMedicamento | 'MEDICAMENTO_FORA_DO_ESCOPO' | 'NBCAL_PROMOCAO_VEDADA';
 
 export interface ConfigNormalizacao {
   /** Nome da categoria na fonte (normalizado) → categoria do app. Fora do mapa: ignorada. */
   mapaCategorias: Record<string, string>;
   categoriaMedicamentos: string;
+  /** false: medicamento, mesmo isento e liberado pela triagem, não entra no app. */
+  exibirMedicamentos: boolean;
+  termosNbcal: readonly string[];
 }
 
 export interface ProdutoNormalizado {
@@ -20,12 +27,13 @@ export interface ProdutoNormalizado {
   categoria: string;
   embalagem: Embalagem;
   ehMedicamento: boolean;
+  tamanhoFralda: TamanhoFralda | null;
 }
 
 export type ResultadoNormalizacao =
   | { tipo: 'ok'; produto: ProdutoNormalizado; oferta: OfertaBruta }
   | { tipo: 'categoria_ignorada'; categoriaFonte: string }
-  | { tipo: 'bloqueado'; codigo: CodigoBloqueioMedicamento; detalhe: string; revisaoHumana: boolean };
+  | { tipo: 'bloqueado'; codigo: CodigoBloqueio; detalhe: string; revisaoHumana: boolean };
 
 function sha256(s: string): string {
   return createHash('sha256').update(s).digest('hex');
@@ -53,6 +61,23 @@ export function normalizarOferta(
   if (!triagem.liberado) {
     return { tipo: 'bloqueado', codigo: triagem.codigo, detalhe: triagem.detalhe, revisaoHumana: triagem.revisaoHumana };
   }
+  if (triagem.ehMedicamento && !config.exibirMedicamentos) {
+    return {
+      tipo: 'bloqueado',
+      codigo: 'MEDICAMENTO_FORA_DO_ESCOPO',
+      detalhe: 'medicamento isento de prescrição; o tenant não exibe medicamentos',
+      revisaoHumana: false,
+    };
+  }
+  const nbcal = triarNbcal(bruta.titulo, bruta.descricao, config.termosNbcal);
+  if (nbcal.vedado) {
+    return {
+      tipo: 'bloqueado',
+      codigo: 'NBCAL_PROMOCAO_VEDADA',
+      detalhe: `anúncio contém "${nbcal.termo}": promoção comercial vedada pela Lei 11.265/2006 (NBCAL)`,
+      revisaoHumana: false,
+    };
+  }
   if (categoriaMapeada === undefined && !triagem.ehMedicamento) {
     return { tipo: 'categoria_ignorada', categoriaFonte: bruta.categoriaFonte };
   }
@@ -74,6 +99,7 @@ export function normalizarOferta(
       categoria: triagem.categoria,
       embalagem,
       ehMedicamento: triagem.ehMedicamento,
+      tamanhoFralda: tamanhoFralda(bruta.titulo),
     },
   };
 }

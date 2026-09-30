@@ -4,3 +4,11 @@ local.properties
 *.iml
 .idea/
 .kotlin/
+captures/
+# Configuração do Firebase do app: fica fora do git (ver README).
+app/google-services.json
+*.jks
+*.keystore
+# Chave de debug do projeto, igual em todo computador: o SHA-1 dela está no cliente OAuth Android.
+# Nunca assina release.
+!app/debug.keystore

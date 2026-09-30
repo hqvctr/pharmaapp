@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Espelha tokens.json › cor.claro.superficie / marca.claro.primaria (janela e notificação). -->
-    <color name="superficie">#F8FAF8</color>
-    <color name="marca_primaria">#00696B</color>
-</resources>

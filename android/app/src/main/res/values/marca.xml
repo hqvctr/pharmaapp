@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Nome provisório (DECISIONS.md 18). Único lugar do nome no app; troque por tenant/flavor. -->
-    <string name="app_name" translatable="false">economae</string>
-</resources>

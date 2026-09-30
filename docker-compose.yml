@@ -43,6 +43,11 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       API_PORT: "3000"
+      # Sem ela a API recusa subir, com mensagem clara (ver .env.example).
+      AUTH_CODIGO_CHAVE: ${AUTH_CODIGO_CHAVE:-}
+      # Só desenvolvimento: o código de login sai no log da API, e a API recusa esse modo em produção.
+      EMAIL_MODO: log
+      NODE_ENV: development
     ports:
       - "${API_PORT:-3000}:3000"
     depends_on:

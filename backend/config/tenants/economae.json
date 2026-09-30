@@ -1,0 +1,92 @@
+{
+  "slug": "economae",
+  "fuso": "America/Sao_Paulo",
+  "curadoria": {
+    "minObservacoes": 14,
+    "janelaReferenciaDias": 30,
+    "janelaPisoDias": 180,
+    "toleranciaPiso": 0.05,
+    "janelaSubidaDias": 15,
+    "janelaBaseSubidaDias": 30,
+    "subidaMaxima": 0.10,
+    "quedaNotaMaxima": 0.50,
+    "pesosScore": { "queda": 0.40, "piso": 0.20, "raridade": 0.25, "reputacao": 0.15 },
+    "scoreMinimoNotificar": 70,
+    "confiabilidadeMinimaNotificar": "media",
+    "freteMaximoSobreEconomia": 1.0,
+    "categorias": {
+      "fraldas_lencos":         { "limiarQueda": 0.25, "perecivel": false },
+      "higiene_cuidados_bebe":  { "limiarQueda": 0.25, "perecivel": false },
+      "alimentacao_infantil":   { "limiarQueda": 0.25, "perecivel": false },
+      "gestacao_pos_parto":     { "limiarQueda": 0.25, "perecivel": false }
+    }
+  },
+  "deduplicacao": {
+    "quedaAdicionalMinima": 0.05,
+    "fatorRetornoAoNormal": 0.95
+  },
+  "medicamentos": {
+    "categoria": "medicamentos",
+    "exibir": false,
+    "notificar": false
+  },
+  "nbcal": {
+    "base": "Lei 11.265/2006 e Decreto 9.579/2018 (NBCAL). Lista inicial, a validar com assessoria jurídica.",
+    "termosVedados": [
+      "formula infantil", "formulas infantis", "formula de seguimento", "formula para lactentes",
+      "mamadeira", "mamadeiras", "chupeta", "chupetas", "bico de mamadeira", "bico para mamadeira",
+      "bico de silicone", "bicos de silicone", "protetor de mamilo", "protetores de mamilo", "protetor de seio",
+      "aptamil", "nan supreme", "nan comfor", "nan sensitive", "nan pro", "nestogeno", "enfamil", "similac",
+      "novamil", "pregomin", "neocate", "alfare", "aptanutri"
+    ],
+    "categoriasComAviso": ["alimentacao_infantil"],
+    "aviso": "O Ministério da Saúde informa: o aleitamento materno evita infecções e alergias e é recomendado até os 2 (dois) anos de idade ou mais."
+  },
+  "fontes": {
+    "lomadee": {
+      "baseUrl": "https://api.lomadee.com/",
+      "tamanhoPagina": 100,
+      "maxPaginas": 20,
+      "mapaCategorias": {
+        "Fraldas": "fraldas_lencos",
+        "Lenços Umedecidos": "fraldas_lencos",
+        "Higiene do Bebê": "higiene_cuidados_bebe",
+        "Proteção Solar Infantil": "higiene_cuidados_bebe",
+        "Alimentação Infantil": "alimentacao_infantil",
+        "Gestantes": "gestacao_pos_parto",
+        "Amamentação": "gestacao_pos_parto",
+        "Medicamentos": "medicamentos"
+      }
+    }
+  },
+  "cobertura": {
+    "raioRetiradaKm": 5,
+    "custoDeslocamentoPorKmCentavos": 80
+  },
+  "app": {
+    "nome": "economae",
+    "documentos": {
+      "termos": { "versao": "rascunho-2026-09-28", "url": null },
+      "privacidade": { "versao": "rascunho-2026-09-28", "url": null }
+    },
+    "rotulosCategorias": {
+      "fraldas_lencos": "Fraldas e lenços",
+      "higiene_cuidados_bebe": "Higiene e cuidados do bebê",
+      "alimentacao_infantil": "Alimentação infantil",
+      "gestacao_pos_parto": "Gestação e pós-parto"
+    },
+    "regiao": { "nome": "Estado de São Paulo", "faixasCep": [{ "inicio": "01000000", "fim": "19999999" }] },
+    "planos": { "gratuito": { "maxCeps": 1 }, "premium": { "maxCeps": 3 } },
+    "limiteDiarioMaximo": 10,
+    "feed": { "idadeMaximaColetaHoras": 6, "tamanhoPaginaPadrao": 20, "tamanhoPaginaMaximo": 50 },
+    "push": { "idadeMaximaAlertaHoras": 12, "limiteDiarioPadrao": 3, "canalAndroid": "ofertas" },
+    "auth": {
+      "codigoValidadeMinutos": 10,
+      "codigoTentativas": 5,
+      "codigosPorHora": 5,
+      "codigosPorHoraPorIp": 20,
+      "sessaoDias": 90,
+      "googleClientIds": ["984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com"]
+    }
+  }
+}

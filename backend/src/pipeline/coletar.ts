@@ -1,5 +1,5 @@
 // CLI: executa um ciclo de coleta para uma fonte de um tenant.
-//   node dist/pipeline/coletar.js --tenant padrao --fonte lomadee --gravacoes <dir> [--agora ISO]
+//   node dist/pipeline/coletar.js --tenant economae --fonte lomadee --gravacoes <dir> [--agora ISO]
 // Sem --gravacoes, usaria a API real; a vinculação (credencial por tenant, P2) ainda não existe.
 import { parseArgs } from 'node:util';
 import pg from 'pg';
