@@ -6,7 +6,7 @@ então confira de novo ao criar as contas.
 
 Para fazer as seções 2 e 3 com o Cowork no navegador: [prompt-cowork.md](prompt-cowork.md). Depois do
 critério da Fase 4 (restrição da chave, conta de serviço, teste no emulador):
-[prompt-cowork-fase4.md](prompt-cowork-fase4.md).
+[prompt-cowork-fase4.md](prompt-cowork-fase4.md). Em seguida: [prompt-cowork-proximos-passos.md](prompt-cowork-proximos-passos.md).
 
 ## Valores já criados
 

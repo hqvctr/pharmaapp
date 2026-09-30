@@ -18,8 +18,10 @@ dado só para isso, tirar da conta. No deploy, desligar a política só durante 
 **Pendente (BACKLOG):** chave de API "Browser" sem restrição; SHA-1 de release, cliente OAuth
 de release e restrição da chave para o pacote de release, depois do Play Console.
 
-**Próximo passo:** o teste no emulador (parte 2 de `docs/operacao/prompt-cowork-fase4.md`), com
-`FCM_MODO=fcm` e a chave da conta de serviço no `.env`, e o RESULTADO TESTE NO EMULADOR colado aqui.
+**Próximo passo:** `docs/operacao/prompt-cowork-proximos-passos.md`. O bloco 1 vai no navegador:
+religar a política, restringir a chave "Browser", conferir o usuário de teste e levantar o que a
+Lomadee exige, só lendo. O bloco 2 é o teste no emulador com `FCM_MODO=fcm`. Colar os dois
+resultados aqui.
 
 ## Depois do critério da Fase 4: Cowork e teste no emulador (2026-09-30)
 
