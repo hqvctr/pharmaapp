@@ -92,6 +92,8 @@ export interface Metricas {
   precoEfetivoPorUnidade: number;
   precoReferenciaPorUnidade: number | null;
   pisoHistoricoPorUnidade: number | null;
+  /** Maior preço por unidade do período medido (para a régua de preço do app). */
+  maiorHistoricoPorUnidade: number | null;
   quedaReal: number | null;
   subidaPreQueda: number | null;
   /** Economia em centavos na compra mínima exigida pela condição (1 embalagem se incondicional). */

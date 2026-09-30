@@ -45,7 +45,11 @@ export interface ConfigApp {
    * idadeMaximaAlertaHoras: alerta mais velho que isso não vira push (quem estava em silêncio perde).
    * limiteDiarioPadrao: pushes por dia para quem não escolheu limite.
    */
-  push: { idadeMaximaAlertaHoras: number; limiteDiarioPadrao: number; canalAndroid: string };
+  /**
+   * categoriasPrivadas: categorias que revelam dado sensível (gestação). O push dessas categorias não
+   * mostra o produto com o celular bloqueado (proposta de UX, N9).
+   */
+  push: { idadeMaximaAlertaHoras: number; limiteDiarioPadrao: number; canalAndroid: string; categoriasPrivadas: string[] };
   auth: {
     codigoValidadeMinutos: number;
     codigoTentativas: number;
@@ -133,6 +137,9 @@ export function validarConfigApp(bruto: unknown, curadoria: ConfigCuradoria): Co
   inteiroPositivo('push.limiteDiarioPadrao', a.push?.limiteDiarioPadrao);
   if (a.push.limiteDiarioPadrao > a.limiteDiarioMaximo) throw new Error('Config inválida: app.push.limiteDiarioPadrao acima do máximo');
   if (typeof a.push.canalAndroid !== 'string' || a.push.canalAndroid === '') throw new Error('Config inválida: app.push.canalAndroid');
+  if (!Array.isArray(a.push.categoriasPrivadas) || a.push.categoriasPrivadas.some((c: unknown) => typeof c !== 'string' || a.rotulosCategorias[c as string] === undefined)) {
+    throw new Error('Config inválida: app.push.categoriasPrivadas precisa listar categorias do tenant');
+  }
   for (const k of ['codigoValidadeMinutos', 'codigoTentativas', 'codigosPorHora', 'codigosPorHoraPorIp', 'sessaoDias'] as const) {
     inteiroPositivo(`auth.${k}`, a.auth?.[k]);
   }

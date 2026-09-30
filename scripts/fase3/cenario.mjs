@@ -61,6 +61,12 @@ const itemA = feed1.corpo.itens.find((i) => i.decisao === 'notificar');
 const itemB = feed1.corpo.itens.find((i) => i.decisao === 'somente_feed');
 confere('item do feed traz preço, referência, prazo e foto, sem link', [itemA.precoCentavos, itemA.precoReferenciaCentavos > itemA.precoCentavos, itemA.prazoEntregaDias, itemA.imagemUrl, 'link' in itemA], [4990, true, 3, 'https://imagens.exemplo/A-100.jpg', false]);
 
+// Prova do desconto (contrato 1.3.0): o menor preço do período é o do dia da promoção inflada ou antes,
+// nunca maior que o preço normal; 20 dias de histórico, menos que 180, então o app dirá "em 20 dias".
+confere('item do feed traz a prova: menor ≤ referência ≤ maior, e os dias medidos',
+  [itemA.prova !== null, itemA.prova.menorPrecoCentavos <= itemA.precoReferenciaCentavos, itemA.precoReferenciaCentavos <= itemA.prova.maiorPrecoCentavos, itemA.prova.diasMedidos >= 14 && itemA.prova.diasMedidos < 180],
+  [true, true, true, true]);
+
 const det = await api('GET', `/v1/ofertas/${itemA.ofertaId}`, { token });
 confere('detalhe ativo com link de afiliado e ao menos 20 dias de histórico', [det.status, det.corpo.ativa, det.corpo.linkAfiliado, typeof det.corpo.link, det.corpo.historico.length >= 20], [200, true, true, 'string', true]);
 

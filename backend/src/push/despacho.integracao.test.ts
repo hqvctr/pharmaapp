@@ -175,9 +175,12 @@ describe.skipIf(URL_TESTE === undefined)('despacho de push contra Postgres', () 
     expect(recebidos('ana')).toHaveLength(1);
     expect(recebidos('gabi')).toHaveLength(1);
     // CEP do Rio: só a oferta da loja que entrega no Rio.
-    expect(recebidos('eva').map((m) => m.corpo)).toEqual(['R$ 49,90 (referência R$ 72,90, 32% abaixo) · Farmácia RJ']);
+    // Texto da proposta de UX: preço no título, economia em reais no corpo. Alerta sem prova (inserido
+    // sem piso) cai no texto de economia simples; a loja vai nos dados para a linha de cima.
+    expect(recebidos('eva').map((m) => [m.corpo, m.dados.loja])).toEqual([['R$ 23,00 abaixo do normal da loja', 'Farmácia RJ']]);
     for (const email of ['bia', 'cris', 'dani', 'fabi', 'hugo']) expect(recebidos(email)).toEqual([]);
-    expect(recebidos('ana')[0]!.corpo).toBe('R$ 49,90 (referência R$ 72,90, 32% abaixo) · Farmácia SP');
+    expect(recebidos('ana')[0]!).toMatchObject({ corpo: 'R$ 23,00 abaixo do normal da loja', dados: { loja: 'Farmácia SP', privado: '0' } });
+    expect(recebidos('ana')[0]!.titulo.startsWith('R$ 49,90 · ')).toBe(true);
 
     const entrega = await sql(`SELECT status, enviado_em FROM deliveries WHERE id = $1`, [recebidos('ana')[0]!.dados.entregaId]);
     expect(entrega.rows[0]).toMatchObject({ status: 'enviada' });
@@ -191,8 +194,8 @@ describe.skipIf(URL_TESTE === undefined)('despacho de push contra Postgres', () 
     await oferta({ categoria: 'alimentacao_infantil', nome: 'Papinha de Banana Marca P 120g' });
     // Sem tamanho identificado: vai também para quem filtra fralda M (fabi). Ana, fabi e gabi, duas ofertas.
     expect(await despachar()).toMatchObject({ enviadas: 6, noLimiteDoDia: 0 });
-    const papinha = recebidos('ana').find((m) => m.titulo.startsWith('Papinha'))!;
-    expect(papinha.corpo).toContain('\nO Ministério da Saúde informa: o aleitamento materno');
+    const papinha = recebidos('ana').find((m) => m.titulo.includes('Papinha'))!;
+    expect(papinha.expandido).toContain('\nO Ministério da Saúde informa: o aleitamento materno');
     expect((await sql(`SELECT count(*)::int AS n FROM deliveries WHERE alert_id = $1`, [alertaId])).rows[0].n).toBe(3);
   });
 

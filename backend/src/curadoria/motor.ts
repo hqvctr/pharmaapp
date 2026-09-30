@@ -65,6 +65,7 @@ export function avaliarOferta(entrada: EntradaAvaliacao, config: ConfigCuradoria
     });
   }
   const piso = pontos.length > 0 ? Math.min(...pontos.map((p) => p.porUnidade)) : null;
+  const maior = pontos.length > 0 ? Math.max(...pontos.map((p) => p.porUnidade)) : null;
   const quedaReal = referencia !== null ? (referencia - efetivo) / referencia : null;
 
   // Condição 2: queda real sobre a mediana, no limiar da categoria.
@@ -134,6 +135,7 @@ export function avaliarOferta(entrada: EntradaAvaliacao, config: ConfigCuradoria
     precoEfetivoPorUnidade: efetivo,
     precoReferenciaPorUnidade: referencia,
     pisoHistoricoPorUnidade: piso,
+    maiorHistoricoPorUnidade: maior,
     quedaReal,
     subidaPreQueda: subida,
     economiaCentavos: economia,

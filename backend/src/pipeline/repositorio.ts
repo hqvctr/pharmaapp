@@ -234,6 +234,10 @@ export interface NovoAlerta {
   validaAte: Date | null;
   rotuloCondicao: string | null;
   entregaAConfirmar: boolean;
+  /** Prova do desconto (migration 0007): menor e maior preço por unidade do período e dias medidos. */
+  pisoPorUnidade: number | null;
+  maiorPorUnidade: number | null;
+  diasMedidos: number;
   criadoEm: Date;
 }
 
@@ -241,12 +245,12 @@ export async function inserirAlerta(db: Db, a: NovoAlerta): Promise<void> {
   await db.query(
     `INSERT INTO alerts (tenant_id, offer_id, store_id, familia_chave, score, decisao, motivo, preco_centavos,
                          preco_efetivo_por_unidade, preco_referencia_por_unidade, valida_ate, rotulo_condicao,
-                         entrega_a_confirmar, criado_em)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+                         entrega_a_confirmar, piso_por_unidade, maior_por_unidade, dias_medidos, criado_em)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
     [
       a.tenantId, a.offerId, a.storeId, a.familiaChave, a.score, a.decisao, a.motivo, a.precoCentavos,
       a.precoEfetivoPorUnidade, a.precoReferenciaPorUnidade, a.validaAte, a.rotuloCondicao, a.entregaAConfirmar,
-      a.criadoEm,
+      a.pisoPorUnidade, a.maiorPorUnidade, a.diasMedidos, a.criadoEm,
     ],
   );
 }

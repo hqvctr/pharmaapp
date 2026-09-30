@@ -79,7 +79,7 @@
     "planos": { "gratuito": { "maxCeps": 1 }, "premium": { "maxCeps": 3 } },
     "limiteDiarioMaximo": 10,
     "feed": { "idadeMaximaColetaHoras": 6, "tamanhoPaginaPadrao": 20, "tamanhoPaginaMaximo": 50 },
-    "push": { "idadeMaximaAlertaHoras": 12, "limiteDiarioPadrao": 3, "canalAndroid": "ofertas" },
+    "push": { "idadeMaximaAlertaHoras": 12, "limiteDiarioPadrao": 3, "canalAndroid": "ofertas", "categoriasPrivadas": ["gestacao_pos_parto"] },
     "auth": {
       "codigoValidadeMinutos": 10,
       "codigoTentativas": 5,

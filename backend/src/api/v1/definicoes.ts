@@ -3,7 +3,7 @@ import type { DefRota } from '../contrato.js';
 import * as E from '../esquemas.js';
 
 // 1.0.0 aprovada em 2026-09-28 (openapi/v1-aprovado.json). Acréscimo sobe o segundo número.
-export const VERSAO_CONTRATO = '1.2.0';
+export const VERSAO_CONTRATO = '1.3.0';
 
 export const rotasV1 = [
   {

@@ -143,6 +143,15 @@ const camposOferta = {
   linkAfiliado: { ...booleano, description: 'true: o app precisa informar que o link é de afiliado.' },
   alertadaEm: instante,
   coletadaEm: instante,
+  prova: objeto(
+    {
+      menorPrecoCentavos: inteiro({ description: 'Menor preço desta embalagem na loja no período medido antes do alerta (até 180 dias).' }),
+      maiorPrecoCentavos: inteiro({ description: 'Maior preço desta embalagem na loja no mesmo período.' }),
+      diasMedidos: inteiro({ minimum: 0, description: 'Dias com preço observado no período. Abaixo de 180, o app diz "em N dias", nunca "em 6 meses".' }),
+    },
+    [],
+    true,
+  ),
 };
 
 export const ItemFeed = nomear(

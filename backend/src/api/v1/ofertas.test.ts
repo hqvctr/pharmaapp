@@ -24,6 +24,9 @@ const linha: LinhaOferta = {
     decisao: 'notificar',
     score: 80,
     referenciaPorUnidade: 6000,
+    pisoPorUnidade: 4200,
+    maiorPorUnidade: 6600,
+    diasMedidos: 94,
   },
   ativa: true,
   prazoEntregaDias: 2,
@@ -46,6 +49,17 @@ describe('visaoOferta', () => {
     const papinha = { ...linha, produto: { ...linha.produto, categoria: 'alimentacao_infantil' } };
     expect(visaoOferta(papinha, config).avisos).toEqual([config.nbcal.aviso]);
     expect(config.nbcal.aviso).toMatch(/^O Ministério da Saúde informa: o aleitamento materno/);
+  });
+});
+
+describe('prova do desconto', () => {
+  it('menor e maior preço convertidos para a embalagem, com os dias medidos', () => {
+    expect(visaoOferta(linha, config).prova).toEqual({ menorPrecoCentavos: 2100, maiorPrecoCentavos: 3300, diasMedidos: 94 });
+  });
+
+  it('alerta anterior à migration 0007 manda prova = null', () => {
+    const antigo = { ...linha, alerta: { ...linha.alerta, pisoPorUnidade: null, maiorPorUnidade: null, diasMedidos: null } };
+    expect(visaoOferta(antigo, config).prova).toBeNull();
   });
 });
 

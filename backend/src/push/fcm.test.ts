@@ -8,7 +8,7 @@ const conta = {
   client_email: 'despacho@projeto.iam.gserviceaccount.com',
   private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }).toString(),
 };
-const mensagem = { titulo: 'Fralda', corpo: 'R$ 49,90', dados: { tipo: 'oferta', ofertaId: 'o1', entregaId: 'e1' } };
+const mensagem = { titulo: 'R$ 49,90 · Fralda', corpo: 'Menor preço em 6 meses', expandido: 'Menor preço em 6 meses\nAviso', dados: { tipo: 'oferta', ofertaId: 'o1', entregaId: 'e1', loja: 'Loja', privado: '0' } };
 const android = { canal: 'ofertas', tag: 'o1', validadeSegundos: 3600 };
 
 function falso(respostaEnvio: { status: number; corpo?: unknown }) {
@@ -46,9 +46,9 @@ describe('EnviadorFcm', () => {
     expect(JSON.parse(pedidos[1]!.init.body as string)).toEqual({
       message: {
         token: 'token-do-aparelho',
-        notification: { title: 'Fralda', body: 'R$ 49,90' },
-        data: mensagem.dados,
-        android: { priority: 'HIGH', ttl: '3600s', notification: { channel_id: 'ofertas', tag: 'o1' } },
+        // Só dados: o app desenha a notificação (texto expandido e versão pública).
+        data: { ...mensagem.dados, titulo: mensagem.titulo, corpo: mensagem.corpo, expandido: mensagem.expandido, canal: 'ofertas', tag: 'o1' },
+        android: { priority: 'HIGH', ttl: '3600s' },
       },
     });
   });

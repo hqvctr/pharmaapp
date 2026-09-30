@@ -217,6 +217,9 @@ async function processarOferta(
     validaAte: bruta.validaAte,
     rotuloCondicao: resultado.rotuloCondicao,
     entregaAConfirmar: resultado.entregaAConfirmar,
+    pisoPorUnidade: resultado.metricas.pisoHistoricoPorUnidade,
+    maiorPorUnidade: resultado.metricas.maiorHistoricoPorUnidade,
+    diasMedidos: resultado.metricas.observacoes180d,
     criadoEm: agora,
   });
   resumo.alertasCriados++;

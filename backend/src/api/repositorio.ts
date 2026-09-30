@@ -290,6 +290,10 @@ export interface LinhaOferta {
     decisao: 'notificar' | 'aguardar_aprovacao' | 'somente_feed';
     score: number;
     referenciaPorUnidade: number;
+    /** Prova do desconto guardada no alerta (0007); null em alerta anterior à migration. */
+    pisoPorUnidade: number | null;
+    maiorPorUnidade: number | null;
+    diasMedidos: number | null;
   };
   ativa: boolean;
   prazoEntregaDias: number | null;
@@ -314,6 +318,7 @@ const SELECT_OFERTA = `
          p.nome, p.marca, p.categoria, p.familia_chave, p.quantidade, p.unidade, p.tamanho_fralda,
          s.id AS loja_id, s.nome AS loja_nome, s.rede, s.tipo AS loja_tipo,
          a.id AS alerta_id, a.criado_em AS alertada_em, a.decisao, a.score, a.preco_referencia_por_unidade,
+         a.piso_por_unidade, a.maior_por_unidade, a.dias_medidos,
          -- Precisão de microssegundo: o cursor não pode perder nem repetir item por arredondamento.
          to_char(a.criado_em AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS alertada_em_cursor,
          ${OFERTA_ATIVA} AS ativa`;
@@ -356,6 +361,9 @@ function ofertaDaLinha(l: Record<string, any>): LinhaOferta {
       decisao: l.decisao,
       score: l.score,
       referenciaPorUnidade: Number(l.preco_referencia_por_unidade),
+      pisoPorUnidade: l.piso_por_unidade === null ? null : Number(l.piso_por_unidade),
+      maiorPorUnidade: l.maior_por_unidade === null ? null : Number(l.maior_por_unidade),
+      diasMedidos: l.dias_medidos,
     },
     ativa: l.ativa,
     prazoEntregaDias: l.prazo ?? null,

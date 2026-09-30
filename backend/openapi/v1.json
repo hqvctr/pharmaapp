@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "economae API",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "Contrato entre o app Android e o backend. Gerado de backend/src/api/v1/definicoes.ts por `npm run contrato`; o teste falha se este arquivo divergir do código. Dinheiro sempre em centavos inteiros. Toda rota exige o cabeçalho X-Tenant; rotas com sessão exigem Authorization: Bearer. Evolução da v1: o servidor só acrescenta (campos, valores de enum, códigos de erro); o cliente ignora campo desconhecido, trata valor de enum desconhecido como o caso genérico e decide pelo código do erro, não pela mensagem. Respostas da v1 vêm com Cache-Control: no-store e Vary: X-Tenant, Authorization."
   },
   "security": [
@@ -1391,6 +1391,32 @@
             "type": "string",
             "format": "date-time"
           },
+          "prova": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "menorPrecoCentavos": {
+                "type": "integer",
+                "description": "Menor preço desta embalagem na loja no período medido antes do alerta (até 180 dias)."
+              },
+              "maiorPrecoCentavos": {
+                "type": "integer",
+                "description": "Maior preço desta embalagem na loja no mesmo período."
+              },
+              "diasMedidos": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Dias com preço observado no período. Abaixo de 180, o app diz \"em N dias\", nunca \"em 6 meses\"."
+              }
+            },
+            "required": [
+              "menorPrecoCentavos",
+              "maiorPrecoCentavos",
+              "diasMedidos"
+            ]
+          },
           "ativa": {
             "type": "boolean",
             "description": "false: a promoção acabou; o app mostra como encerrada e sem link."
@@ -1443,6 +1469,7 @@
           "linkAfiliado",
           "alertadaEm",
           "coletadaEm",
+          "prova",
           "ativa",
           "link",
           "historico"
@@ -1720,6 +1747,32 @@
             "type": "string",
             "format": "date-time"
           },
+          "prova": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "menorPrecoCentavos": {
+                "type": "integer",
+                "description": "Menor preço desta embalagem na loja no período medido antes do alerta (até 180 dias)."
+              },
+              "maiorPrecoCentavos": {
+                "type": "integer",
+                "description": "Maior preço desta embalagem na loja no mesmo período."
+              },
+              "diasMedidos": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Dias com preço observado no período. Abaixo de 180, o app diz \"em N dias\", nunca \"em 6 meses\"."
+              }
+            },
+            "required": [
+              "menorPrecoCentavos",
+              "maiorPrecoCentavos",
+              "diasMedidos"
+            ]
+          },
           "prazoEntregaDias": {
             "type": [
               "integer",
@@ -1747,6 +1800,7 @@
           "linkAfiliado",
           "alertadaEm",
           "coletadaEm",
+          "prova",
           "prazoEntregaDias"
         ]
       },

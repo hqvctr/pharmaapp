@@ -23,7 +23,7 @@ export class EnviadorPushLog implements EnviadorPush {
 
   async enviar(token: string, m: MensagemPush): Promise<ResultadoEnvio> {
     this.enviados.push({ token, mensagem: m });
-    this.escrever(`[push-dev] token=${token.slice(0, 12)}… titulo=${JSON.stringify(m.titulo)} corpo=${JSON.stringify(m.corpo)}`);
+    this.escrever(`[push-dev] token=${token.slice(0, 12)}… titulo=${JSON.stringify(m.titulo)} corpo=${JSON.stringify(m.corpo)} privado=${m.dados.privado}`);
     return { tipo: 'ok' };
   }
 }
@@ -76,13 +76,11 @@ export class EnviadorFcm implements EnviadorPush {
         body: JSON.stringify({
           message: {
             token,
-            notification: { title: m.titulo, body: m.corpo },
-            data: m.dados,
-            android: {
-              priority: 'HIGH',
-              ttl: `${android.validadeSegundos}s`,
-              notification: { channel_id: android.canal, tag: android.tag },
-            },
+            // Só dados: o app monta a notificação mesmo em segundo plano (ServicoMensagens). Com
+            // "notification", o sistema desenharia sozinho: sem texto expandido (o aviso da NBCAL
+            // ficaria escondido) e sem versão pública para a categoria privada.
+            data: { ...m.dados, titulo: m.titulo, corpo: m.corpo, expandido: m.expandido, canal: android.canal, tag: android.tag },
+            android: { priority: 'HIGH', ttl: `${android.validadeSegundos}s` },
           },
         }),
         signal: AbortSignal.timeout(10_000),

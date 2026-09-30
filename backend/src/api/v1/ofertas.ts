@@ -52,7 +52,20 @@ export function visaoOferta(l: repo.LinhaOferta, config: ConfigTenant): Record<s
     linkAfiliado: l.linkAfiliado,
     alertadaEm: l.alerta.criadoEm.toISOString(),
     coletadaEm: l.coletadaEm.toISOString(),
+    prova: provaDoAlerta(l),
   };
+}
+
+/**
+ * O que prova o desconto, por embalagem: menor e maior preço do período medido antes do alerta e
+ * quantos dias foram medidos (proposta de UX, selo "Menor preço em 6 meses" e régua de preço).
+ * Null em alerta anterior à migration 0007.
+ */
+function provaDoAlerta(l: repo.LinhaOferta): { menorPrecoCentavos: number; maiorPrecoCentavos: number; diasMedidos: number } | null {
+  const { pisoPorUnidade, maiorPorUnidade, diasMedidos } = l.alerta;
+  if (pisoPorUnidade === null || maiorPorUnidade === null || diasMedidos === null) return null;
+  const q = l.produto.quantidade;
+  return { menorPrecoCentavos: Math.round(pisoPorUnidade * q), maiorPrecoCentavos: Math.round(maiorPorUnidade * q), diasMedidos };
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

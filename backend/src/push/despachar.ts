@@ -82,7 +82,11 @@ export async function executarDespacho(ctx: ContextoDespacho): Promise<ResumoDes
           const entregaId = await repo.reservarEntrega(pool, tenantId, alertaId, p.userId, agora);
           if (entregaId === null) continue;
 
-          const mensagem = montarMensagem(visao, entregaId);
+          const mensagem = montarMensagem(visao, entregaId, {
+            condicao: oferta.condicao,
+            rotuloCategoria: app.rotulosCategorias[oferta.produto.categoria] ?? oferta.produto.categoria,
+            privado: app.push.categoriasPrivadas.includes(oferta.produto.categoria),
+          });
           const validade = Math.max(60, Math.floor((oferta.alerta.criadoEm.getTime() + app.push.idadeMaximaAlertaHoras * HORA_MS - agora.getTime()) / 1000));
           let algumOk = false;
           const erros: string[] = [];
