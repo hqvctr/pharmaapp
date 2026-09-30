@@ -10,7 +10,7 @@ decisão (código do repositório ou fonte externa com data de acesso).
 | 3 | Auditoria heurística e de acessibilidade, priorizada | [AUDITORIA.md](AUDITORIA.md) | 4 |
 | 4 | Proposta: arquitetura, fluxos, componentes, estados, justificativas | [PROPOSTA_UX.md](PROPOSTA_UX.md) | 5 |
 | 5 | Tokens (claro e escuro) + tema do app + contraste verificado | [design-tokens/](design-tokens/README.md) | 5 |
-| 6 | Protótipo navegável, arquivo único, abre no navegador (versão 2, alinhada às fases 3 e 4) | [prototipo.html](prototipo.html) | 5 |
+| 6 | Protótipo navegável, arquivo único, abre no navegador (versão 2.1: fases 3 e 4, frete de acordo com o CEP) | [prototipo.html](prototipo.html) | 5 |
 | 7 | Telas implementadas no app real (`br.com.economae`): cartão, detalhe, prova e notificação da proposta | [../android/](../android/app/src/main/java/br/com/economae/ui/prova/Prova.kt) | 5 |
 | 8 | Todo texto de interface | [UX_COPY.md](UX_COPY.md) | 5 |
 | 9 | Métricas, metas e o que testar primeiro | [MEDICAO.md](MEDICAO.md) | 5 |

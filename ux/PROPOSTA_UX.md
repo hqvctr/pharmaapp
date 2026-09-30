@@ -454,3 +454,19 @@ A proposta saiu do protótipo e entrou no código das fases 3 e 4, na mesma bran
 - Tokens com a marca framboesa do app; o protótipo foi regenerado com ela.
 
 Registrado como DECISIONS 68–72, a confirmar. O que falta está em BACKLOG_UX (estado de 30/09).
+
+## 16. Frete de acordo com o CEP (protótipo 2.1, 2026-09-30)
+
+- **Onde:** logo abaixo do preço, no cartão e no detalhe: "Frete R$ 9,90 · total R$ 171,30 levando 3" e, embaixo,
+  "CEP 01310-100 · chega em até 2 dias". O frete é condição de custo, então vem antes do clique (princípio 4).
+- **O preço grande não inclui frete.** Ele é comparado ao preço normal da loja, que também não inclui; somar o frete
+  num lado só inventaria economia. O total com frete aparece ao lado, sem competir com o preço.
+- **CEP escolhido no topo:** o chip "Frete para 01310-100" abre a folha de CEP. Gratuito: trocar o CEP. Premium: escolher
+  entre os 3 CEPs; o detalhe compara o frete em todos (casa, avó, creche).
+- **Ausência explicada:** se a loja não entrega no CEP ou o frete come a economia (FRETE_ANULA_ECONOMIA), a oferta sai do
+  feed desse CEP e o fim da lista diz quantas ficaram de fora e por quê.
+- **Notificação:** a linha de entrega do texto expandido vira a de frete, do primeiro CEP da pessoa em que a oferta passa.
+  O texto recolhido (≤ 40) continua com a prova.
+- **Dado que falta (B-36):** hoje o frete é um valor por oferta (`offers.frete_*`), o prazo é por faixa de CEP da loja
+  (`store_service_areas`) e a Lomadee não informa frete. O protótipo supõe frete por faixa de CEP (S-33).
+- Descartado: mostrar o preço com frete como número principal — mistura dois custos e esconde o preço comparável.

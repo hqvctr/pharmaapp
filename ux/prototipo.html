@@ -320,6 +320,15 @@ svg.i.g { width: 48px; height: 48px; }
 .regua .rotulos { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0 var(--espaco-3); }
 .regua .rotulos .h { color: var(--cor-prova); }
 .linha-apoio { display: flex; align-items: center; gap: var(--espaco-3); color: var(--cor-texto-secundario); }
+.frete-linha { display: flex; align-items: flex-start; gap: var(--espaco-3); color: var(--cor-texto); }
+.frete-linha > svg { color: var(--cor-texto-secundario); flex: none; margin-top: 2px; }
+.frete-linha .coluna { gap: 0; min-width: 0; }
+.bloco-frete { border: 1px solid var(--cor-contorno); border-radius: var(--raio-lg); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-3); }
+.bloco-frete .botao-texto { padding-left: 0; padding-right: 0; }
+.linha-total { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0 var(--espaco-3); padding: var(--espaco-2) 0; border-bottom: 1px solid var(--cor-contorno-suave); font-variant-numeric: tabular-nums; }
+.linha-total.forte { font-weight: var(--tipo-titulo-secao-peso); border-bottom: 0; }
+.outros-ceps { margin: 0; padding: 0; list-style: none; }
+.outros-ceps li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0 var(--espaco-3); padding: var(--espaco-2) 0; border-bottom: 1px solid var(--cor-contorno-suave); font-variant-numeric: tabular-nums; }
 .anuncio { display: block; width: 100%; text-align: left; border: 1.5px dashed var(--cor-anuncio-borda); background: var(--cor-anuncio-container); color: var(--cor-sobre-anuncio-container); border-radius: var(--raio-md); padding: var(--espaco-5); cursor: pointer; }
 .anuncio .coluna { gap: var(--espaco-2); }
 .item-remedio { display: flex; align-items: center; gap: var(--espaco-4); width: 100%; min-height: var(--alvo-toque-minimo); padding: var(--espaco-4) 0; border: 0; border-bottom: 1px solid var(--cor-contorno-suave); background: transparent; color: var(--cor-texto); text-align: left; cursor: pointer; }
@@ -530,13 +539,15 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
       <li><button data-atalho="ofertas:nada">Nada hoje</button></li>
       <li><button data-atalho="detalhe:fralda">Leve 3 pague 2</button></li>
       <li><button data-atalho="detalhe:papinha">Aviso da NBCAL</button></li>
+      <li><button data-atalho="ofertas:outroCep">Frete em outro CEP</button></li>
+      <li><button data-atalho="detalhe:freteCeps">Frete nos 3 CEPs</button></li>
       <li><button data-atalho="bloqueio:N9">Gestação bloqueada</button></li>
     </ul>
 
     <div class="nota" id="nota" aria-live="polite"></div>
-    <details class="nota"><summary><strong>O que mudou na versão 2 (30/09)</strong></summary>
-      <p>Alinhada às fases 3 e 4 do produto: foco em mães, da gestação aos primeiros anos (4 categorias); remédio fora do app; aviso da NBCAL inteiro em alimentação infantil; filtro opcional por tamanho de fralda; entrada por código no e-mail ou Google, e termos 18+ antes de tudo; limite de avisos de 1 a 10; filtro por categoria no feed; oferta que não existe mais. Novo: notificação de gestação escondida com o celular bloqueado (N9) e comparação com o texto que o despachante envia hoje (A1).</p></details>
-    <p class="aviso-exemplo"><strong>Dados de exemplo.</strong> Marcas, lojas e preços são fictícios. Categorias, avisos, limites e regras seguem <code>backend/config/tenants/economae.json</code> e o contrato <code>backend/openapi/v1.json</code> 1.2.0. Os textos são os de <code>ux/UX_COPY.md</code>.</p>
+    <details class="nota"><summary><strong>O que mudou na versão 2 e 2.1 (30/09)</strong></summary>
+      <p><strong>2.1:</strong> frete de acordo com o CEP. Cartão e detalhe mostram frete, total e prazo para o CEP escolhido; o chip do topo das Ofertas troca o CEP; o premium compara os 3 CEPs no detalhe; oferta cujo frete come a economia some daquele CEP, com a explicação no fim da lista. Estados novos: Ofertas › Frete em outro CEP e Detalhe › Frete nos seus 3 CEPs.</p><p>Alinhada às fases 3 e 4 do produto: foco em mães, da gestação aos primeiros anos (4 categorias); remédio fora do app; aviso da NBCAL inteiro em alimentação infantil; filtro opcional por tamanho de fralda; entrada por código no e-mail ou Google, e termos 18+ antes de tudo; limite de avisos de 1 a 10; filtro por categoria no feed; oferta que não existe mais. Novo: notificação de gestação escondida com o celular bloqueado (N9) e comparação com o texto que o despachante envia hoje (A1).</p></details>
+    <p class="aviso-exemplo"><strong>Dados de exemplo.</strong> Marcas, lojas e preços são fictícios. Categorias, avisos, limites e regras seguem <code>backend/config/tenants/economae.json</code> e o contrato <code>backend/openapi/v1.json</code> 1.3.0. Faixas de CEP e valores de frete também são de exemplo. Os textos são os de <code>ux/UX_COPY.md</code>.</p>
   </section>
 
   <div class="quadro-envoltorio">
@@ -553,7 +564,8 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
 // Versão 2 (30/09/2026): alinhada às fases 3 e 4 do produto (branch claude/awesome-noether-jruv6b):
 // foco em mães da gestação aos primeiros anos (DECISIONS 44), remédio fora do app (45), NBCAL (46),
 // tamanho de fralda (51), login por código ou Google (34), termos 18+ antes de tudo (38),
-// push com limite padrão 3 e teto 10 (58, config do tenant). Contrato da API: backend/openapi/v1.json 1.2.0.
+// push com limite padrão 3 e teto 10 (58, config do tenant). Contrato da API: backend/openapi/v1.json 1.3.0.
+// Versão 2.1: frete, total e prazo de acordo com o CEP escolhido (PROPOSTA_UX 16; BACKLOG_UX B-36).
 
 // ======================= Dados de exemplo (fictícios) =======================
 function serie(normal, menor, maior, semente, dias = 89) {
@@ -582,20 +594,30 @@ const TAMANHOS = ["RN", "P", "M", "G", "XG", "XXG", "XXXG"];
 const AVISO_MS = "O Ministério da Saúde informa: o aleitamento materno evita infecções e alergias e é recomendado até os 2 (dois) anos de idade ou mais.";
 function oferta(o) { o.prova.serie = serie(o.prova.normal, o.prova.menor, o.prova.maior, o.prova.semente, Math.min(o.prova.dias, 89)); o.avisos = o.avisos || []; return o; }
 const OF = {
-  protetor: oferta({ id: "protetor", nome: "Protetor Solar Infantil Solare FPS 50", emb: { q: 0.12, u: "l", rot: "120 ml" }, cat: "higiene_cuidados_bebe", loja: "Drogaria Central", preco: 3990, cond: null, prova: { normal: 5990, menor: 4290, maior: 6490, dias: 180, semente: 7 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "exc" }),
-  fralda: oferta({ id: "fralda", nome: "Fralda Bebê Seco", tamanho: "G", emb: { q: 34, u: "un", rot: "34 unidades" }, cat: "fraldas_lencos", loja: "Farmácia Vida", preco: 8070, cond: { tipo: "leve_pague", leve: 3, pague: 2 }, prova: { normal: 7990, menor: 6290, maior: 8490, dias: 180, semente: 11 }, cob: { tipo: "entrega", prazo: 2 }, conferido: "13:55", nivel: "exc" }),
-  papinha: oferta({ id: "papinha", nome: "Papinha Nutri+ Maçã e Banana", emb: { q: 0.12, u: "kg", rot: "120 g" }, cat: "alimentacao_infantil", loja: "Drogaria Central", preco: 590, cond: null, prova: { normal: 849, menor: 620, maior: 899, dias: 94, semente: 13 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "exc", avisos: [AVISO_MS] }),
-  lenco: oferta({ id: "lenco", nome: "Lenço Umedecido Toque Suave", emb: { q: 96, u: "un", rot: "96 unidades" }, cat: "fraldas_lencos", loja: "Drogaria Central", preco: 1890, cond: null, prova: { normal: 2690, menor: 1830, maior: 2890, dias: 94, semente: 3 }, cob: { tipo: "confirmar" }, conferido: "14:10", nivel: "boa" }),
-  shampoo: oferta({ id: "shampoo", nome: "Shampoo Infantil Pele Leve", emb: { q: 0.4, u: "l", rot: "400 ml" }, cat: "higiene_cuidados_bebe", loja: "Farmácia Vida", preco: 2490, cond: { tipo: "cartao", programa: "Vida Mais" }, prova: { normal: 3490, menor: 2590, maior: 3690, dias: 180, semente: 5 }, cob: { tipo: "retirada", km: 1.2 }, conferido: "13:55", nivel: "boa" }),
-  creme: oferta({ id: "creme", nome: "Creme para Estrias Gestar", emb: { q: 0.25, u: "l", rot: "250 ml" }, cat: "gestacao_pos_parto", loja: "Farmácia Vida", preco: 4490, cond: null, prova: { normal: 6290, menor: 4690, maior: 6590, dias: 180, semente: 17 }, cob: { tipo: "entrega", prazo: 2 }, conferido: "13:55", nivel: "exc" }),
+  protetor: oferta({ id: "protetor", nome: "Protetor Solar Infantil Solare FPS 50", emb: { q: 0.12, u: "l", rot: "120 ml" }, cat: "higiene_cuidados_bebe", loja: "Drogaria Central", preco: 3990, cond: null, prova: { normal: 5990, menor: 4290, maior: 6490, dias: 180, semente: 7 }, frete: { capital: { t: "gratis", prazo: 3 }, grande: { t: "pago", c: 690, prazo: 3 }, interior: { t: "pago", c: 1290, prazo: 5 }, litoral: { t: "confirmar", prazo: 4 } }, conferido: "14:10", nivel: "exc" }),
+  fralda: oferta({ id: "fralda", nome: "Fralda Bebê Seco", tamanho: "G", emb: { q: 34, u: "un", rot: "34 unidades" }, cat: "fraldas_lencos", loja: "Farmácia Vida", preco: 8070, cond: { tipo: "leve_pague", leve: 3, pague: 2 }, prova: { normal: 7990, menor: 6290, maior: 8490, dias: 180, semente: 11 }, frete: { capital: { t: "pago", c: 990, prazo: 2 }, grande: { t: "pago", c: 990, prazo: 2 }, interior: { t: "pago", c: 1490, prazo: 3 } }, conferido: "13:55", nivel: "exc" }),
+  papinha: oferta({ id: "papinha", nome: "Papinha Nutri+ Maçã e Banana", emb: { q: 0.12, u: "kg", rot: "120 g" }, cat: "alimentacao_infantil", loja: "Drogaria Central", preco: 590, cond: null, prova: { normal: 849, menor: 620, maior: 899, dias: 94, semente: 13 }, frete: { capital: { t: "confirmar", prazo: 3 }, grande: { t: "confirmar", prazo: 3 }, interior: { t: "pago", c: 890, prazo: 5 }, litoral: { t: "confirmar", prazo: 4 } }, conferido: "14:10", nivel: "exc", avisos: [AVISO_MS] }),
+  lenco: oferta({ id: "lenco", nome: "Lenço Umedecido Toque Suave", emb: { q: 96, u: "un", rot: "96 unidades" }, cat: "fraldas_lencos", loja: "Drogaria Central", preco: 1890, cond: null, prova: { normal: 2690, menor: 1830, maior: 2890, dias: 94, semente: 3 }, frete: { capital: { t: "confirmar", prazo: 3 }, grande: { t: "confirmar", prazo: 3 }, interior: { t: "confirmar", prazo: 5 }, litoral: { t: "confirmar", prazo: 4 } }, conferido: "14:10", nivel: "boa" }),
+  shampoo: oferta({ id: "shampoo", nome: "Shampoo Infantil Pele Leve", emb: { q: 0.4, u: "l", rot: "400 ml" }, cat: "higiene_cuidados_bebe", loja: "Farmácia Vida", preco: 2490, cond: { tipo: "cartao", programa: "Vida Mais" }, prova: { normal: 3490, menor: 2590, maior: 3690, dias: 180, semente: 5 }, frete: { capital: { t: "retirada", km: 1.2 } }, conferido: "13:55", nivel: "boa" }),
+  creme: oferta({ id: "creme", nome: "Creme para Estrias Gestar", emb: { q: 0.25, u: "l", rot: "250 ml" }, cat: "gestacao_pos_parto", loja: "Farmácia Vida", preco: 4490, cond: null, prova: { normal: 6290, menor: 4690, maior: 6590, dias: 180, semente: 17 }, frete: { capital: { t: "pago", c: 790, prazo: 2 }, grande: { t: "pago", c: 990, prazo: 3 }, interior: { t: "pago", c: 1490, prazo: 3 } }, conferido: "13:55", nivel: "exc" }),
 };
 OF.caiu = { ...OF.protetor, id: "caiu", preco: 3490, anterior: 3990 };
 OF.encerrada = { ...OF.protetor, id: "encerrada", encerrada: { dia: "30/09", hora: "16:40", voltou: 5990 } };
 OF.mudou = { ...OF.protetor, id: "mudou", mudou: { preco: 4490, hora: "15:20" } };
-OF.retirada = { ...OF.protetor, id: "retirada", cob: { tipo: "retirada", km: 1.2 } };
+OF.retirada = { ...OF.protetor, id: "retirada", frete: { capital: { t: "retirada", km: 1.2 } } };
 OF.sabonete = { ...OF.encerrada, id: "sabonete", nome: "Sabonete Líquido Infantil", emb: { q: 0.2, u: "l", rot: "200 ml" } };
 const ANUNCIO = { anunciante: "Loja Exemplo", texto: "Kit de banho infantil com 15% de desconto no app da Loja Exemplo." };
 const RESUMO = { conferidos: 1284, aprovadas: 3 };
+// Frete por CEP. A loja atende faixas de CEP (store_service_areas: cep_inicio, cep_fim, prazo_dias) e,
+// nesta proposta, informa o frete por faixa (BACKLOG_UX B-36). Faixas e valores de exemplo.
+// t: "gratis" | "pago" (c = centavos) | "confirmar" (loja não informa antes do carrinho) | "retirada" (km).
+// Faixa ausente = a loja não entrega nesse CEP, e a oferta não aparece para ele (o feed já filtra assim).
+const FAIXAS = [
+  { id: "capital", de: 1000000, ate: 5999999 }, { id: "capital", de: 8000000, ate: 8499999 },
+  { id: "grande", de: 6000000, ate: 9999999 }, { id: "litoral", de: 11000000, ate: 11999999 }, { id: "interior", de: 12000000, ate: 19999999 },
+];
+// CEPs de exemplo do premium: casa (São Paulo), casa da avó (Campinas) e creche (Santos).
+const CEPS_PREMIUM = ["01310100", "13010000", "11010000"];
 
 // ======================= Regras (espelham a API e a proposta) =======================
 function milhar(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
@@ -621,7 +643,45 @@ function textoCondicao(o) {
   if (c.tipo === "app") return `Só no app da ${o.loja}`;
 }
 function rotuloCondicaoApi(o) { const c = o.cond; if (!c) return null; if (c.tipo === "leve_pague") return `Leve ${c.leve}, pague ${c.pague}`; if (c.tipo === "cartao") return `Preço com cartão fidelidade ${c.programa}`; return null; }
-function textoCobertura(c) { return c.tipo === "entrega" ? `Entrega no seu CEP em até ${c.prazo} dias` : c.tipo === "confirmar" ? "Entrega no seu CEP · frete a confirmar na loja" : `Retire na loja a ${km(c.km)}`; }
+function faixa(cep) { const n = +cep, f = FAIXAS.find((x) => n >= x.de && n <= x.ate); return f ? f.id : null; }
+const freteDe = (o, cep = E.cep) => o.frete[faixa(cep)] || null;
+// FRETE_ANULA_ECONOMIA (motor.ts): frete conhecido ≥ economia da compra mínima × 1,0 (freteMaximoSobreEconomia).
+const freteAnula = (o, f) => f?.t === "pago" && f.c >= economia(o);
+const entregaOk = (o, cep = E.cep) => { const f = freteDe(o, cep); return !!f && !freteAnula(o, f); };
+const comFrete = (o, f) => total(o) + (f?.t === "pago" ? f.c : 0);
+// O aviso sai para o primeiro CEP da pessoa em que a oferta passa (entrega e frete não come a economia).
+const cepDoAviso = (o) => E.ceps.find((c) => entregaOk(o, c)) || E.cep;
+function freteResumo(o, f) {
+  if (!f) return "A loja não entrega neste CEP";
+  const lev = compraMin(o) > 1 ? ` levando ${compraMin(o)}` : "";
+  if (freteAnula(o, f)) return `Frete ${reais(f.c)}: come a economia`;
+  if (f.t === "gratis") return `Frete grátis · total ${reais(total(o))}${lev}`;
+  if (f.t === "pago") return `Frete ${reais(f.c)} · total ${reais(comFrete(o, f))}${lev}`;
+  if (f.t === "confirmar") return "Frete a confirmar na loja";
+  return "Retirada na loja, sem frete";
+}
+function freteApoio(f, cep = E.cep) {
+  if (!f) return `CEP ${fmtCep(cep)}`;
+  return f.t === "retirada" ? `A ${km(f.km)} do CEP ${fmtCep(cep)}` : `CEP ${fmtCep(cep)} · chega em até ${f.prazo} dias`;
+}
+function fraseFrete(o, cep = E.cep) {
+  const f = freteDe(o, cep), c = fmtCep(cep);
+  if (!f) return `A loja não entrega no CEP ${c}.`;
+  if (freteAnula(o, f)) return `Para o CEP ${c}, o frete de ${reais(f.c)} come a economia.`;
+  if (f.t === "gratis") return `Frete grátis para ${c}, chega em até ${f.prazo} dias.`;
+  if (f.t === "pago") return `Frete para ${c}: ${reais(f.c)}, total ${reais(comFrete(o, f))}. Chega em até ${f.prazo} dias.`;
+  if (f.t === "confirmar") return `Entrega para ${c} em até ${f.prazo} dias. Frete a confirmar na loja.`;
+  return `Retire na loja a ${km(f.km)}. Sem frete.`;
+}
+function resumoCurto(o, cep) {
+  const f = freteDe(o, cep);
+  if (!f) return "a loja não entrega";
+  if (freteAnula(o, f)) return `frete ${reais(f.c)}, come a economia`;
+  if (f.t === "gratis") return `frete grátis · até ${f.prazo} dias`;
+  if (f.t === "pago") return `frete ${reais(f.c)} · total ${reais(comFrete(o, f))}`;
+  if (f.t === "confirmar") return `frete a confirmar · até ${f.prazo} dias`;
+  return `retirada a ${km(f.km)}`;
+}
 function porUnidade(o) {
   const e = efetivo(o);
   if (o.emb.u === "l") return `${reais(Math.round(e * 0.1 / o.emb.q))} por 100 ml`;
@@ -645,7 +705,8 @@ function textoNotif(o) {
   if (o.cond?.tipo === "quantidade_minima") c.push(`Comprando ${o.cond.quantidade} · economia de ${e}`);
   if (o.cond?.tipo === "cartao") { c.push(`Com cartão ${o.cond.programa} · ${e} a menos`); c.push(`Só com cartão da loja · ${e} a menos`); }
   if (o.cond?.tipo === "app") { c.push(`Só no app da ${o.loja} · ${e} a menos`); c.push(`Só com cartão da loja · ${e} a menos`); }
-  if (!o.cond && o.cob.tipo === "retirada") c.push(`Retire a ${km(o.cob.km)} · ${e} a menos`);
+  const fr = freteDe(o, cepDoAviso(o));
+  if (!o.cond && fr?.t === "retirada") c.push(`Retire a ${km(fr.km)} · ${e} a menos`);
   const s = selo(o);
   if (s.tipo === "menor" && s.dias == null) c.push(`Menor preço em 6 meses: ${e} a menos`, `Menor em 6 meses: ${e} a menos`);
   else if (s.tipo === "menor") c.push(`Menor preço em ${s.dias} dias: ${e} a menos`);
@@ -659,7 +720,7 @@ function expandidoNotif(o) {
     textoNotif(o),
     `Preço normal nesta loja: ${reais(o.prova.normal)}.`,
     s.tipo === "menor" ? (s.dias == null ? "Menor preço dos últimos 6 meses." : `Menor preço em ${s.dias} dias de medição.`) : "Perto do menor preço dos últimos 6 meses.",
-    o.cob.tipo === "entrega" ? `Entrega no seu CEP em até ${o.cob.prazo} dias.` : o.cob.tipo === "confirmar" ? "Entrega no seu CEP. Frete a confirmar na loja." : `Retire na loja a ${km(o.cob.km)}.`,
+    fraseFrete(o, cepDoAviso(o)),
     `Conferido às ${o.conferido}. Você segue ${CAT[o.cat].rot}.`,
     ...o.avisos,
   ].join("\n");
@@ -678,24 +739,26 @@ function descricao(o) {
   p.push(`Preço normal nesta loja: ${reais(o.prova.normal)}.`);
   p.push(`Economia de ${reais(economia(o))}.`);
   p.push(textoSelo(o) + ".");
-  p.push(textoCobertura(o.cob) + ".");
+  p.push(fraseFrete(o));
   p.push(`Conferido às ${o.conferido}.`);
   p.push(...o.avisos);
   return p.join(" ");
 }
 // O feed mostra só as categorias seguidas, e fralda só nos tamanhos escolhidos (vazio = todos; sem tamanho = sempre).
-function visivel(o) {
+function visivelCategoria(o) {
   if (!E.categorias.has(o.cat)) return false;
   if (E.filtroCat && o.cat !== E.filtroCat) return false;
   if (o.tamanho && E.tamanhos.size && !E.tamanhos.has(o.tamanho)) return false;
   return true;
 }
+// E só as que a loja entrega no CEP escolhido e cujo frete não come a economia.
+const visivel = (o) => visivelCategoria(o) && entregaOk(o);
 
 // ======================= Estado do protótipo =======================
 const E = {
   tela: "bloqueio", estado: "N1", tema: "claro", escala: 1, avisos: true,
   categorias: new Set(["fraldas_lencos", "higiene_cuidados_bebe", "alimentacao_infantil"]), tamanhos: new Set(["G"]), filtroCat: null,
-  cep: "01310100", cepDigitado: "", cepTentou: false, email: "voce@exemplo.com", emailDigitado: "", codigoDigitado: "", aceitou: false,
+  cep: "01310100", ceps: ["01310100"], premium: false, cepDigitado: "", cepTentou: false, email: "voce@exemplo.com", emailDigitado: "", codigoDigitado: "", aceitou: false,
   limite: 3, expandida: false, verDias: false, folha: null, dialogo: null, pilha: [], destacar: null, foraDoApp: null, retorno: false, obrigado: false,
 };
 const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
@@ -717,6 +780,22 @@ function htmlPreco(o, destaque) {
     <span class="chip-economia t-economia">${ic("trending_down", "i p")}${reais(economia(o))} a menos${levando}</span></div>
     <div class="t-preco-normal">Preço normal nesta loja: ${reais(o.prova.normal)}</div>`;
 }
+function htmlFrete(o) {
+  const f = freteDe(o), icone = !f || freteAnula(o, f) ? "info" : f.t === "retirada" ? "storefront" : "local_shipping";
+  return `<div class="frete-linha">${ic(icone, "i p")}<span class="coluna"><span class="t-corpo">${freteResumo(o, f)}</span><span class="t-apoio sec">${freteApoio(f)}</span></span></div>`;
+}
+function htmlFreteDetalhe(o) {
+  const f = freteDe(o), linha = (a, b, forte) => `<div class="linha-total${forte ? " forte" : ""}"><span>${a}</span><span>${b}</span></div>`;
+  let miolo;
+  if (!f) miolo = `<p class="t-corpo" style="margin:0">A ${esc(o.loja)} não entrega neste CEP.</p>`;
+  else if (freteAnula(o, f)) miolo = `<p class="t-corpo" style="margin:0">Para este CEP, o frete de ${reais(f.c)} é maior que a economia de ${reais(economia(o))}. Por isso esta oferta não aparece nas suas ofertas deste CEP.</p>`;
+  else if (f.t === "retirada") miolo = `<p class="t-corpo" style="margin:0">Retire na loja, a ${km(f.km)} do seu CEP. Sem frete: você paga ${reais(total(o))}.</p>`;
+  else miolo = `<div class="t-corpo">${linha(compraMin(o) > 1 ? `Produto (${compraMin(o)} pacotes)` : "Produto", reais(total(o)))}${linha("Frete", f.t === "gratis" ? "Grátis" : f.t === "pago" ? reais(f.c) : "A confirmar")}${f.t === "confirmar" ? "" : linha("Total", reais(comFrete(o, f)), true)}</div>
+      <p class="t-apoio sec" style="margin:0">Chega em até ${f.prazo} dias. ${f.t === "confirmar" ? "A loja só mostra o frete no carrinho." : `Frete informado pela loja às ${o.conferido}. Confira no carrinho antes de pagar.`}</p>`;
+  const outros = E.ceps.filter((c) => c !== E.cep);
+  const lista = outros.length ? `<p class="t-rotulo" style="margin:var(--espaco-2) 0 0">Nos seus outros CEPs</p><ul class="outros-ceps t-apoio">${outros.map((c) => `<li><span>${fmtCep(c)}</span><span>${resumoCurto(o, c)}</span></li>`).join("")}</ul>` : "";
+  return `<section class="bloco-frete" aria-labelledby="tit-frete"><div class="quebra" style="justify-content:space-between"><h2 id="tit-frete" class="t-titulo-secao">Frete para o CEP ${fmtCep(E.cep)}</h2><button class="botao-texto" data-acao="folha-cep" aria-label="Trocar o CEP do frete">Trocar CEP</button></div>${miolo}${lista}</section>`;
+}
 const htmlAvisos = (o) => o.avisos.map((a) => `<p class="aviso-legal t-apoio">${esc(a)}</p>`).join("");
 function htmlCartao(o) {
   const tc = textoCondicao(o);
@@ -728,9 +807,9 @@ function htmlCartao(o) {
           <span class="quebra" style="gap:var(--espaco-2)">${o.nivel === "exc" ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}${o.tamanho ? `<span class="chip-tamanho t-rotulo-p">Tamanho ${o.tamanho}</span>` : ""}</span>
           <span class="t-nome">${esc(o.nome)} · ${esc(o.emb.rot)}</span><span class="t-apoio sec">${esc(o.loja)}</span></div></div>
       ${htmlPreco(o, false)}
+      ${htmlFrete(o)}
       <div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
       ${htmlRegua(o, false)}
-      <div class="linha-apoio t-apoio">${ic(o.cob.tipo === "retirada" ? "storefront" : "local_shipping", "i p")}<span>${textoCobertura(o.cob)}</span></div>
       <div class="linha-apoio t-apoio">${ic("schedule", "i p")}<span>Conferido às ${o.conferido}</span></div>
       ${htmlAvisos(o)}
     </div></button>`;
@@ -890,7 +969,7 @@ const TELAS = {
       if (E._ultimo !== "cep:" + est) { E.cepDigitado = { vazio: "", incompleto: "0131", fora: "20040002", valido: "01310100" }[est]; E.cepTentou = est === "incompleto" || est === "fora"; }
       const d = E.cepDigitado, valido = d.length === 8, sp = valido && +d >= 1000000 && +d <= 19999999;
       const erro = E.cepTentou && !valido, fora = E.cepTentou && valido && !sp;
-      return passo("Qual é o seu CEP?", "Serve só para saber quais lojas entregam para você. Não pedimos endereço nem localização.",
+      return passo("Qual é o seu CEP?", "Serve para saber quais lojas entregam para você e quanto sai o frete. Não pedimos endereço nem localização.",
         `<div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-cep">CEP</label><input id="campo-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${fmtCep(d)}" aria-invalid="${erro}" ${erro ? 'aria-describedby="erro-cep"' : ""}>
          ${erro ? `<span id="erro-cep" class="msg-erro t-apoio">${ic("error", "i p")}O CEP tem 8 números.</span>` : ""}</div>
          ${fora ? `<div class="caixa-info" role="status"><h2 class="t-titulo-secao">Ainda não chegamos aí</h2><p class="t-corpo sec" style="margin:0">Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.</p></div>` : ""}`,
@@ -909,31 +988,38 @@ const TELAS = {
   },
   ofertas: {
     nome: "Ofertas", principal: true,
-    estados: { com: "Com ofertas", carregando: "Carregando", nada: "Nada passou no teste hoje", medindo: "Começando a medir", semCategoria: "Sem categoria", fora: "Fora da região", erro: "Erro", offline: "Sem internet (cópia salva)", retorno: "Voltou da loja" },
+    estados: { com: "Com ofertas", carregando: "Carregando", nada: "Nada passou no teste hoje", medindo: "Começando a medir", semCategoria: "Sem categoria", fora: "Fora da região", erro: "Erro", offline: "Sem internet (cópia salva)", retorno: "Voltou da loja", outroCep: "Frete em outro CEP (premium)" },
     nota: {
-      _: "Resumo do dia no topo, filtro por categoria (o feed da API aceita ?categoria=), Excepcionais (avisadas) e Boas ofertas separadas por seção e etiqueta, fralda com o tamanho e só nos tamanhos escolhidos, alimentação infantil sempre com o aviso da NBCAL inteiro, anúncio só a partir da 3ª posição e com forma própria (princípio 9). Remédio saiu do app (DECISIONS 45). Dependência: o item do feed da API ainda não traz o menor preço do período nem os dias medidos; selo e régua do cartão precisam desse acréscimo (BACKLOG_UX B-02).",
+      _: "Resumo do dia no topo, filtro por categoria (o feed da API aceita ?categoria=), Excepcionais (avisadas) e Boas ofertas separadas por seção e etiqueta, fralda com o tamanho e só nos tamanhos escolhidos, alimentação infantil sempre com o aviso da NBCAL inteiro, anúncio só a partir da 3ª posição e com forma própria (princípio 9). Remédio saiu do app (DECISIONS 45). Selo e régua do cartão vêm de prova no item do feed (contrato 1.3.0, DECISIONS 68). Frete: cada cartão mostra, logo abaixo do preço, o frete e o total para o CEP escolhido no topo, e o prazo; o chip do topo troca o CEP. Hoje a API guarda um frete só por oferta e o prazo por faixa de CEP da loja, e a Lomadee não informa frete (sempre a confirmar); frete por faixa de CEP é acréscimo (BACKLOG_UX B-36). O preço grande continua sem frete, para comparar com o preço normal da loja, que também não inclui frete.",
       nada: "Ausência de oferta é funcionalidade (princípio 5): os números do dia provam a curadoria (U06).",
       medindo: "Partida a frio explicada com contagem (U02). Sem 14 dias de histórico nada é avisado.",
       carregando: "Esqueleto estático, sem brilho animado (custo em aparelho de entrada, S-01).",
       offline: "Última cópia salva com a hora (princípio 7). A fase 4 escolheu não guardar feed no aparelho (DECISIONS 61, \"preço que muda engana\"); a proposta mantém a cópia só com a hora bem visível. Decisão a tomar com o responsável (BACKLOG_UX B-30).",
       retorno: "Ao voltar da loja, uma pergunta opcional fecha o ciclo (U23).",
+      outroCep: "Premium com 3 CEPs, vendo o de Campinas. O frete e o prazo mudam com o CEP; a fralda passa a custar R$ 14,90 de frete. A papinha some: R$ 8,90 de frete para uma economia de R$ 2,59 é o caso FRETE_ANULA_ECONOMIA do motor. O shampoo some porque a loja só tem retirada na capital (o feed da API já filtra por faixa de CEP da loja). A caixa no fim diz quantas ficaram de fora e por quê: ausência explicada (princípio 5).",
     },
     render(est) {
       if (est === "retorno" && E._ultimo !== "ofertas:retorno") { E.retorno = true; E.obrigado = false; }
+      if (est === "outroCep" && E._ultimo !== "ofertas:outroCep") { E.premium = true; E.ceps = CEPS_PREMIUM.slice(); E.cep = "13010000"; }
       let corpo;
-      const cepChip = E.cep ? `<div class="pad"><button class="chip-cep" data-acao="ir" data-destino="cep:valido" aria-label="CEP ${fmtCep(E.cep)}. Toque para trocar.">${ic("location_on", "i p")}CEP ${fmtCep(E.cep)}</button></div>` : "";
+      const cepChip = E.cep ? `<div class="pad"><button class="chip-cep" data-acao="folha-cep" aria-label="Frete e ofertas para o CEP ${fmtCep(E.cep)}. Toque para trocar.">${ic("location_on", "i p")}Frete para ${fmtCep(E.cep)}${ic("keyboard_arrow_down", "i p")}</button></div>` : "";
       const filtros = E.categorias.size > 1 ? `<div class="pad quebra filtros" role="group" aria-label="Filtrar por categoria. Toque de novo para ver todas.">
           ${[...E.categorias].map((k) => `<button class="chip-filtro t-rotulo" role="checkbox" aria-checked="${E.filtroCat === k}" data-filtro="${k}" aria-label="Mostrar só ${CAT[k].rot}">${E.filtroCat === k ? ic("check_circle", "i p") : ""}${CAT[k].curto}</button>`).join("")}</div>` : "";
       const lista = (ofertas) => {
-        ofertas = ofertas.filter(visivel);
+        const base = ofertas.filter(visivelCategoria);
+        const semEntrega = base.filter((o) => !freteDe(o)).length, anula = base.filter((o) => freteAnula(o, freteDe(o))).length;
+        const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+        const partes = [anula ? `${plural(anula, "com frete maior que a economia", "com frete maior que a economia")}` : "", semEntrega ? `${plural(semEntrega, "de loja que não entrega aí", "de lojas que não entregam aí")}` : ""].filter(Boolean);
+        const foraCep = partes.length ? `<div class="caixa-info" role="note" style="flex-direction:row;align-items:flex-start;gap:var(--espaco-3)">${ic("local_shipping", "i p")}<span class="t-apoio">Para o CEP ${fmtCep(E.cep)} ficaram de fora ${plural(anula + semEntrega, "oferta", "ofertas")}: ${partes.join(" e ")}. Trocar o CEP muda o frete e as ofertas.</span></div>` : "";
+        ofertas = base.filter(visivel);
         const exc = ofertas.filter((o) => o.nivel === "exc"), boas = ofertas.filter((o) => o.nivel !== "exc");
-        if (!exc.length && !boas.length) return htmlEstado("verified", "Nada nesta categoria hoje", "Quando o preço cair de verdade, a gente avisa.");
         const itens = [];
         if (exc.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Excepcionais</h2><p class="t-apoio sec" style="margin:4px 0 0">Menor preço dos últimos meses. Estas a gente avisa.</p></div>`, ...exc.map(htmlCartao));
         if (boas.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Boas ofertas</h2><p class="t-apoio sec" style="margin:4px 0 0">Também conferidas, mas não tão fortes para avisar.</p></div>`, ...boas.map(htmlCartao));
         let n = 0; const pos = itens.findIndex((h) => h.startsWith('<button class="cartao"') && ++n === 3);
         if (pos > 0) itens.splice(pos, 0, htmlAnuncio());
-        return itens.join("");
+        if (!exc.length && !boas.length) return htmlEstado("verified", "Nada nesta categoria hoje", "Quando o preço cair de verdade, a gente avisa.") + foraCep;
+        return itens.join("") + foraCep;
       };
       const todas = [OF.protetor, OF.fralda, OF.papinha, OF.creme, OF.lenco, OF.shampoo];
       const retorno = est === "retorno" ? `<div class="retorno" role="region" aria-label="Pergunta sobre o preço">${E.obrigado ? `<span class="t-corpo">Obrigado. Isso ajuda a conferir as próximas.</span>` : `<span class="t-nome">O preço na loja bateu?</span><div class="quebra"><button class="botao-contorno" data-acao="obrigado">Sim</button><button class="botao-contorno" data-acao="obrigado">Não</button><button class="botao-texto" data-acao="obrigado">Não comprei</button></div>`}</div>` : "";
@@ -956,21 +1042,23 @@ const TELAS = {
   },
   detalhe: {
     nome: "Detalhe da oferta",
-    estados: { protetor: "Ativa, incondicional", fralda: "Fralda, leve 3 pague 2", papinha: "Alimentação infantil (aviso NBCAL)", shampoo: "Só com cartão + retirada", lenco: "Quase o menor, 94 dias de histórico", creme: "Gestação e pós-parto", caiu: "Caiu mais desde o aviso", mudou: "Preço mudou depois do aviso", encerrada: "Encerrada (ativa = false)", carregando: "Carregando", erro: "Erro", naoExiste: "Oferta não existe mais" },
+    estados: { protetor: "Ativa, incondicional", fralda: "Fralda, leve 3 pague 2", papinha: "Alimentação infantil (aviso NBCAL)", shampoo: "Só com cartão + retirada", lenco: "Quase o menor, 94 dias de histórico", creme: "Gestação e pós-parto", freteCeps: "Frete nos seus 3 CEPs (premium)", caiu: "Caiu mais desde o aviso", mudou: "Preço mudou depois do aviso", encerrada: "Encerrada (ativa = false)", carregando: "Carregando", erro: "Erro", naoExiste: "Oferta não existe mais" },
     nota: {
-      _: "Ordem de leitura: o que mudou → condição → produto → preço → aviso legal → prova → cobertura → ação (A07). A prova fica na primeira dobra, não numa aba (R13). O detalhe da API já traz o histórico de 180 dias, que dá o menor preço, os dias medidos e a régua sem campo novo. Link de afiliado declarado quando linkAfiliado = true (CDC art. 36).",
-      fralda: "O preço grande é o efetivo por pacote (precoEfetivoCentavos, comparável ao normal); o total a pagar está na faixa de condição (U09). Tamanho G em etiqueta.",
+      _: "Ordem de leitura: o que mudou → condição → produto → preço → aviso legal → frete e total → prova → frete detalhado → ação (A07). O frete com o total fica junto do preço, antes do clique (princípio 4): quem vai pagar R$ 9,90 de entrega precisa saber disso antes de sair do app. A prova fica na primeira dobra, não numa aba (R13). O detalhe da API já traz o histórico de 180 dias, que dá o menor preço, os dias medidos e a régua sem campo novo. Link de afiliado declarado quando linkAfiliado = true (CDC art. 36).",
+      fralda: "O preço grande é o efetivo por pacote (precoEfetivoCentavos, comparável ao normal); o total a pagar está na faixa de condição (U09). Tamanho G em etiqueta. O frete de R$ 9,90 é da compra toda (3 pacotes), por isso o total é R$ 171,30.",
       papinha: "Alimentação infantil: o aviso do Ministério da Saúde aparece inteiro logo abaixo do preço, visível sem rolar, sem cortar nem esconder (DECISIONS 46; avisos[] da API). Com 94 dias de histórico, o selo diz \"94 dias\", nunca \"6 meses\".",
       encerrada: "Com ativa = false a API manda link = null: a promoção acabou e isso vem antes de tudo, e o botão leva às ofertas de hoje (R8).",
       mudou: "Mudança de preço aparece antes do preço (R9).",
       creme: "Produto de gestação: dentro do app aparece normalmente; a proteção está na tela bloqueada (N9).",
       naoExiste: "OFERTA_NAO_ENCONTRADA (404): a notificação pode ser tocada dias depois.",
+      freteCeps: "Premium: o bloco de frete compara os CEPs da pessoa (casa, avó, creche). Em Santos a loja não entrega, e o texto diz isso em vez de esconder. \"Trocar CEP\" muda o CEP de referência de todo o app, não só desta tela.",
     },
     render(est) {
       if (est === "carregando") return topo("", true) + `<div class="lista">${esqueleto()}</div>`;
       if (est === "erro") return topo("", true) + htmlEstado("cloud_off", "Não deu para carregar a oferta", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true);
       if (est === "naoExiste") return topo("", true) + htmlEstado("event_busy", "Esta oferta não existe mais", "A loja tirou o produto do ar. Veja as ofertas de hoje.", "Ver ofertas de hoje", "ir-ofertas");
-      const o = OF[est] || OF.protetor;
+      if (est === "freteCeps" && E._ultimo !== "detalhe:freteCeps") { E.premium = true; E.ceps = CEPS_PREMIUM.slice(); E.cep = CEPS_PREMIUM[0]; }
+      const o = OF[est === "freteCeps" ? "fralda" : est] || OF.protetor;
       const tc = textoCondicao(o), s = selo(o);
       const abaixo = reais(o.prova.normal - efetivo(o));
       let h = topo("", true, `<button class="botao-icone" data-acao="nada" aria-label="Compartilhar">${ic("share")}</button>`);
@@ -982,7 +1070,7 @@ const TELAS = {
           <span class="quebra" style="gap:var(--espaco-2)">${o.nivel === "exc" ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}${o.tamanho ? `<span class="chip-tamanho t-rotulo-p">Tamanho ${o.tamanho}</span>` : ""}</span>
           <h1 class="t-titulo-secao">${esc(o.nome)}</h1><span class="t-apoio sec">Embalagem: ${o.emb.rot}</span><span class="t-apoio sec">${o.loja}</span></div></div>`;
       // Aviso legal logo depois do preço: visível sem rolar, nunca escondido abaixo da prova (NBCAL).
-      h += htmlPreco(o, true) + `<div class="t-apoio sec">${porUnidade(o)}</div>` + htmlAvisos(o);
+      h += htmlPreco(o, true) + `<div class="t-apoio sec">${porUnidade(o)}</div>` + htmlAvisos(o) + htmlFrete(o);
       const dias = o.prova.serie.slice().reverse().slice(0, 30);
       h += `<section class="prova" aria-labelledby="tit-prova"><h2 id="tit-prova" class="t-titulo-secao">Por que é promoção de verdade</h2>
         <div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
@@ -993,7 +1081,7 @@ const TELAS = {
           <button class="botao-texto" style="align-self:flex-start;padding-left:0" data-acao="ver-dias" aria-expanded="${E.verDias}">${E.verDias ? "Esconder preços dia a dia" : "Ver preços dia a dia"}</button>
           ${E.verDias ? `<ul class="dias t-apoio">${dias.map((d) => `<li><span>${d.dia}</span><span>${reais(d.c)}</span></li>`).join("")}</ul>` : ""}</div>
         <button class="botao-contorno" data-acao="como">Como a gente confere</button></section>`;
-      h += `<div class="linha-apoio t-apoio">${ic(o.cob.tipo === "retirada" ? "storefront" : "local_shipping", "i p")}<span>${textoCobertura(o.cob)}</span></div>
+      h += htmlFreteDetalhe(o) + `
         <div class="linha-apoio t-apoio">${ic("schedule", "i p")}<span>Conferido às ${o.conferido}. O preço e o estoque podem mudar na loja.</span></div>
         <p class="t-apoio sec" style="margin:0">O economae pode ganhar uma comissão se você comprar por este link. O preço para você é o mesmo, e isso não muda a escolha das ofertas.</p></div>`;
       h += `<div class="rodape-fixo">${o.encerrada ? `<button class="botao-principal" data-acao="ir" data-destino="ofertas:com">Ver ofertas de hoje</button>` : `<button class="botao-principal" data-acao="loja" data-id="${o.id}" aria-label="Ver na ${o.loja}. Abre fora do app.">Ver na ${o.loja}${ic("open_in_new", "i p")}</button>`}</div>`;
@@ -1019,7 +1107,11 @@ const TELAS = {
     estados: { gratuito: "Gratuito", premium: "Premium ativo" },
     nota: { _: "Junta as telas \"Preferências\" e \"Conta\" da fase 4 num destino só da barra inferior. Limite do dia de 1 a 10 (teto do tenant; padrão 3, DECISIONS 58). Silêncio visível. Tamanho da fralda editável. Sair e excluir a conta em dois toques, sem documento (R14). Premium = mais CEPs, e o próprio responsável achou fraco para este público: a proposta de benefício está em aberto (BACKLOG_UX B-14)." },
     render(est) {
-      const plano = est === "premium" ? "Premium ativo até 30/10" : "Acompanhe até 3 CEPs com o premium";
+      if (E._ultimo !== "ajustes:" + est) {
+        if (est === "premium" && !E.premium) { E.premium = true; E.ceps = CEPS_PREMIUM.slice(); E.cep = E.ceps[0]; }
+        if (est === "gratuito" && E.premium) { E.premium = false; E.ceps = [E.ceps[0]]; E.cep = E.ceps[0]; }
+      }
+      const plano = est === "premium" ? `Premium ativo até 30/10 · ${E.ceps.length} de 3 CEPs` : "Acompanhe até 3 CEPs com o premium";
       const item = (t, apoio, acao, icone = "chevron_right", cls = "") => `<button class="item-ajuste ${cls}" data-acao="${acao || "nada"}"><span class="coluna"><span class="t-nome">${t}</span>${apoio ? `<span class="t-apoio sec">${apoio}</span>` : ""}</span>${ic(icone)}</button>`;
       const limites = [1, 3, 5, 10].map((n) => `<button class="radio" role="radio" aria-checked="${E.limite === n}" data-limite="${n}"><span class="bola"></span><span class="t-corpo">${n} por dia${n === 3 ? " (padrão)" : ""}</span></button>`).join("");
       return topo("Ajustes", false) + faixaAvisos() + `<div class="pad" style="padding-bottom:var(--espaco-8)">
@@ -1029,7 +1121,7 @@ const TELAS = {
         ${item("Não avisar entre", "21:00 e 08:00. Avisos desse horário chegam às 08:00, os melhores primeiro.")}
         <hr class="div"><h2 class="t-titulo-secao" style="margin-bottom:var(--espaco-3)">Categorias que você segue</h2><div class="coluna" style="gap:var(--espaco-3)">${htmlCategorias()}</div>
         ${E.categorias.has("fraldas_lencos") ? `<p class="t-nome" style="margin:var(--espaco-5) 0 var(--espaco-2)">Tamanho da fralda</p>${htmlTamanhos()}<p class="t-apoio sec" style="margin:var(--espaco-2) 0 0">${E.tamanhos.size ? "Lenço e fralda sem tamanho no anúncio aparecem sempre." : "Sem escolha, chegam promoções de todos os tamanhos."}</p>` : ""}
-        <hr class="div"><h2 class="t-titulo-secao">Seu CEP</h2>${item(fmtCep(E.cep || "01310100"), "Só o CEP, nunca o endereço. Atendemos o estado de São Paulo.", "ir-cep")}${item("Adicionar outro CEP", plano, "premium")}
+        <hr class="div"><h2 class="t-titulo-secao">${E.ceps.length > 1 ? "Seus CEPs" : "Seu CEP"}</h2>${E.ceps.map((c, i) => item(fmtCep(c), i === 0 ? "Só o CEP, nunca o endereço. O frete e as ofertas são calculados para ele." : "Frete e ofertas também para este CEP.", "ir-cep")).join("")}${E.ceps.length < 3 ? item("Adicionar outro CEP", plano, "premium") : `<p class="t-apoio sec" style="margin:0">${plano}</p>`}
         <hr class="div"><h2 class="t-titulo-secao">Conta</h2>${item(E.email, "Entrou com e-mail. A sessão dura 90 dias sem uso.", "nada", "mail")}
         ${item("Sair", "Os avisos param neste celular.", "sair", "logout")}
         <hr class="div">${item("Como a gente confere", null, "como")}${item("Termos de uso")}${item("Política de privacidade")}
@@ -1054,6 +1146,10 @@ function htmlSobreposicao() {
   if (E.folha === "como") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-como"><span class="alca"></span><h2 id="tit-como" class="t-titulo-tela">Como a gente confere uma promoção</h2>
     ${["Todo dia, anotamos o preço de cada produto em cada loja.", "Só avisamos quando o preço está pelo menos 25% abaixo do normal da loja.", "O preço precisa ser o menor dos últimos 6 meses, ou bem perto dele.", "Se a loja aumentou o preço pouco antes para depois “baixar”, a gente descarta.", "Se o frete come a economia, a gente descarta.", "Precisamos de pelo menos 14 dias de preço de um produto para saber se ele está barato.", "Fórmula infantil, mamadeira, bico e chupeta nunca aparecem: a lei proíbe promoção desses produtos."].map((t) => `<div class="linha topo t-corpo"><span style="color:var(--cor-prova)">${ic("check_circle")}</span><span>${t}</span></div>`).join("")}
     <button class="botao-principal" data-acao="fechar">Entendi</button></div></div>`;
+  if (E.folha === "cep") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-cep"><span class="alca"></span><h2 id="tit-cep" class="t-titulo-tela">Frete e ofertas para qual CEP?</h2>
+    <p class="t-corpo sec" style="margin:0">O frete, o prazo e as lojas que entregam mudam com o CEP.</p>
+    <div role="radiogroup" aria-labelledby="tit-cep">${E.ceps.map((c) => `<button class="radio" role="radio" aria-checked="${c === E.cep}" data-cep="${c}"><span class="bola"></span><span class="t-corpo">CEP ${fmtCep(c)}</span></button>`).join("")}</div>
+    ${E.premium ? `<button class="botao-contorno" data-acao="ir" data-destino="ajustes:premium">Mudar meus CEPs</button>` : `<button class="botao-contorno" data-acao="ir-cep">Trocar CEP</button><button class="botao-texto" data-acao="premium">Acompanhar até 3 CEPs</button>`}</div></div>`;
   if (E.folha === "premium") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-premium"><span class="alca"></span><h2 id="tit-premium" class="t-titulo-tela">Acompanhe até 3 CEPs</h2>
     <p class="t-corpo sec" style="margin:0">Para quem compra para casa, para a casa da avó ou para a creche.</p><p class="t-titulo-secao" style="margin:0">[preço da Google Play] por mês</p><p class="t-apoio sec" style="margin:0">Renova sozinho. Cancele quando quiser na Google Play.</p>
     <button class="botao-principal" data-acao="fechar">Assinar por [preço da Google Play]</button></div></div>`;
@@ -1115,7 +1211,7 @@ document.querySelector(".painel").addEventListener("click", (ev) => {
 });
 $nav.addEventListener("click", (ev) => { const b = ev.target.closest("[data-aba]"); if (b) ir(b.dataset.aba, null); });
 $tela.addEventListener("click", (ev) => {
-  const alvo = ev.target.closest("[data-abrir],[data-acao],[data-cat-alternar],[data-limite],[data-tamanho],[data-filtro]");
+  const alvo = ev.target.closest("[data-abrir],[data-acao],[data-cat-alternar],[data-limite],[data-tamanho],[data-filtro],[data-cep]");
   if (!alvo) return;
   if (alvo.dataset.abrir) { const id = alvo.dataset.abrir; ir("detalhe", ({ retirada: "protetor", sabonete: "encerrada" })[id] || id); return; }
   if (alvo.dataset.catAlternar) { const k = alvo.dataset.catAlternar; E.categorias.has(k) ? E.categorias.delete(k) : E.categorias.add(k); if (E.filtroCat && !E.categorias.has(E.filtroCat)) E.filtroCat = null; render(); return; }
@@ -1123,6 +1219,7 @@ $tela.addEventListener("click", (ev) => {
   // Filtro de categoria como chip de filtro do Material 3: toque de novo volta a mostrar todas.
   if (alvo.dataset.filtro !== undefined) { E.filtroCat = E.filtroCat === alvo.dataset.filtro ? null : alvo.dataset.filtro; render(); return; }
   if (alvo.dataset.limite !== undefined) { E.limite = +alvo.dataset.limite; render(); return; }
+  if (alvo.dataset.cep) { E.cep = alvo.dataset.cep; E.folha = null; render(true); return; }
   const a = alvo.dataset.acao;
   // Clique dentro da folha não fecha; só o véu ou os botões de fechar.
   if (a === "fechar" && ev.target.closest(".folha,.dialogo") && !ev.target.closest("button[data-acao='fechar']")) return;
@@ -1132,6 +1229,7 @@ $tela.addEventListener("click", (ev) => {
     case "expandir": E.expandida = !E.expandida; render(); break;
     case "como": E.folha = "como"; render(); break;
     case "premium": E.folha = "premium"; render(); break;
+    case "folha-cep": E.folha = "cep"; render(); break;
     case "apagar": E.dialogo = "apagar"; render(); break;
     case "apagado": case "sair": E.aceitou = false; ir("boasVindas", "padrao"); break;
     case "fechar": E.folha = null; E.dialogo = null; render(); break;
@@ -1157,7 +1255,7 @@ $tela.addEventListener("click", (ev) => {
     case "verificar-codigo": if (E.codigoDigitado.length === 6 && E.codigoDigitado !== "482913") ir("termos", "padrao"); else ir("entrada", "codigoErrado", false); break;
     case "cep-continuar": {
       E.cepTentou = true; const d = E.cepDigitado;
-      if (d.length === 8 && +d >= 1000000 && +d <= 19999999) { E.cep = d; ir("permissao", "padrao"); }
+      if (d.length === 8 && +d >= 1000000 && +d <= 19999999) { const i = E.ceps.indexOf(E.cep); if (i >= 0) E.ceps[i] = d; else E.ceps.unshift(d); E.cep = d; ir("permissao", "padrao"); }
       else if (d.length === 8 && E._foraConfirmado === d) ir("ofertas", "fora");
       else { if (d.length === 8) E._foraConfirmado = d; render(); }
       break;

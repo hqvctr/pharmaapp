@@ -70,4 +70,5 @@ B-01 (usuário sem conta) sai do backlog: superado pelas DECISIONS 34 e 38. B-06
 | B-33 | **Feito em parte:** faixa de condição, chip de economia, preço normal sem risco, selo, régua, prova e aviso legal no app real. Faltam: estados "Nada passou no teste hoje" com os números do dia (B-09), "Começando a medir", tela Avisos (B-31), barra inferior com três destinos. |
 | B-34 | **Novo:** ícone do app e da notificação ainda são do sistema (`star_on`). |
 | B-35 | **Novo:** o app não tem teste de captura em fonte a 200% nem em tema escuro; a jornada roda só no claro, a 100%. |
+| B-36 | **Novo: frete por faixa de CEP.** Guardar frete (status, valor) por faixa de CEP da loja, ao lado do prazo (`store_service_areas`); servir no item do feed para o `?cep=` consultado; aplicar FRETE_ANULA_ECONOMIA por CEP; no app, bloco de frete no detalhe e chip de CEP no feed (protótipo 2.1, PROPOSTA 16). Depende de fonte que informe frete por CEP (S-33); até lá vale "Frete a confirmar na loja". |
 

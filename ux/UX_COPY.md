@@ -319,3 +319,29 @@ Estes textos estão no protótipo. O `strings.xml` do módulo `android/` desta b
 | Excluir conta | Excluir a conta? · Apagamos seu e-mail, CEPs, preferências e histórico de avisos. Não tem volta. · Cancelar · Excluir |
 | Premium | Para quem compra para casa, para a casa da avó ou para a creche. |
 
+
+## 13. Frete de acordo com o CEP (protótipo 2.1, 2026-09-30)
+
+Substitui a linha de cobertura (`notif_expandido_entrega*`, `..._retirada` e `{cobertura}` de `a11y_cartao`). O frete é
+sempre do CEP escolhido no topo das Ofertas; o preço grande continua sem frete (comparável ao preço normal).
+
+| Chave | Texto | Onde |
+|---|---|---|
+| `frete_pago` | Frete {frete} · total {preço + frete}[ levando {n}] | Cartão e detalhe, logo abaixo do preço |
+| `frete_gratis` | Frete grátis · total {preço}[ levando {n}] | Cartão e detalhe |
+| `frete_confirmar` | Frete a confirmar na loja | Cartão e detalhe (a loja só mostra no carrinho) |
+| `frete_retirada` | Retirada na loja, sem frete | Cartão e detalhe |
+| `frete_apoio` | CEP {cep} · chega em até {n} dias · (retirada) A {distância} do CEP {cep} | Segunda linha |
+| `frete_nao_entrega` | A loja não entrega neste CEP | Oferta aberta de um aviso antigo |
+| `frete_anula` | Frete {frete}: come a economia | Idem |
+| `frete_bloco_titulo` | Frete para o CEP {cep} · Trocar CEP | Detalhe |
+| `frete_bloco_linhas` | Produto[ ({n} pacotes)] · Frete · Total | Detalhe |
+| `frete_bloco_rodape` | Chega em até {n} dias. Frete informado pela loja às {hora}. Confira no carrinho antes de pagar. | Detalhe |
+| `frete_bloco_rodape_confirmar` | Chega em até {n} dias. A loja só mostra o frete no carrinho. | Detalhe |
+| `frete_bloco_anula` | Para este CEP, o frete de {frete} é maior que a economia de {economia}. Por isso esta oferta não aparece nas suas ofertas deste CEP. | Detalhe |
+| `frete_outros_ceps` | Nos seus outros CEPs · {cep} {frete {frete} · total {total} / frete grátis · até {n} dias / a loja não entrega} | Detalhe, premium |
+| `notif_expandido_frete` | Frete para {cep}: {frete}, total {total}. Chega em até {n} dias. · Frete grátis para {cep}, chega em até {n} dias. · Entrega para {cep} em até {n} dias. Frete a confirmar na loja. · Retire na loja a {distância}. Sem frete. | Notificação expandida e leitor de tela |
+| `feed_chip_cep` | Frete para {cep} ▾ (leitor: "Frete e ofertas para o CEP {cep}. Toque para trocar.") | Topo das Ofertas |
+| `folha_cep` | Frete e ofertas para qual CEP? · O frete, o prazo e as lojas que entregam mudam com o CEP. · Trocar CEP · Acompanhar até 3 CEPs · (premium) Mudar meus CEPs | Folha |
+| `feed_fora_do_cep` | Para o CEP {cep} ficaram de fora {n} ofertas: {a} com frete maior que a economia e {b} de loja que não entrega aí. Trocar o CEP muda o frete e as ofertas. | Fim da lista |
+| `cep_texto` | Serve para saber quais lojas entregam para você e quanto sai o frete. Não pedimos endereço nem localização. | Primeiro uso, CEP |
