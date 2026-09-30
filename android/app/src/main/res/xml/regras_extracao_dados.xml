@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- O token de sessão não vai para backup na nuvem nem para outro aparelho. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="datastore/sessao.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="datastore/sessao.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>

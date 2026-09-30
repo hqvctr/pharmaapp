@@ -11,7 +11,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --dir src",
     "migrate": "node dist/db/migrate.js",
-    "start:api": "node dist/api/server.js"
+    "start:api": "node dist/api/server.js",
+    "contrato": "tsc -p tsconfig.json && node dist/api/gerarContrato.js",
+    "despachar": "node dist/push/despachar.js"
   },
   "dependencies": {
     "fastify": "5.12.5",

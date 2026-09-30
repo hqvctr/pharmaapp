@@ -1,3 +1,6 @@
 .env
 node_modules/
 dist/
+# Chave da conta de serviço do FCM: fica fora do repositório (docs/operacao/prompt-cowork-fase4.md).
+*firebase-adminsdk*.json
+fcm-conta-servico*.json

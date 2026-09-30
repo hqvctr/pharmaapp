@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nome_app">economae</string>
+    <!-- Igual a app.push.canalAndroid na config do tenant. -->
+    <string name="canal_ofertas_id" translatable="false">ofertas</string>
+    <string name="canal_ofertas_nome">Promoções</string>
+    <string name="canal_ofertas_descricao">Promoções excepcionais nas categorias e no CEP que você escolheu</string>
+</resources>

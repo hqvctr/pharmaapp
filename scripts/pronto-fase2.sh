@@ -26,7 +26,7 @@ GRAV=backend/fixtures/lomadee
 LISTAS=backend/fixtures/medicamentos/listas_teste.json
 # Dia da promoção: 2026-09-01 às 10:00 em São Paulo (13:00 UTC).
 instante() { node -e "console.log(new Date(Date.parse('2026-09-01T13:00:00Z') - $1 * 864e5 + ${2:-0} * 36e5).toISOString())"; }
-coletar() { node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --listas-medicamentos "$LISTAS" --gravacoes "$1" --agora "$2"; }
+coletar() { node backend/dist/pipeline/coletar.js --tenant economae --fonte lomadee --listas-medicamentos "$LISTAS" --gravacoes "$1" --agora "$2"; }
 
 echo "--- histórico: 13 dias de preço normal, 7 dias com o shampoo inflado"
 for d in $(seq 20 -1 8); do coletar "$GRAV/base" "$(instante "$d")" > /dev/null 2>&1; done
@@ -62,9 +62,13 @@ confere "desconto de mentira descartado por subida pré-queda" \
 confere "queda pequena descartada" \
   "SELECT count(*) FROM offers o JOIN products p ON p.id = o.product_id WHERE p.nome LIKE 'Fralda%' AND o.ultimo_motivo LIKE '%QUEDA_ABAIXO_DO_LIMIAR%'" 1
 confere "medicamentos bloqueados (sem referência e tarja preta)" \
-  "SELECT string_agg(codigo, ',' ORDER BY codigo) FROM triagem_bloqueios" "MEDICAMENTO_SEM_REFERENCIA,TERMO_DE_VENDA_CONTROLADA"
-confere "nenhum medicamento virou oferta" \
-  "SELECT count(*) FROM products WHERE categoria = 'medicamentos_isentos'" 0
+  "SELECT string_agg(codigo, ',' ORDER BY codigo) FROM triagem_bloqueios WHERE codigo NOT LIKE 'NBCAL%'" "MEDICAMENTO_SEM_REFERENCIA,TERMO_DE_VENDA_CONTROLADA"
+confere "NBCAL: mamadeira e fórmula infantil bloqueadas" \
+  "SELECT string_agg(id_externo, ',' ORDER BY id_externo) FROM triagem_bloqueios WHERE codigo = 'NBCAL_PROMOCAO_VEDADA'" "A-800,A-900"
+confere "nenhum medicamento nem item da NBCAL virou produto" \
+  "SELECT count(*) FROM products WHERE categoria = 'medicamentos' OR nome ~* 'mamadeira|f.rmula infantil'" 0
+confere "tamanho da fralda extraído do título" \
+  "SELECT string_agg(DISTINCT tamanho_fralda, ',') FROM products WHERE nome LIKE 'Fralda%'" "G"
 confere "categoria fora do escopo ignorada" \
   "SELECT count(*) FROM products WHERE nome LIKE 'Fone%'" 0
 confere "histórico: 21 dias do protetor na loja A (P1)" \

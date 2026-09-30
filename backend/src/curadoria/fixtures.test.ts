@@ -21,7 +21,8 @@ const TAGS_OBRIGATORIAS = [
   'loja_fora_de_cobertura',
 ];
 
-const configTenant = JSON.parse(readFileSync(path.join(RAIZ, 'config/tenants/padrao.json'), 'utf8'));
+// Config própria dos testes: o catálogo de categorias do tenant muda com o produto, o motor não.
+const configTenant = JSON.parse(readFileSync(path.join(RAIZ, 'fixtures/config-motor.json'), 'utf8'));
 const configCuradoria = validarConfigCuradoria(configTenant.curadoria);
 const configCobertura = validarConfigCobertura(configTenant.cobertura);
 

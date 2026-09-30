@@ -17,6 +17,8 @@ export interface OfertaBruta {
   lojaIdExterno: string;
   link: string;
   linkAfiliado: boolean;
+  /** Foto do produto (https) ou null. */
+  imagemUrl: string | null;
   disponivel: boolean;
   validaDe: Date | null;
   validaAte: Date | null;
@@ -27,6 +29,11 @@ export interface ResultadoColeta {
   ofertas: OfertaBruta[];
   /** Itens que a fonte devolveu mas não puderam ser lidos (formato inesperado). */
   ilegiveis: Array<{ referencia: string; erro: string }>;
+  /**
+   * true: a fonte devolveu tudo o que tem; oferta ausente acabou e é marcada indisponível.
+   * false (ex.: corte por maxPaginas): ausência não prova nada.
+   */
+  completa: boolean;
 }
 
 export interface SourceAdapter {

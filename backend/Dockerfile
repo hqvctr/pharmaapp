@@ -13,5 +13,6 @@ COPY package.json package-lock.json .npmrc ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY migrations ./migrations
+COPY config ./config
 USER node
 CMD ["node", "dist/api/server.js"]
