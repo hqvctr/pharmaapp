@@ -47,3 +47,15 @@ desenhada e implementada com dados de exemplo, e só funciona de verdade quando 
 | B-26 | Conferir a curva de escala de fonte do protótipo contra um aparelho Android 14+ (S-29). | Só afeta o protótipo. |
 | B-27 | Capturas Paparazzi em aparelho menor (320 dp) e em tablet. | Aparelho de referência escolhido pela pesquisa (S-01); telas menores são raras no dado da StatCounter. |
 | B-28 | Integrar `node ux/design-tokens/gerar.mjs` ao build do Android (hoje é passo manual antes de compilar). | Evitar Node como dependência do Gradle nesta fase. |
+
+## Versão 2 (2026-09-30), depois das fases 3 e 4
+
+| # | Item | Por que ficou de fora | Depende de |
+|---|---|---|---|
+| B-29 | **Notificação de gestação escondida com o celular bloqueado** (`VISIBILITY_PRIVATE` + versão pública) no app da fase 4. | Proposta nova (PROPOSTA 14, N9); o app real está em outra branch. | Canal ou categoria no payload do push |
+| B-30 | **Cópia offline do feed** com a hora visível. A fase 4 decidiu não guardar feed no aparelho (DECISIONS 61, "preço que muda engana"); a proposta mantém a cópia com "Mostrando as ofertas das HH:MM". | Decisão do responsável. | — |
+| B-31 | **Rota para listar os avisos recebidos** (entregas do usuário), para a tela Avisos. | Não existe no contrato 1.2.0. | Acréscimo no contrato |
+| B-32 | **Texto do push igual ao da proposta:** preço no título (≤ 30), prova no texto (≤ 40), "preço normal" em vez de "referência", economia em reais. Hoje o título é o nome do produto. | Implementação da fase 4 (`backend/src/push/regras.ts`). | Nenhuma; é mudança de texto no despachante |
+| B-33 | **Portar componentes deste `android/` para o app real** (`br.com.economae`): Régua de preço, selo de prova, faixa de condição, chip de economia, estados de silêncio. | O módulo `android/` desta branch foi escrito antes da fase 4 e usa dados de exemplo; o app real está na outra branch. | Decisão de qual base seguir |
+
+B-01 (usuário sem conta) sai do backlog: superado pelas DECISIONS 34 e 38. B-06 (remédio) sai: remédio foi tirado do app (DECISIONS 45).

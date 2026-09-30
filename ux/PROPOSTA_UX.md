@@ -409,3 +409,38 @@ tabela, com dados de exemplo, para que a fase 3 só precise preencher o reposit�
 Nenhuma conclusão das fases 1–4 foi revertida pela pesquisa posterior. Um refinamento: a fase 1
 listou "conta Google ou e-mail" como pré-requisito implícito do modelo; a proposta torna a conta
 **opcional**, o que exige mudança de esquema (S-13, B-01) — é proposta, não contradição.
+
+## 14. Versão 2 (2026-09-30): alinhamento com as fases 3 e 4
+
+As fases 3 e 4 do produto (branch `claude/awesome-noether-jruv6b`, contrato `backend/openapi/v1.json`
+1.2.0) tomaram decisões que mudam a proposta. O protótipo foi atualizado; as mudanças e os motivos:
+
+| Mudou | De | Para | Motivo |
+|---|---|---|---|
+| Público e categorias | 8 categorias de farmácia e mercado | 4: Fraldas e lenços, Higiene e cuidados do bebê, Alimentação infantil, Gestação e pós-parto | DECISIONS 44 (aprovada) |
+| Remédio sem receita | Seção de lista de preço no feed | Fora do app | DECISIONS 45 |
+| Aviso legal | Não existia | Aviso do Ministério da Saúde inteiro em alimentação infantil, no cartão, logo abaixo do preço no detalhe, e na notificação expandida | DECISIONS 46 (NBCAL, validada pela assessoria); campo `avisos[]` da API |
+| Tamanho de fralda | Não existia | Passo opcional no primeiro uso (só para quem escolheu fraldas), etiqueta "Tamanho G" no cartão e no detalhe, edição em Ajustes | DECISIONS 51; pergunta tamanho, nunca idade |
+| Conta | Opcional (S-13) | Obrigatória: código de 6 números no e-mail ou Google, depois termos 18+ | DECISIONS 34 e 38. S-13 foi superada; a proposta reduz o atrito com código sem senha, Google em um toque e sessão de 90 dias |
+| Primeiro uso | 4 passos | Boas-vindas → Entrar → Termos → Categorias → Tamanho (se fralda) → CEP → Permissão | As telas novas vêm das regras acima |
+| Limite de avisos | 1, 3, 5, sem limite | 1, 3 (padrão), 5, 10 | Teto do tenant (`limiteDiarioMaximo` = 10) e padrão do despachante (DECISIONS 58) |
+| Feed | Sem filtro | Chips de filtro por categoria (toque de novo mostra todas) | O feed da API aceita `?categoria=` |
+| Detalhe | — | Estado "Esta oferta não existe mais" (404) | Notificação tocada dias depois |
+
+**Novo na proposta, ainda não implementado:**
+- **N9: gestação escondida com o celular bloqueado.** "Gestação e pós-parto" revela gravidez por
+  inferência (CHECKPOINT, revisão 3). Para essa categoria, a notificação usa `VISIBILITY_PRIVATE` com
+  uma versão pública ("Nova oferta excepcional · Desbloqueie o celular para ver"). A categoria ganha
+  uma nota explicando isso no primeiro uso (BACKLOG_UX B-29).
+- **A1: comparação com o texto que o despachante envia hoje.** A fase 4 põe o nome do produto no
+  título e "preço (referência X, Y% abaixo) · loja" no corpo (`backend/src/push/regras.ts`). Recolhida,
+  a notificação mostra só o nome e o começo do corpo; o preço fica cortado. A recomendação continua a
+  da seção 2: preço no título, "preço normal" em vez de "referência", economia em reais em vez de
+  percentual (princípios 2 e 8). Ajuste proposto em BACKLOG_UX B-32.
+
+**Dependências de dado confirmadas no contrato 1.2.0:**
+- O detalhe já traz o histórico de 180 dias. Com ele, o app calcula o menor preço, os dias medidos e
+  a régua, sem campo novo.
+- O item do feed não traz nada disso. O selo e a régua do cartão continuam dependendo do acréscimo
+  B-02.
+- A tela Avisos precisa de uma rota que liste as entregas do usuário (B-31).

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Protótipo economae</title>
-<meta name="description" content="Protótipo navegável da proposta de UX do economae: notificação, primeiro uso, ofertas, detalhe, avisos e ajustes, com todos os estados. Dados de exemplo fictícios.">
+<meta name="description" content="Protótipo navegável da proposta de UX do economae, versão 2: notificação, entrada, termos, primeiro uso, ofertas, detalhe, avisos e ajustes, alinhado às fases 3 e 4. Dados de exemplo fictícios.">
 <style>
 /* tokens:inicio */
 /* GERADO por ux/design-tokens/gerar.mjs a partir de tokens.json. Não editar à mão. */
@@ -233,6 +233,9 @@ button { font: inherit; color: inherit; }
 .painel .opcao[aria-pressed="true"] { background: var(--pagina-texto); color: var(--pagina-painel); border-color: var(--pagina-texto); }
 .painel .nota { margin-top: 16px; padding: 12px; border-radius: 12px; background: var(--pagina-fundo); font-size: 14px; line-height: 20px; }
 .painel .nota strong { display: block; margin-bottom: 4px; }
+.painel details.nota summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; }
+.painel details.nota summary strong { margin: 0; }
+.painel details.nota p { margin: 8px 0 0; }
 .painel .aviso-exemplo { font-size: 13px; line-height: 18px; margin-top: 12px; opacity: 0.85; }
 .painel ul.atalhos { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .painel ul.atalhos button { min-height: 36px; font-size: 13px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--pagina-contorno); background: transparent; cursor: pointer; }
@@ -410,6 +413,23 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
 .fora-do-app { position: absolute; inset: 0; background: var(--sistema-fundo); color: var(--sistema-texto); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 32px; text-align: center; z-index: 20; }
 .fora-do-app .botao-principal { max-width: 260px; }
 
+/* ---------- Versão 2: aviso legal, tamanho, filtros, entrada e termos ---------- */
+.aviso-legal { margin: 0; padding: var(--espaco-3) var(--espaco-4); border-radius: var(--raio-sm); background: var(--cor-superficie-container); color: var(--cor-texto); border-left: 4px solid var(--cor-contorno); }
+.chip-tamanho { display: inline-flex; align-items: center; padding: var(--espaco-1) var(--espaco-3); border-radius: var(--raio-total); border: 1px solid var(--cor-contorno); color: var(--cor-texto); }
+.chip-filtro { min-height: var(--alvo-toque-minimo); min-width: var(--alvo-toque-minimo); display: inline-flex; align-items: center; justify-content: center; gap: var(--espaco-2); padding: 0 var(--espaco-5); border-radius: var(--raio-sm); border: 1px solid var(--cor-contorno); background: transparent; color: var(--cor-texto); cursor: pointer; }
+.chip-filtro[aria-checked="true"] { background: var(--marca-primaria-container); color: var(--marca-sobre-primaria-container); border-color: var(--marca-primaria); }
+.filtros { padding-top: var(--espaco-3); gap: var(--espaco-3) var(--espaco-2); }
+.filtros .chip-filtro { padding: 0 var(--espaco-4); }
+.nota-categoria { margin: 0; display: flex; gap: var(--espaco-2); align-items: flex-start; padding: 0 var(--espaco-2); }
+.resumo-termos { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--espaco-4); }
+.resumo-termos li { display: flex; gap: var(--espaco-3); align-items: flex-start; }
+.resumo-termos svg { color: var(--cor-prova); margin-top: 3px; }
+.caixa-aceite { display: flex; align-items: center; gap: var(--espaco-4); width: 100%; min-height: var(--alvo-toque-minimo); padding: var(--espaco-4); border-radius: var(--raio-md); border: 1px solid var(--cor-contorno); background: var(--cor-superficie-cartao); color: var(--cor-texto); cursor: pointer; text-align: left; }
+.caixa-aceite[aria-checked="true"] { border: 2px solid var(--marca-primaria); }
+.caixa-aceite[aria-checked="true"] svg { color: var(--marca-primaria); }
+.campo input.codigo { letter-spacing: 0.4em; font-size: var(--tipo-titulo-tela-tamanho); }
+.notif .texto.uma-linha { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 @media (prefers-reduced-motion: no-preference) {
   .tela > * { animation: aparecer var(--duracao-curta) var(--curva-padrao); }
 }
@@ -457,6 +477,16 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
 <symbol id="i-signal_cellular_alt" viewBox="0 -960 960 960"><path d="M214.5-174.58Q200-189.17 200-210v-140q0-20.83 14.62-35.42Q229.24-400 250.12-400q20.88 0 35.38 14.58Q300-370.83 300-350v140q0 20.83-14.62 35.42Q270.76-160 249.88-160q-20.88 0-35.38-14.58Zm250 0Q450-189.17 450-210v-340q0-20.83 14.62-35.42Q479.24-600 500.12-600q20.88 0 35.38 14.58Q550-570.83 550-550v340q0 20.83-14.62 35.42Q520.76-160 499.88-160q-20.88 0-35.38-14.58Zm250 0Q700-189.17 700-210v-540q0-20.83 14.62-35.42Q729.24-800 750.12-800q20.88 0 35.38 14.58Q800-770.83 800-750v540q0 20.83-14.62 35.42Q770.76-160 749.88-160q-20.88 0-35.38-14.58Z"/></symbol>
 <symbol id="i-wifi" viewBox="0 -960 960 960"><path d="M417-154q-27-27-27-63t27-63q27-27 63-27t63 27q27 27 27 63t-27 63q-27 27-63 27t-63-27Zm209-378.5Q694-505 757-451q14 12 15 30.5T759-388q-14 14-32 13t-33-13q-53-44-106.5-63T480-470q-54 0-107.5 19T266-388q-15 12-33 13t-32-13q-14-14-13-32.5t15-30.5q63-54 131-81.5T480-560q78 0 146 27.5Zm95.5-219Q835-703 926-622q14 13 15.5 31.5T929-558q-14 14-33.5 13.5T861-558q-83-70-178-111t-203-41q-108 0-203 41T99-558q-15 13-34 13.5T32-558q-14-14-13-32.5T34-622q91-81 204.5-129.5T480-800q128 0 241.5 48.5Z"/></symbol>
 <symbol id="i-battery_full" viewBox="0 -960 960 960"><path d="M310-80q-12.75 0-21.37-8.63Q280-97.25 280-110v-676q0-12.75 8.63-21.38Q297.25-816 310-816h90v-34q0-12.75 8.63-21.38Q417.25-880 430-880h100q12.75 0 21.38 8.62Q560-862.75 560-850v34h90q12.75 0 21.38 8.62Q680-798.75 680-786v676q0 12.75-8.62 21.37Q662.75-80 650-80H310Z"/></symbol>
+<symbol id="i-baby_changing_station" viewBox="0 -960 960 960"><path d="M150-80q-12.75 0-21.37-8.63Q120-97.25 120-110v-358q0-4.9.5-9.45.5-4.55 2.5-9.55l59-175q8-23 26.5-35.5t40.87-12.5q7.16 0 14.31 1.29 7.16 1.28 14.32 4.71l168 74h64q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5h-65q-6.25 0-12.5-1.43T420-575l-104-46-56 169v342q0 12.75-8.62 21.37Q242.75-80 230-80h-80Zm250-130q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h410q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H400Zm380-110q-25 0-42.5-17.5T720-380q0-25 17.5-42.5T780-440q25 0 42.5 17.5T840-380q0 25-17.5 42.5T780-320Zm-270-10q-24.75 0-42.37-17.63Q450-365.25 450-390v-60h-50q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h80q12.75 0 21.38 8.62Q510-492.75 510-480v50h120v-50q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v90q0 24.75-17.62 42.37Q654.75-330 630-330H510ZM313.08-774q-30.08 0-51.58-21.42t-21.5-51.5q0-30.08 21.42-51.58t51.5-21.5q30.08 0 51.58 21.42t21.5 51.5q0 30.08-21.42 51.58t-51.5 21.5Z"/></symbol>
+<symbol id="i-pregnant_woman" viewBox="0 -960 960 960"><path d="M411-110v-150h-61q-12.75 0-21.37-8.63Q320-277.25 320-290v-284q0-50 28-78t77.5-28q49.5 0 76 33t26.5 73q52 6 82 41.5t30 89.5v153q0 12.75-8.62 21.37Q622.75-260 610-260H485v150q0 12.75-8.62 21.37Q467.75-80 455-80h-14q-12.75 0-21.37-8.63Q411-97.25 411-110Zm-36.5-645.42q-21.5-21.42-21.5-51.5t21.42-51.58q21.42-21.5 51.5-21.5t51.58 21.42q21.5 21.42 21.5 51.5t-21.42 51.58q-21.42 21.5-51.5 21.5t-51.58-21.42Z"/></symbol>
+<symbol id="i-bathtub" viewBox="0 -960 960 960"><path d="M221.5-620.42q-21.5-21.42-21.5-51.5t21.42-51.58q21.42-21.5 51.5-21.5t51.58 21.42q21.5 21.42 21.5 51.5t-21.42 51.58q-21.42 21.5-51.5 21.5t-51.58-21.42ZM185.82-80Q168-80 154-91.5T140-120q-24.75 0-42.37-17.63Q80-155.25 80-180v-230q0-12.75 8.63-21.38Q97.25-440 110-440h90v-27.79Q200-503 225-528t60.38-25q18.62 0 35.62 7 17 7 30 21l52 59q7 8 14.5 14.5T433-440h307v-334q0-18.94-12.5-32.47Q715-820 696-820q-9.88 0-18.94 2T661-809l-52 52q5 17 1.5 34.5T598-689l-102-97q16.43-10.93 35.22-13.96Q550-803 568-796l52-51q15-15 34.54-24t41.46-9q43.79 0 73.89 31Q800-818 800-774v334h50q12.75 0 21.38 8.62Q880-422.75 880-410v230q0 24.75-17.62 42.37Q844.75-120 820-120q0 17-14 28.5T773-80H185.82ZM140-180h680v-200H140v200Zm0 0h680-680Z"/></symbol>
+<symbol id="i-soup_kitchen" viewBox="0 -960 960 960"><path d="M390-80q-100 0-178-68.5T120-316q-2-14 6.5-24t23.5-10h450l45-433q5-41 36-69t73-28q46 0 78 32t32 78v11q0 13-8.5 21.5T834-729q-13 0-21.5-8.5T804-759v-11q0-21-14.5-35.5T754-820q-20 0-34 13t-16 32l-46 445q-11 106-87.5 178T390-80Zm0-60q65 0 119-39t80-111H188q26 72 81.5 111T390-140Zm0-150ZM245-420q-14 0-19.5-8.5T223-452q2-6 2-13v-15q0-35-20-75.5T185-625q0-9 1-19.5t6-21.5q2-5 8.5-9.5T215-680q14 0 20 9t3 23q-1 4-3 23 0 34 20 72t20 73q0 14-1.5 25t-5.5 21q-2 5-9 9.5t-14 4.5Zm260 0q-14 0-19.5-8.5T483-452q2-6 2-13v-15q0-35-20-75.5T445-625q0-9 1-19.5t6-21.5q2-5 8.5-9.5T475-680q14 0 20 9t3 23q-1 4-3 23 0 34 20 72t20 73q0 14-1.5 25t-5.5 21q-2 5-9 9.5t-14 4.5Zm-130 0q-14 0-19.5-8.5T353-452q2-6 2-13v-15q0-35-20-75.5T315-625q0-9 1-19.5t6-21.5q2-5 8.5-9.5T345-680q14 0 20 9t3 23q-1 4-3 23 0 34 20 72t20 73q0 14-1.5 25t-5.5 21q-2 5-9 9.5t-14 4.5Z"/></symbol>
+<symbol id="i-mail" viewBox="0 -960 960 960"><path d="M140-160q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h680q24 0 42 18t18 42v520q0 24-18 42t-42 18H140Zm680-525L496-473q-4 2-7.5 3.5T480-468q-5 0-8.5-1.5T464-473L140-685v465h680v-465ZM480-522l336-218H145l335 218ZM140-685v7-39.32.73V-740v23-.91V-678v-7 465-465Z"/></symbol>
+<symbol id="i-visibility_off" viewBox="0 -960 960 960"><path d="M600-620q29 29 42.5 71.5T647-464q0 13-8.5 21.5T617-434q-13 0-21.5-8.5T587-464q11-34 2.5-64.5T559-580q-21-22-52-30t-64 3q-13 0-21.5-8.5T413-637q0-13 8.5-21.5T443-667q42-9 85 4.5t72 42.5ZM490-740q-32 0-64 3t-63 13q-12 4-24-1t-17-16q-5-11 0-22.5t16-15.5q35-11 72-16t75-5q137 0 249.5 75.5T907-526q3 6 5 12.5t2 13.5q0 7-1.5 13.5T908-474q-23 49-55 90.5T779-307q-9 8-20 5.5T741-313q-7-9-5.5-20t10.5-19q36-30 65-66.5t46-81.5q-49-109-148-174.5T490-740Zm-10 540q-136 0-247.5-76T55-472q-4-7-5.5-13.5T48-500q0-8 2-14.5t5-13.5q24-48 55.5-90.5T182-696L77-801q-9-9-8.5-21t8.5-21q9-9 21.5-9t21.5 9l716 716q8 8 8 19.5T836-87q-8 10-20.5 10T794-86L648-229q-41 15-83 22t-85 7ZM223-654q-41 29-72 68t-49 86q52 112 156.5 176T488-260q29 0 58-1.5t55-14.5l-64-64q-14 6-28.5 8t-28.5 2q-71 0-120.5-49.5T310-500q0-14 2.5-28.5T320-557l-97-97Zm305 142Zm-116 58Z"/></symbol>
+<symbol id="i-logout" viewBox="0 -960 960 960"><path d="M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h269q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H180v600h269q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H180Zm545-330H390q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h333l-81-81q-9-9-8.5-21t9.5-21q9-9 21.5-9t21.5 9l133 133q9 9 9 21t-9 21L687-326q-8.8 9-20.9 8.5-12.1-.5-21.49-9.5-8.61-9-8.61-21.5t9-21.5l80-80Z"/></symbol>
+<symbol id="i-check_box" viewBox="0 -960 960 960"><path d="m419-407-98-98q-9-9-21.5-8.5T278-504q-9 9-9 21.5t9 21.5l120 119q9 9 21 9t21-9l247-247q9-9 9-21.5t-9-21.5q-9-9-21.5-9t-21.5 9L419-407ZM180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Zm0-600v600-600Z"/></symbol>
+<symbol id="i-check_box_outline_blank" viewBox="0 -960 960 960"><path d="M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Z"/></symbol>
+<symbol id="i-description" viewBox="0 -960 960 960"><path d="M349-250h262q12.75 0 21.38-8.68 8.62-8.67 8.62-21.5 0-12.82-8.62-21.32-8.63-8.5-21.38-8.5H349q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5Zm0-170h262q12.75 0 21.38-8.68 8.62-8.67 8.62-21.5 0-12.82-8.62-21.32-8.63-8.5-21.38-8.5H349q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5ZM220-80q-24 0-42-18t-18-42v-680q0-24 18-42t42-18h336q12.44 0 23.72 5T599-862l183 183q8 8 13 19.28 5 11.28 5 23.72v496q0 24-18 42t-42 18H220Zm331-584v-156H220v680h520v-494H581q-12.75 0-21.37-8.63Q551-651.25 551-664ZM220-820v186-186 680-680Z"/></symbol>
 <!-- icones:fim -->
 </svg>
 
@@ -493,16 +523,20 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
     <label>Atalhos</label>
     <ul class="atalhos">
       <li><button data-atalho="bloqueio:N1">Notificação</button></li>
+      <li><button data-atalho="bloqueio:A1">Aviso de hoje × proposta</button></li>
       <li><button data-atalho="boasVindas:padrao">Primeiro uso</button></li>
+      <li><button data-atalho="entrada:email">Entrar</button></li>
       <li><button data-atalho="ofertas:com">Ofertas</button></li>
       <li><button data-atalho="ofertas:nada">Nada hoje</button></li>
-      <li><button data-atalho="ofertas:medindo">Começando a medir</button></li>
       <li><button data-atalho="detalhe:fralda">Leve 3 pague 2</button></li>
-      <li><button data-atalho="detalhe:encerrada">Oferta encerrada</button></li>
+      <li><button data-atalho="detalhe:papinha">Aviso da NBCAL</button></li>
+      <li><button data-atalho="bloqueio:N9">Gestação bloqueada</button></li>
     </ul>
 
     <div class="nota" id="nota" aria-live="polite"></div>
-    <p class="aviso-exemplo"><strong>Dados de exemplo.</strong> Marcas, lojas e preços são fictícios, iguais aos de <code>android/.../modelo/Exemplos.kt</code>. Os textos são os de <code>ux/UX_COPY.md</code>.</p>
+    <details class="nota"><summary><strong>O que mudou na versão 2 (30/09)</strong></summary>
+      <p>Alinhada às fases 3 e 4 do produto: foco em mães, da gestação aos primeiros anos (4 categorias); remédio fora do app; aviso da NBCAL inteiro em alimentação infantil; filtro opcional por tamanho de fralda; entrada por código no e-mail ou Google, e termos 18+ antes de tudo; limite de avisos de 1 a 10; filtro por categoria no feed; oferta que não existe mais. Novo: notificação de gestação escondida com o celular bloqueado (N9) e comparação com o texto que o despachante envia hoje (A1).</p></details>
+    <p class="aviso-exemplo"><strong>Dados de exemplo.</strong> Marcas, lojas e preços são fictícios. Categorias, avisos, limites e regras seguem <code>backend/config/tenants/economae.json</code> e o contrato <code>backend/openapi/v1.json</code> 1.2.0. Os textos são os de <code>ux/UX_COPY.md</code>.</p>
   </section>
 
   <div class="quadro-envoltorio">
@@ -516,50 +550,57 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
 
 <script>
 "use strict";
-// ======================= Dados de exemplo (espelham Exemplos.kt) =======================
-const HOJE = "28/09";
-function serie(normal, menor, maior, semente) {
+// Versão 2 (30/09/2026): alinhada às fases 3 e 4 do produto (branch claude/awesome-noether-jruv6b):
+// foco em mães da gestação aos primeiros anos (DECISIONS 44), remédio fora do app (45), NBCAL (46),
+// tamanho de fralda (51), login por código ou Google (34), termos 18+ antes de tudo (38),
+// push com limite padrão 3 e teto 10 (58, config do tenant). Contrato da API: backend/openapi/v1.json 1.2.0.
+
+// ======================= Dados de exemplo (fictícios) =======================
+function serie(normal, menor, maior, semente, dias = 89) {
   let x = BigInt(semente); const out = [];
-  for (let atras = 89; atras >= 1; atras--) {
+  for (let atras = dias; atras >= 1; atras--) {
     x = (x * 1103515245n + 12345n) & 0x7fffffffn;
     const variacao = (Number(x % 1000n) / 1000 - 0.5) * 0.12;
     const bruto = Math.trunc(normal * (1 + variacao));
     const valor = (atras >= 55 && atras <= 60) ? maior : Math.min(Math.max(bruto, menor + 100), maior);
-    const d = new Date(2026, 8, 28 - atras);
+    const d = new Date(2026, 8, 30 - atras);
     out.push({ dia: String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0"), c: valor });
   }
   return out;
 }
+// Categorias e rótulos: backend/config/tenants/economae.json › app.rotulosCategorias.
 const CAT = {
-  mercearia: { rot: "Mercearia", ex: "Arroz, café, óleo", ic: "shopping_basket" },
-  pereciveis: { rot: "Frios e hortifrúti", ex: "Queijo, frutas, carne", ic: "egg" },
-  higiene_intima: { rot: "Higiene íntima", ex: "Absorvente, sabonete íntimo", ic: "sanitizer" },
-  maquiagem: { rot: "Maquiagem", ex: "Base, batom, rímel", ic: "brush" },
-  higiene_bebe: { rot: "Bebê", ex: "Fralda, lenço, pomada", ic: "child_care" },
-  limpeza: { rot: "Limpeza", ex: "Sabão, detergente, desinfetante", ic: "cleaning_services" },
-  cuidados_pessoais: { rot: "Cuidados pessoais", ex: "Protetor solar, shampoo, hidratante", ic: "spa" },
-  medicamentos_isentos: { rot: "Remédios sem receita", ex: "Analgésico, antiácido (sem aviso)", ic: "medication" },
+  fraldas_lencos: { curto: "Fraldas", rot: "Fraldas e lenços", ex: "Fralda, lenço umedecido", ic: "baby_changing_station" },
+  higiene_cuidados_bebe: { curto: "Higiene", rot: "Higiene e cuidados do bebê", ex: "Sabonete, shampoo, protetor solar infantil", ic: "bathtub" },
+  alimentacao_infantil: { curto: "Alimentação", rot: "Alimentação infantil", ex: "Papinha, cereal infantil", ic: "soup_kitchen",
+    nota: "Fórmula infantil, mamadeira, bico e chupeta não aparecem: a lei proíbe promoção desses produtos (NBCAL)." },
+  gestacao_pos_parto: { curto: "Gestação", rot: "Gestação e pós-parto", ex: "Creme para estrias, absorvente pós-parto", ic: "pregnant_woman",
+    nota: "Esta escolha fica só na sua conta. Com o celular bloqueado, o aviso não mostra o produto." },
 };
-function oferta(o) { o.prova.serie = serie(o.prova.normal, o.prova.menor, o.prova.maior, o.prova.semente); return o; }
+const TAMANHOS = ["RN", "P", "M", "G", "XG", "XXG", "XXXG"];
+// Texto da NBCAL: economae.json › nbcal.aviso. Vai inteiro, nunca cortado nem escondido.
+const AVISO_MS = "O Ministério da Saúde informa: o aleitamento materno evita infecções e alergias e é recomendado até os 2 (dois) anos de idade ou mais.";
+function oferta(o) { o.prova.serie = serie(o.prova.normal, o.prova.menor, o.prova.maior, o.prova.semente, Math.min(o.prova.dias, 89)); o.avisos = o.avisos || []; return o; }
 const OF = {
-  protetor: oferta({ id: "protetor", nome: "Protetor Solare FPS 50 Facial", emb: { q: 0.05, u: "l", rot: "50 ml" }, cat: "cuidados_pessoais", loja: "Drogaria Central", preco: 3990, cond: null, prova: { normal: 5990, menor: 4290, maior: 6490, dias: 180, semente: 7 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "exc" }),
-  fralda: oferta({ id: "fralda", nome: "Fralda Bebê Seco G", emb: { q: 34, u: "un", rot: "34 unidades" }, cat: "higiene_bebe", loja: "Farmácia Vida", preco: 8070, cond: { tipo: "leve_pague", leve: 3, pague: 2 }, prova: { normal: 7990, menor: 6290, maior: 8490, dias: 180, semente: 11 }, cob: { tipo: "entrega", prazo: 2 }, conferido: "13:55", nivel: "exc" }),
-  shampoo: oferta({ id: "shampoo", nome: "Shampoo Capilar+ Hidratação", emb: { q: 0.4, u: "l", rot: "400 ml" }, cat: "cuidados_pessoais", loja: "Drogaria Central", preco: 1890, cond: null, prova: { normal: 2690, menor: 1830, maior: 2890, dias: 94, semente: 3 }, cob: { tipo: "confirmar" }, conferido: "14:10", nivel: "boa" }),
-  hidratante: oferta({ id: "hidratante", nome: "Hidratante Pele Leve Corporal", emb: { q: 0.4, u: "l", rot: "400 ml" }, cat: "cuidados_pessoais", loja: "Farmácia Vida", preco: 2490, cond: { tipo: "cartao", programa: "Vida Mais" }, prova: { normal: 3490, menor: 2590, maior: 3690, dias: 180, semente: 5 }, cob: { tipo: "retirada", km: 1.2 }, conferido: "13:55", nivel: "boa" }),
-  paracetamol: oferta({ id: "paracetamol", nome: "Paracetamol 750 mg", emb: { q: 20, u: "un", rot: "20 comprimidos" }, cat: "medicamentos_isentos", loja: "Drogaria Central", preco: 990, cond: null, prova: { normal: 1450, menor: 1090, maior: 1590, dias: 180, semente: 9 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "boa", remedio: true }),
+  protetor: oferta({ id: "protetor", nome: "Protetor Solar Infantil Solare FPS 50", emb: { q: 0.12, u: "l", rot: "120 ml" }, cat: "higiene_cuidados_bebe", loja: "Drogaria Central", preco: 3990, cond: null, prova: { normal: 5990, menor: 4290, maior: 6490, dias: 180, semente: 7 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "exc" }),
+  fralda: oferta({ id: "fralda", nome: "Fralda Bebê Seco", tamanho: "G", emb: { q: 34, u: "un", rot: "34 unidades" }, cat: "fraldas_lencos", loja: "Farmácia Vida", preco: 8070, cond: { tipo: "leve_pague", leve: 3, pague: 2 }, prova: { normal: 7990, menor: 6290, maior: 8490, dias: 180, semente: 11 }, cob: { tipo: "entrega", prazo: 2 }, conferido: "13:55", nivel: "exc" }),
+  papinha: oferta({ id: "papinha", nome: "Papinha Nutri+ Maçã e Banana", emb: { q: 0.12, u: "kg", rot: "120 g" }, cat: "alimentacao_infantil", loja: "Drogaria Central", preco: 590, cond: null, prova: { normal: 849, menor: 620, maior: 899, dias: 94, semente: 13 }, cob: { tipo: "entrega", prazo: 3 }, conferido: "14:10", nivel: "exc", avisos: [AVISO_MS] }),
+  lenco: oferta({ id: "lenco", nome: "Lenço Umedecido Toque Suave", emb: { q: 96, u: "un", rot: "96 unidades" }, cat: "fraldas_lencos", loja: "Drogaria Central", preco: 1890, cond: null, prova: { normal: 2690, menor: 1830, maior: 2890, dias: 94, semente: 3 }, cob: { tipo: "confirmar" }, conferido: "14:10", nivel: "boa" }),
+  shampoo: oferta({ id: "shampoo", nome: "Shampoo Infantil Pele Leve", emb: { q: 0.4, u: "l", rot: "400 ml" }, cat: "higiene_cuidados_bebe", loja: "Farmácia Vida", preco: 2490, cond: { tipo: "cartao", programa: "Vida Mais" }, prova: { normal: 3490, menor: 2590, maior: 3690, dias: 180, semente: 5 }, cob: { tipo: "retirada", km: 1.2 }, conferido: "13:55", nivel: "boa" }),
+  creme: oferta({ id: "creme", nome: "Creme para Estrias Gestar", emb: { q: 0.25, u: "l", rot: "250 ml" }, cat: "gestacao_pos_parto", loja: "Farmácia Vida", preco: 4490, cond: null, prova: { normal: 6290, menor: 4690, maior: 6590, dias: 180, semente: 17 }, cob: { tipo: "entrega", prazo: 2 }, conferido: "13:55", nivel: "exc" }),
 };
 OF.caiu = { ...OF.protetor, id: "caiu", preco: 3490, anterior: 3990 };
-OF.encerrada = { ...OF.protetor, id: "encerrada", encerrada: { dia: "28/09", hora: "16:40", voltou: 5990 } };
+OF.encerrada = { ...OF.protetor, id: "encerrada", encerrada: { dia: "30/09", hora: "16:40", voltou: 5990 } };
 OF.mudou = { ...OF.protetor, id: "mudou", mudou: { preco: 4490, hora: "15:20" } };
 OF.retirada = { ...OF.protetor, id: "retirada", cob: { tipo: "retirada", km: 1.2 } };
-OF.sabonete = { ...OF.encerrada, id: "sabonete", nome: "Sabonete Líquido Suave", emb: { q: 0.25, u: "l", rot: "250 ml" } };
-const ANUNCIO = { anunciante: "Mercado Exemplo", texto: "Cesta de limpeza com 15% de desconto no app do Mercado Exemplo." };
-const RESUMO = { conferidos: 1284, aprovadas: 2 };
+OF.sabonete = { ...OF.encerrada, id: "sabonete", nome: "Sabonete Líquido Infantil", emb: { q: 0.2, u: "l", rot: "200 ml" } };
+const ANUNCIO = { anunciante: "Loja Exemplo", texto: "Kit de banho infantil com 15% de desconto no app da Loja Exemplo." };
+const RESUMO = { conferidos: 1284, aprovadas: 3 };
 
-// ======================= Regras (espelham OfertaUi, Prova.kt, TextosNotificacao.kt) =======================
+// ======================= Regras (espelham a API e a proposta) =======================
 function milhar(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 // Espaço não separável: "R$" nunca fica numa linha e o número na outra.
-function reais(c) { const neg = c < 0; c = Math.abs(Math.round(c)); return (neg ? "-" : "") + "R$\u00A0" + milhar(Math.floor(c / 100)) + "," + String(c % 100).padStart(2, "0"); }
+function reais(c) { const neg = c < 0; c = Math.abs(Math.round(c)); return (neg ? "-" : "") + "R$ " + milhar(Math.floor(c / 100)) + "," + String(c % 100).padStart(2, "0"); }
 function km(d) { return d.toFixed(1).replace(".", ",") + " km"; }
 function pct(f) { return Math.round(f * 100) + "%"; }
 function fmtCep(d) { return d.length <= 5 ? d : d.slice(0, 5) + "-" + d.slice(5, 8); }
@@ -567,6 +608,7 @@ const compraMin = (o) => o.cond?.tipo === "leve_pague" ? o.cond.leve : o.cond?.t
 const total = (o) => o.cond?.tipo === "leve_pague" ? o.preco * o.cond.pague : o.cond?.tipo === "quantidade_minima" ? o.preco * o.cond.quantidade : o.preco;
 const efetivo = (o) => Math.round(total(o) / compraMin(o));
 const economia = (o) => (o.prova.normal - efetivo(o)) * compraMin(o);
+const nomeCompleto = (o) => o.nome + (o.tamanho ? ` ${o.tamanho}` : "");
 function selo(o) { return { tipo: efetivo(o) <= o.prova.menor ? "menor" : "quase", dias: o.prova.dias >= 180 ? null : o.prova.dias }; }
 function textoSelo(o) { const s = selo(o); if (s.tipo === "menor") return s.dias == null ? "Menor preço em 6 meses" : `Menor preço em ${s.dias} dias de medição`; return s.dias == null ? "Quase o menor preço em 6 meses" : `Quase o menor preço em ${s.dias} dias`; }
 const periodo = (o) => selo(o).dias == null ? "6 meses" : `${selo(o).dias} dias`;
@@ -578,6 +620,7 @@ function textoCondicao(o) {
   if (c.tipo === "cartao") return `Só com o cartão ${c.programa}`;
   if (c.tipo === "app") return `Só no app da ${o.loja}`;
 }
+function rotuloCondicaoApi(o) { const c = o.cond; if (!c) return null; if (c.tipo === "leve_pague") return `Leve ${c.leve}, pague ${c.pague}`; if (c.tipo === "cartao") return `Preço com cartão fidelidade ${c.programa}`; return null; }
 function textoCobertura(c) { return c.tipo === "entrega" ? `Entrega no seu CEP em até ${c.prazo} dias` : c.tipo === "confirmar" ? "Entrega no seu CEP · frete a confirmar na loja" : `Retire na loja a ${km(c.km)}`; }
 function porUnidade(o) {
   const e = efetivo(o);
@@ -586,12 +629,13 @@ function porUnidade(o) {
   return `${reais(Math.round(e / o.emb.q))} por unidade`;
 }
 function tituloNotif(o) {
-  const montar = (nome) => o.cond?.tipo === "leve_pague" ? `${reais(total(o))} por ${o.cond.leve} · ${nome}` : `${reais(o.preco)} · ${nome}`;
-  if (montar(o.nome).length <= 30) return montar(o.nome);
+  const nome = nomeCompleto(o);
+  const montar = (n) => o.cond?.tipo === "leve_pague" ? `${reais(total(o))} por ${o.cond.leve} · ${n}` : `${reais(o.preco)} · ${n}`;
+  if (montar(nome).length <= 30) return montar(nome);
   const espaco = 30 - montar("").length - 1;
   if (espaco < 3) return montar("").replace(/[ ·]+$/, "");
-  let corte = o.nome.slice(0, espaco);
-  if (o.nome[espaco] !== " " && corte.includes(" ")) corte = corte.slice(0, corte.lastIndexOf(" "));
+  let corte = nome.slice(0, espaco);
+  if (nome[espaco] !== " " && corte.includes(" ")) corte = corte.slice(0, corte.lastIndexOf(" "));
   return montar(corte.trimEnd() + "…");
 }
 function textoNotif(o) {
@@ -617,26 +661,41 @@ function expandidoNotif(o) {
     s.tipo === "menor" ? (s.dias == null ? "Menor preço dos últimos 6 meses." : `Menor preço em ${s.dias} dias de medição.`) : "Perto do menor preço dos últimos 6 meses.",
     o.cob.tipo === "entrega" ? `Entrega no seu CEP em até ${o.cob.prazo} dias.` : o.cob.tipo === "confirmar" ? "Entrega no seu CEP. Frete a confirmar na loja." : `Retire na loja a ${km(o.cob.km)}.`,
     `Conferido às ${o.conferido}. Você segue ${CAT[o.cat].rot}.`,
+    ...o.avisos,
   ].join("\n");
+}
+// Texto que o despachante da fase 4 envia hoje (backend/src/push/regras.ts › montarMensagem), para comparar.
+function mensagemAtual(o) {
+  const partes = [...(rotuloCondicaoApi(o) ? [rotuloCondicaoApi(o)] : []), `${reais(efetivo(o))} (referência ${reais(o.prova.normal)}, ${Math.round((o.prova.normal - efetivo(o)) / o.prova.normal * 100)}% abaixo)`, o.loja];
+  return { titulo: nomeCompleto(o).length <= 65 ? nomeCompleto(o) : nomeCompleto(o).slice(0, 64) + "…", corpo: [partes.join(" · "), ...o.avisos].join("\n") };
 }
 function descricao(o) {
   const p = [];
   if (o.nivel === "exc") p.push("Excepcional.");
   const tc = textoCondicao(o); if (tc) p.push(tc + ".");
-  p.push(`${o.nome}, ${o.emb.rot}, na ${o.loja}.`);
+  p.push(`${nomeCompleto(o)}, ${o.emb.rot}, na ${o.loja}.`);
   p.push(reais(efetivo(o)) + (compraMin(o) > 1 ? " cada." : "."));
   p.push(`Preço normal nesta loja: ${reais(o.prova.normal)}.`);
   p.push(`Economia de ${reais(economia(o))}.`);
   p.push(textoSelo(o) + ".");
   p.push(textoCobertura(o.cob) + ".");
   p.push(`Conferido às ${o.conferido}.`);
+  p.push(...o.avisos);
   return p.join(" ");
+}
+// O feed mostra só as categorias seguidas, e fralda só nos tamanhos escolhidos (vazio = todos; sem tamanho = sempre).
+function visivel(o) {
+  if (!E.categorias.has(o.cat)) return false;
+  if (E.filtroCat && o.cat !== E.filtroCat) return false;
+  if (o.tamanho && E.tamanhos.size && !E.tamanhos.has(o.tamanho)) return false;
+  return true;
 }
 
 // ======================= Estado do protótipo =======================
 const E = {
   tela: "bloqueio", estado: "N1", tema: "claro", escala: 1, avisos: true,
-  categorias: new Set(["cuidados_pessoais", "higiene_bebe", "limpeza"]), cep: "01310100", cepDigitado: "", cepTentou: false,
+  categorias: new Set(["fraldas_lencos", "higiene_cuidados_bebe", "alimentacao_infantil"]), tamanhos: new Set(["G"]), filtroCat: null,
+  cep: "01310100", cepDigitado: "", cepTentou: false, email: "voce@exemplo.com", emailDigitado: "", codigoDigitado: "", aceitou: false,
   limite: 3, expandida: false, verDias: false, folha: null, dialogo: null, pilha: [], destacar: null, foraDoApp: null, retorno: false, obrigado: false,
 };
 const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
@@ -658,6 +717,7 @@ function htmlPreco(o, destaque) {
     <span class="chip-economia t-economia">${ic("trending_down", "i p")}${reais(economia(o))} a menos${levando}</span></div>
     <div class="t-preco-normal">Preço normal nesta loja: ${reais(o.prova.normal)}</div>`;
 }
+const htmlAvisos = (o) => o.avisos.map((a) => `<p class="aviso-legal t-apoio">${esc(a)}</p>`).join("");
 function htmlCartao(o) {
   const tc = textoCondicao(o);
   return `<button class="cartao" data-abrir="${o.id}" aria-label="${esc(descricao(o))}">
@@ -665,25 +725,20 @@ function htmlCartao(o) {
     <div class="corpo" aria-hidden="true">
       <div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto">${ic(CAT[o.cat].ic)}</div>
         <div class="coluna" style="gap:var(--espaco-1);flex:1;min-width:0">
-          ${o.nivel === "exc" ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}
+          <span class="quebra" style="gap:var(--espaco-2)">${o.nivel === "exc" ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}${o.tamanho ? `<span class="chip-tamanho t-rotulo-p">Tamanho ${o.tamanho}</span>` : ""}</span>
           <span class="t-nome">${esc(o.nome)} · ${esc(o.emb.rot)}</span><span class="t-apoio sec">${esc(o.loja)}</span></div></div>
       ${htmlPreco(o, false)}
       <div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
       ${htmlRegua(o, false)}
       <div class="linha-apoio t-apoio">${ic(o.cob.tipo === "retirada" ? "storefront" : "local_shipping", "i p")}<span>${textoCobertura(o.cob)}</span></div>
       <div class="linha-apoio t-apoio">${ic("schedule", "i p")}<span>Conferido às ${o.conferido}</span></div>
+      ${htmlAvisos(o)}
     </div></button>`;
 }
 function htmlAnuncio() {
   return `<button class="anuncio" data-acao="anuncio" aria-label="${esc("Anúncio. " + ANUNCIO.anunciante + ". " + ANUNCIO.texto)}"><div class="coluna" aria-hidden="true">
     <span class="linha t-rotulo">${ic("campaign", "i p")}Anúncio · ${ANUNCIO.anunciante}</span>
     <span class="t-corpo">${ANUNCIO.texto}</span><span class="t-apoio">Anúncio pago. Não passou pela nossa conferência.</span></div></button>`;
-}
-function htmlRemedios(lista) {
-  if (!lista.length) return "";
-  return `<div class="secao"><h2 class="t-titulo-secao">Remédios sem receita</h2><p class="t-apoio sec" style="margin:4px 0 0">Lista de preços. Remédio não recebe aviso.</p></div>
-    <div>${lista.map((o) => `<button class="item-remedio" data-abrir="${o.id}" aria-label="${esc(`${o.nome} · ${o.emb.rot}, ${o.loja}, ${reais(o.preco)}`)}"><span class="coluna" style="gap:0;flex:1"><span class="t-nome">${o.nome} · ${o.emb.rot}</span><span class="t-apoio sec">${o.loja}</span></span><span class="t-titulo-secao">${reais(o.preco)}</span></button>`).join("")}</div>
-    <p class="t-apoio sec" style="margin:0">SE PERSISTIREM OS SINTOMAS, O MÉDICO DEVERÁ SER CONSULTADO.</p>`;
 }
 const esqueleto = () => `<div class="esqueleto" aria-hidden="true"><div class="linha" style="gap:var(--espaco-4)"><i style="width:56px;height:56px"></i><div class="coluna" style="flex:1;gap:var(--espaco-3)"><i style="width:80%;height:16px"></i><i style="width:40%;height:14px"></i></div></div><i style="width:50%;height:32px"></i><i style="width:100%;height:6px;border-radius:999px"></i></div>`;
 function htmlEstado(icone, titulo, texto, acao, dataAcao, erro, extra = "") {
@@ -695,28 +750,41 @@ function faixaAvisos() {
 function topo(titulo, voltar, extra = "") {
   return `<div class="barra-topo">${voltar ? `<button class="botao-icone" data-acao="voltar" aria-label="Voltar">${ic("arrow_back")}</button>` : ""}${titulo ? `<h1 class="t-titulo-tela">${titulo}</h1>` : ""}<span class="espaco"></span>${extra}</div>`;
 }
+function htmlCategorias() {
+  return Object.entries(CAT).map(([k, c]) => {
+    const sel = E.categorias.has(k);
+    return `<div class="coluna" style="gap:var(--espaco-2)"><button class="categoria" role="checkbox" aria-checked="${sel}" data-cat-alternar="${k}" ${c.nota ? `aria-describedby="nota-${k}"` : ""}>${ic(c.ic)}<span class="coluna" style="gap:0;flex:1"><span class="t-nome">${c.rot}</span><span class="t-apoio sec">${c.ex}</span></span><span class="marca-sel">${ic(sel ? "check_circle" : "radio_button_unchecked")}</span></button>
+      ${c.nota ? `<p id="nota-${k}" class="t-apoio sec nota-categoria">${ic(k === "gestacao_pos_parto" ? "visibility_off" : "info", "i p")}<span>${c.nota}</span></p>` : ""}</div>`;
+  }).join("");
+}
+function htmlTamanhos() {
+  return `<div class="quebra" role="group" aria-label="Tamanhos da fralda">${TAMANHOS.map((t) => `<button class="chip-filtro t-rotulo" role="checkbox" aria-checked="${E.tamanhos.has(t)}" data-tamanho="${t}">${E.tamanhos.has(t) ? ic("check_circle", "i p") : ""}${t}</button>`).join("")}</div>`;
+}
 
 // ======================= Telas =======================
 const TELAS = {
   bloqueio: {
     nome: "Notificação (tela de bloqueio)",
-    estados: { N1: "N1 · incondicional, sem foto", N2: "N2 · com foto", N3: "N3 · leve 3 pague 2", N4: "N4 · só com cartão da loja", N5: "N5 · caiu mais desde o último aviso", N6: "N6 · retirada na loja", N7: "N7 · duas ao mesmo tempo (grupo)" },
+    estados: { N1: "N1 · incondicional, sem foto", N2: "N2 · com foto", N3: "N3 · fralda, leve 3 pague 2", N4: "N4 · só com cartão da loja", N5: "N5 · caiu mais desde o último aviso", N6: "N6 · retirada na loja", N7: "N7 · duas ao mesmo tempo (grupo)", N8: "N8 · alimentação infantil, com aviso da NBCAL", N9: "N9 · gestação, celular bloqueado", A1: "Hoje: texto que o despachante da fase 4 envia" },
     nota: {
-      _: "A notificação é a tela principal (princípio 1). Título ≤ 30 caracteres começando pelo preço; texto ≤ 40 com a prova. Toque no corpo abre o detalhe; o botão de seta expande. Contador abaixo mostra os caracteres. Evidência: diretriz Android de notificação; R5, R7, R11.",
-      N3: "A condição abre o texto recolhido e o título mostra o que sai do bolso (R$ 161,40 por 3). Princípio 4; reclamação R10.",
+      _: "A notificação é a tela principal (princípio 1). Título ≤ 30 caracteres começando pelo preço; texto ≤ 40 com a prova. Toque no corpo abre o detalhe; a seta expande. O contador abaixo mostra os caracteres. Evidência: diretriz Android de notificação; R5, R7, R11.",
+      N3: "A condição abre o texto recolhido e o título mostra o que sai do bolso (R$ 161,40 por 3). O tamanho da fralda entra no nome porque o filtro por tamanho existe (DECISIONS 51). Princípio 4; R10.",
       N5: "A deduplicação só libera novo aviso se o preço caiu mais 5% (DECISIONS 25). O texto diz isso para não parecer repetido (U13).",
       N7: "Duas ofertas no mesmo minuto viram um grupo, não uma rajada (R5).",
+      N8: "Alimentação infantil sai sempre com o aviso do Ministério da Saúde, inteiro (NBCAL, DECISIONS 46). Recolhida, a notificação mostra a prova; o aviso aparece inteiro ao expandir, no feed e no detalhe — é o mesmo arranjo do despachante (aviso no corpo, depois da primeira linha). Falta a assessoria confirmar se o aviso precisa aparecer já na notificação recolhida (SUPOSICOES S-32).",
+      N9: "\"Gestação e pós-parto\" revela gravidez por inferência (CHECKPOINT, revisão 3). Com o celular bloqueado, o aviso mostra só \"Nova oferta excepcional\" (VISIBILITY_PRIVATE com versão pública do Android); o produto aparece depois de desbloquear. Proposta nova, ainda não implementada (BACKLOG_UX B-29).",
+      A1: "Como a fase 4 monta o aviso hoje (regras.ts): título = nome do produto; corpo = condição, \"preço (referência X, Y% abaixo)\" e loja. Recolhido, o Android corta o corpo em uma linha e a pessoa vê o nome, não o preço. A proposta põe o preço no título e troca \"referência\" e \"% abaixo\" por \"preço normal\" e economia em reais (princípios 2 e 8; Inaf). Compare com N3, que é a mesma oferta.",
     },
     render(est) {
-      const mapa = { N1: OF.protetor, N2: OF.protetor, N3: OF.fralda, N4: OF.hidratante, N5: OF.caiu, N6: OF.retirada };
+      const mapa = { N1: OF.protetor, N2: OF.protetor, N3: OF.fralda, N4: OF.shampoo, N5: OF.caiu, N6: OF.retirada, N8: OF.papinha };
+      const cab = (o, extraBotao = true) => `<div class="cab"><span class="mini">${ic("sell")}</span><span>economae${o ? " · " + o.loja : ""} · agora</span><span class="esp"></span>
+            ${extraBotao ? `<button class="expandir" data-acao="expandir" aria-expanded="${E.expandida}" aria-label="${E.expandida ? "Recolher" : "Expandir"} notificação">${ic(E.expandida ? "keyboard_arrow_up" : "keyboard_arrow_down")}</button>` : ""}</div>`;
       const notif = (o, foto) => {
         const t = tituloNotif(o), x = textoNotif(o);
-        return `<article class="notif" aria-label="Notificação de economae">
-          <div class="cab"><span class="mini">${ic("sell")}</span><span>economae · ${o.loja} · agora</span><span class="esp"></span>
-            <button class="expandir" data-acao="expandir" aria-expanded="${E.expandida}" aria-label="${E.expandida ? "Recolher" : "Expandir"} notificação">${ic(E.expandida ? "keyboard_arrow_up" : "keyboard_arrow_down")}</button></div>
+        return `<article class="notif" aria-label="Notificação de economae">${cab(o)}
           <button class="miolo" data-abrir="${o.id}"><span class="txt"><div class="titulo">${esc(t)}</div><div class="texto ${E.expandida ? "grande" : ""}">${esc(E.expandida ? expandidoNotif(o) : x)}</div></span>
             ${E.expandida && foto ? "" : `<span class="icone-grande">${ic(CAT[o.cat].ic)}</span>`}</button>
-          ${E.expandida && foto ? `<div class="foto">Foto do produto (quando a fonte fornecer — S-09)</div>` : ""}
+          ${E.expandida && foto ? `<div class="foto">Foto do produto (imagemUrl da loja, quando houver)</div>` : ""}
           ${E.expandida ? `<div class="acoes"><button data-acao="loja" data-id="${o.id}">Ver na loja</button><button data-acao="ajustar" data-cat="${o.cat}">Ajustar avisos</button></div>` : ""}
         </article><div class="contador" aria-hidden="true">título ${[...t].length}/30 · texto ${[...x].length}/40</div>`;
       };
@@ -724,53 +792,116 @@ const TELAS = {
       if (est === "N7") {
         const itens = [OF.protetor, OF.fralda];
         corpo = E.expandida ? itens.map((o) => notif(o, false)).join("") :
-          `<article class="notif"><div class="cab"><span class="mini">${ic("sell")}</span><span>economae · agora</span><span class="esp"></span><button class="expandir" data-acao="expandir" aria-expanded="false" aria-label="Expandir notificações">${ic("keyboard_arrow_down")}</button></div>
+          `<article class="notif">${cab(null)}
             <button class="miolo" data-acao="ir" data-destino="ofertas:com"><span class="txt"><div class="titulo">2 ofertas excepcionais</div><ul class="linhas">${itens.map((o) => `<li>${esc(tituloNotif(o))}</li>`).join("")}</ul></span></button></article>`;
+      } else if (est === "N9") {
+        corpo = `<article class="notif" aria-label="Notificação de economae">${cab(null, false)}
+          <button class="miolo" data-abrir="creme"><span class="txt"><div class="titulo">Nova oferta excepcional</div><div class="texto">Desbloqueie o celular para ver</div></span><span class="icone-grande">${ic("lock")}</span></button></article>
+          <div class="contador" aria-hidden="true">versão pública; o conteúdo aparece depois de desbloquear</div>`;
+      } else if (est === "A1") {
+        const m = mensagemAtual(OF.fralda), primeira = m.corpo.split("\n")[0];
+        corpo = `<article class="notif" aria-label="Notificação de economae">${cab(OF.fralda)}
+          <button class="miolo" data-abrir="fralda"><span class="txt"><div class="titulo">${esc(m.titulo)}</div><div class="texto ${E.expandida ? "grande" : "uma-linha"}">${esc(E.expandida ? m.corpo : primeira)}</div></span><span class="icone-grande">${ic(CAT.fraldas_lencos.ic)}</span></button>
+          ${E.expandida ? `<div class="acoes"><button data-acao="loja" data-id="fralda">Abrir</button></div>` : ""}</article>
+          <div class="contador" aria-hidden="true">título ${[...m.titulo].length} · corpo ${[...primeira].length} caracteres na 1ª linha</div>`;
       } else corpo = notif(mapa[est], est === "N2");
-      return `<div class="bloqueio"><div class="relogio">14:12</div><div class="data">segunda-feira, 28 de setembro</div>${corpo}</div>`;
+      return `<div class="bloqueio"><div class="relogio">14:12</div><div class="data">quarta-feira, 30 de setembro</div>${corpo}</div>`;
     },
   },
   boasVindas: {
     nome: "Primeiro uso 1 · Boas-vindas", estados: { padrao: "Padrão" },
-    nota: { _: "Promessa em uma frase, sem carrossel e sem conta (R1). O botão secundário explica a conferência sem jargão." },
+    nota: { _: "Promessa em uma frase e o público em outra: de fralda a papinha, da gestação aos primeiros anos (DECISIONS 44). Sem carrossel. O botão secundário explica a conferência sem jargão." },
     render() {
-      return passo("Só avisamos quando a promoção é de verdade.", "Comparamos com o preço que a própria loja cobrou nos últimos meses. Se não for o menor, a gente não avisa.",
-        `<div style="color:var(--cor-prova)">${ic("verified", "i g")}</div>`, `<button class="botao-principal" data-acao="ir" data-destino="categorias:algumas">Começar</button><button class="botao-texto" data-acao="como">Como a gente confere</button>`);
+      return passo("Só avisamos quando a promoção é de verdade.", "De fralda a papinha, da gestação aos primeiros anos. Comparamos com o preço que a própria loja cobrou nos últimos meses. Se não for o menor, a gente não avisa.",
+        `<div style="color:var(--cor-prova)">${ic("verified", "i g")}</div>`, `<button class="botao-principal" data-acao="ir" data-destino="entrada:email">Começar</button><button class="botao-texto" data-acao="como">Como a gente confere</button>`);
+    },
+  },
+  entrada: {
+    nome: "Primeiro uso 2 · Entrar",
+    estados: { email: "E-mail", emailInvalido: "E-mail inválido", codigo: "Código enviado", codigoErrado: "Código errado", vencido: "Código vencido", cota: "E-mail indisponível (cota do dia)" },
+    nota: {
+      _: "A API exige conta antes de preferências e feed (DECISIONS 34 e 38), então a proposta de uso sem conta (S-13) foi superada. Para não repetir a reclamação nº 1 (login, R1): e-mail com código de 6 números, sem senha, e Google em um toque. A sessão dura 90 dias deslizantes (DECISIONS 35): quem abre o app de vez em quando não precisa entrar de novo.",
+      codigoErrado: "5 tentativas por código (DECISIONS 42). O texto diz quantas restam em vez de só \"erro\".",
+      cota: "Acima da cota diária de e-mails a API responde ENVIO_FALHOU (DECISIONS 55). A tela oferece o Google na hora, em vez de deixar a pessoa esperando um código que não chega.",
+    },
+    render(est) {
+      if (["email", "emailInvalido", "cota"].includes(est)) {
+        if (E._ultimo !== "entrada:" + est) E.emailDigitado = est === "emailInvalido" ? "voce@exemplo" : est === "cota" ? E.email : "";
+        const erro = est === "emailInvalido", cota = est === "cota";
+        return passo("Entre para receber os avisos", "Mandamos um código de 6 números para o seu e-mail. Não tem senha.",
+          `<div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-email">Seu e-mail</label><input id="campo-email" type="email" inputmode="email" autocomplete="email" value="${esc(E.emailDigitado)}" aria-invalid="${erro}" ${erro ? 'aria-describedby="erro-email"' : ""}>
+            ${erro ? `<span id="erro-email" class="msg-erro t-apoio">${ic("error", "i p")}Confira o e-mail. Falta o final, como .com ou .com.br.</span>` : ""}</div>
+           ${cota ? `<div class="caixa-info" role="status"><h2 class="t-titulo-secao">Não conseguimos mandar o e-mail agora</h2><p class="t-corpo sec" style="margin:0">Entre com Google, ou tente de novo daqui a algumas horas.</p></div>` : ""}`,
+          `${cota ? "" : `<button class="botao-principal" data-acao="enviar-codigo">${ic("mail", "i p")}Receber código por e-mail</button>`}<button class="${cota ? "botao-principal" : "botao-contorno"}" data-acao="google">Entrar com Google</button>`);
+      }
+      if (E._ultimo !== "entrada:" + est) E.codigoDigitado = est === "codigoErrado" ? "482913" : "";
+      const erro = est === "codigoErrado", vencido = est === "vencido";
+      return passo("Confira seu e-mail", `Enviamos um código de 6 números para ${esc(E.email)}. Ele vale por 10 minutos.`,
+        `<div class="campo${erro || vencido ? " erro" : ""}"><label class="t-apoio" for="campo-codigo">Código</label><input id="campo-codigo" class="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="${E.codigoDigitado}" aria-invalid="${erro || vencido}" ${erro || vencido ? 'aria-describedby="erro-codigo"' : ""}>
+          ${erro ? `<span id="erro-codigo" class="msg-erro t-apoio">${ic("error", "i p")}Código errado. Você ainda tem 3 tentativas.</span>` : ""}
+          ${vencido ? `<span id="erro-codigo" class="msg-erro t-apoio">${ic("error", "i p")}Este código venceu. Peça outro.</span>` : ""}</div>
+         <p class="t-apoio sec" style="margin:0">Não chegou? Veja a caixa de spam ou promoções.</p>`,
+        `<button class="botao-principal" data-acao="verificar-codigo">Entrar</button><button class="botao-texto" data-acao="ir" data-destino="entrada:codigo">Enviar outro código</button><button class="botao-texto" data-acao="ir" data-destino="entrada:email">Usar outro e-mail</button>`);
+    },
+  },
+  termos: {
+    nome: "Primeiro uso 3 · Termos", estados: { padrao: "Antes de aceitar", marcado: "Marcado", novaVersao: "Termos mudaram (aceitar de novo)" },
+    nota: {
+      _: "Os termos vigentes precisam estar aceitos antes de qualquer outra tela (DECISIONS 38); público 18+ (CHECKPOINT, revisão 3). O resumo em três frases diz o que importa antes do link: não vendemos nada, a loja decide preço e entrega, e o link pode render comissão (CDC art. 36). A caixa é o alvo inteiro, com 48 dp.",
+      novaVersao: "Quando a versão vigente muda (usuario.termos.pendente = true), a mesma tela volta com o motivo no título, sem perder as escolhas da pessoa.",
+    },
+    render(est) {
+      if (E._ultimo !== "termos:" + est) E.aceitou = est === "marcado";
+      const nova = est === "novaVersao";
+      return passo(nova ? "Os termos mudaram" : "Antes de começar", nova ? "Leia a versão nova e aceite de novo para continuar. Suas escolhas continuam salvas." : null,
+        `<ul class="resumo-termos t-corpo">
+          <li>${ic("storefront", "i p")}<span>Mostramos promoções de lojas parceiras. Não vendemos nada: preço, estoque e entrega são da loja.</span></li>
+          <li>${ic("sell", "i p")}<span>Quando você compra por um link nosso, podemos receber comissão. O preço para você é o mesmo.</span></li>
+          <li>${ic("home", "i p")}<span>Pedimos só e-mail e CEP. Nunca endereço, localização ou dados do bebê.</span></li></ul>
+         <div class="coluna" style="gap:0"><button class="item-ajuste" data-acao="nada">${ic("description")}<span class="coluna"><span class="t-nome">Ler os termos de uso</span><span class="t-apoio sec">Versão rascunho-2026-09-28</span></span>${ic("chevron_right")}</button>
+           <button class="item-ajuste" data-acao="nada">${ic("description")}<span class="coluna"><span class="t-nome">Ler a política de privacidade</span></span>${ic("chevron_right")}</button></div>
+         <button class="caixa-aceite" role="checkbox" aria-checked="${E.aceitou}" data-acao="aceitar">${ic(E.aceitou ? "check_box" : "check_box_outline_blank")}<span class="t-corpo">Tenho 18 anos ou mais e aceito os termos de uso.</span></button>`,
+        `<button class="botao-principal" ${E.aceitou ? "" : "disabled"} data-acao="ir" data-destino="${nova ? "ofertas:com" : "categorias:algumas"}">${E.aceitou ? "Continuar" : "Marque para continuar"}</button>`);
     },
   },
   categorias: {
-    nome: "Primeiro uso 2 · Categorias", estados: { algumas: "Com escolhas", nenhuma: "Nenhuma escolhida" },
-    nota: { _: "Notifica só o que a pessoa escolher (R11). Estado dito por ícone e texto, não só por cor (A02). Remédio avisa que não recebe aviso (DECISIONS 28)." },
+    nome: "Primeiro uso 4 · Categorias", estados: { algumas: "Com escolhas", nenhuma: "Nenhuma escolhida" },
+    nota: { _: "Só as quatro categorias do produto (DECISIONS 44). Avisa só o que a pessoa escolher (R11). Duas notas sob as categorias sensíveis: o que a NBCAL tira da alimentação infantil (DECISIONS 46) e que a gestação não aparece com o celular bloqueado (N9). Estado dito por ícone e texto, não só por cor (A02)." },
     render(est) {
       if (est === "nenhuma" && E._ultimo !== "categorias:nenhuma") E.categorias = new Set();
-      const n = E.categorias.size;
-      const lista = Object.entries(CAT).map(([k, c]) => {
-        const sel = E.categorias.has(k);
-        return `<button class="categoria" role="checkbox" aria-checked="${sel}" data-cat-alternar="${k}">${ic(c.ic)}<span class="coluna" style="gap:0;flex:1"><span class="t-nome">${c.rot}</span><span class="t-apoio sec">${c.ex}</span></span><span class="marca-sel">${ic(sel ? "check_circle" : "radio_button_unchecked")}</span></button>`;
-      }).join("");
-      return passo("O que você costuma comprar?", "Escolha uma ou mais. Só avisamos sobre o que você escolher.", `<div class="coluna" style="gap:var(--espaco-3)">${lista}</div>`,
-        `<button class="botao-principal" ${n ? "" : "disabled"} data-acao="ir" data-destino="cep:vazio">${n ? `Continuar com ${n}` : "Escolha pelo menos uma"}</button>`);
+      const n = E.categorias.size, proximo = E.categorias.has("fraldas_lencos") ? "tamanho:alguns" : "cep:vazio";
+      return passo("O que você costuma comprar?", "Escolha uma ou mais. Só avisamos sobre o que você escolher.", `<div class="coluna" style="gap:var(--espaco-3)">${htmlCategorias()}</div>`,
+        `<button class="botao-principal" ${n ? "" : "disabled"} data-acao="ir" data-destino="${proximo}">${n ? `Continuar com ${n}` : "Escolha pelo menos uma"}</button>`);
+    },
+  },
+  tamanho: {
+    nome: "Primeiro uso 5 · Tamanho da fralda", estados: { alguns: "Com tamanho", nenhum: "Sem escolha (todos)" },
+    nota: { _: "Só aparece para quem escolheu fraldas. Sem filtro por tamanho, fralda vira spam (CHECKPOINT, revisão 3). Pergunta o tamanho, nunca a idade do bebê (DECISIONS 51; LGPD art. 14). Opcional: \"Pular\" deixa todos. Dá para marcar dois tamanhos para quem está trocando." },
+    render(est) {
+      if (est === "nenhum" && E._ultimo !== "tamanho:nenhum") E.tamanhos = new Set();
+      return passo("Qual tamanho de fralda?", "Opcional. Marque um ou dois, se estiver trocando. Sem escolha, chegam promoções de todos os tamanhos.", htmlTamanhos() + `<p class="t-apoio sec" style="margin:0">Lenço e fralda sem tamanho no anúncio aparecem sempre.</p>`,
+        `<button class="botao-principal" data-acao="ir" data-destino="cep:vazio">${E.tamanhos.size ? "Continuar" : "Continuar com todos os tamanhos"}</button>`);
     },
   },
   cep: {
-    nome: "Primeiro uso 3 · CEP", estados: { vazio: "Vazio", incompleto: "Incompleto (erro)", fora: "Fora de SP", valido: "Válido" },
-    nota: { _: "Só CEP, nunca localização do aparelho (R12; 0001:29). Fora de SP não é erro: guardamos e avisamos quando chegar (U22).", incompleto: "Erro com cor, ícone e texto; o campo diz o que falta (A02).", fora: "Região inicial é o estado de SP (DECISIONS 19)." },
+    nome: "Primeiro uso 6 · CEP", estados: { vazio: "Vazio", incompleto: "Incompleto (erro)", fora: "Fora de SP", valido: "Válido" },
+    nota: { _: "Só CEP, nunca localização do aparelho (R12; 0001:29). Fora de SP a API recusa (DECISIONS 43): a tela não trata como erro, explica a região e guarda o interesse (U22).", incompleto: "Erro com cor, ícone e texto; o campo diz o que falta (A02).", fora: "Região do tenant: Estado de São Paulo (economae.json › app.regiao)." },
     render(est) {
       if (E._ultimo !== "cep:" + est) { E.cepDigitado = { vazio: "", incompleto: "0131", fora: "20040002", valido: "01310100" }[est]; E.cepTentou = est === "incompleto" || est === "fora"; }
       const d = E.cepDigitado, valido = d.length === 8, sp = valido && +d >= 1000000 && +d <= 19999999;
       const erro = E.cepTentou && !valido, fora = E.cepTentou && valido && !sp;
       return passo("Qual é o seu CEP?", "Serve só para saber quais lojas entregam para você. Não pedimos endereço nem localização.",
-        `<div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-cep">CEP</label><input id="campo-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${fmtCep(d)}" aria-invalid="${erro}" aria-describedby="${erro ? "erro-cep" : ""}">
+        `<div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-cep">CEP</label><input id="campo-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${fmtCep(d)}" aria-invalid="${erro}" ${erro ? 'aria-describedby="erro-cep"' : ""}>
          ${erro ? `<span id="erro-cep" class="msg-erro t-apoio">${ic("error", "i p")}O CEP tem 8 números.</span>` : ""}</div>
          ${fora ? `<div class="caixa-info" role="status"><h2 class="t-titulo-secao">Ainda não chegamos aí</h2><p class="t-corpo sec" style="margin:0">Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.</p></div>` : ""}`,
         `<button class="botao-principal" data-acao="cep-continuar">${fora ? "Me avise quando chegar" : "Continuar"}</button><button class="botao-texto" data-acao="nada">Não sei meu CEP</button>`);
     },
   },
   permissao: {
-    nome: "Primeiro uso 4 · Permissão de aviso", estados: { padrao: "Antes de pedir", negada: "Depois de negar" },
-    nota: { _: "Pedido em contexto, disparado por um botão, com a notificação de exemplo desenhada (diretriz Android; U03). \"Quero receber avisos\" abre o diálogo do sistema (simulado).", negada: "Negar não bloqueia nada: as ofertas continuam no app (F5)." },
+    nome: "Primeiro uso 7 · Permissão de aviso", estados: { padrao: "Antes de pedir", negada: "Depois de negar" },
+    nota: { _: "Pedido em contexto, disparado por um botão, com um aviso de exemplo (diretriz Android; U03). O consentimento é registrado à parte dos termos (PUT /v1/eu/notificacoes; DECISIONS 38). \"Quero receber avisos\" abre o diálogo do sistema (simulado). \"No máximo 3 por dia\" é o padrão real do despachante (DECISIONS 58).", negada: "Negar não bloqueia nada: as ofertas continuam no app (F5)." },
     render(est) {
-      const o = OF.protetor;
+      const o = OF.fralda;
       return passo("Quer receber o aviso quando aparecer?", est === "negada" ? "Tudo bem. As ofertas continuam aqui no app. Se mudar de ideia, é só ir em Ajustes." : "No máximo 3 por dia, nunca de madrugada, nunca propaganda. Você muda isso quando quiser.",
         `<p class="t-rotulo sec" style="margin:0">Um aviso é assim:</p><div class="caixa-info" aria-label="Exemplo de aviso"><span class="t-rotulo-p sec">economae · ${o.loja}</span><span class="t-nome">${esc(tituloNotif(o))}</span><span class="t-apoio sec">${esc(textoNotif(o))}</span></div>`,
         `<button class="botao-principal" data-acao="pedir-permissao">Quero receber avisos</button><button class="botao-texto" data-acao="ir" data-destino="ofertas:com">Agora não</button>`);
@@ -778,92 +909,93 @@ const TELAS = {
   },
   ofertas: {
     nome: "Ofertas", principal: true,
-    estados: { com: "Com ofertas", carregando: "Carregando", nada: "Nada passou no teste hoje", medindo: "Começando a medir", semCategoria: "Sem categoria", semCep: "Sem CEP", fora: "Fora da região", erro: "Erro sem cópia salva", offline: "Sem internet (cópia salva)", retorno: "Voltou da loja" },
+    estados: { com: "Com ofertas", carregando: "Carregando", nada: "Nada passou no teste hoje", medindo: "Começando a medir", semCategoria: "Sem categoria", fora: "Fora da região", erro: "Erro", offline: "Sem internet (cópia salva)", retorno: "Voltou da loja" },
     nota: {
-      _: "Resumo do dia no topo, Excepcionais (avisadas) e Boas ofertas separadas por seção e etiqueta com ícone, anúncio só a partir da 3ª posição e com forma própria (princípio 9), remédios em formato de lista (RDC 96/2008).",
+      _: "Resumo do dia no topo, filtro por categoria (o feed da API aceita ?categoria=), Excepcionais (avisadas) e Boas ofertas separadas por seção e etiqueta, fralda com o tamanho e só nos tamanhos escolhidos, alimentação infantil sempre com o aviso da NBCAL inteiro, anúncio só a partir da 3ª posição e com forma própria (princípio 9). Remédio saiu do app (DECISIONS 45). Dependência: o item do feed da API ainda não traz o menor preço do período nem os dias medidos; selo e régua do cartão precisam desse acréscimo (BACKLOG_UX B-02).",
       nada: "Ausência de oferta é funcionalidade (princípio 5): os números do dia provam a curadoria (U06).",
       medindo: "Partida a frio explicada com contagem (U02). Sem 14 dias de histórico nada é avisado.",
       carregando: "Esqueleto estático, sem brilho animado (custo em aparelho de entrada, S-01).",
-      offline: "Última cópia salva com a hora (princípio 7).",
+      offline: "Última cópia salva com a hora (princípio 7). A fase 4 escolheu não guardar feed no aparelho (DECISIONS 61, \"preço que muda engana\"); a proposta mantém a cópia só com a hora bem visível. Decisão a tomar com o responsável (BACKLOG_UX B-30).",
       retorno: "Ao voltar da loja, uma pergunta opcional fecha o ciclo (U23).",
     },
     render(est) {
+      if (est === "retorno" && E._ultimo !== "ofertas:retorno") { E.retorno = true; E.obrigado = false; }
       let corpo;
       const cepChip = E.cep ? `<div class="pad"><button class="chip-cep" data-acao="ir" data-destino="cep:valido" aria-label="CEP ${fmtCep(E.cep)}. Toque para trocar.">${ic("location_on", "i p")}CEP ${fmtCep(E.cep)}</button></div>` : "";
+      const filtros = E.categorias.size > 1 ? `<div class="pad quebra filtros" role="group" aria-label="Filtrar por categoria. Toque de novo para ver todas.">
+          ${[...E.categorias].map((k) => `<button class="chip-filtro t-rotulo" role="checkbox" aria-checked="${E.filtroCat === k}" data-filtro="${k}" aria-label="Mostrar só ${CAT[k].rot}">${E.filtroCat === k ? ic("check_circle", "i p") : ""}${CAT[k].curto}</button>`).join("")}</div>` : "";
       const lista = (ofertas) => {
+        ofertas = ofertas.filter(visivel);
         const exc = ofertas.filter((o) => o.nivel === "exc"), boas = ofertas.filter((o) => o.nivel !== "exc");
+        if (!exc.length && !boas.length) return htmlEstado("verified", "Nada nesta categoria hoje", "Quando o preço cair de verdade, a gente avisa.");
         const itens = [];
         if (exc.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Excepcionais</h2><p class="t-apoio sec" style="margin:4px 0 0">Menor preço dos últimos meses. Estas a gente avisa.</p></div>`, ...exc.map(htmlCartao));
         if (boas.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Boas ofertas</h2><p class="t-apoio sec" style="margin:4px 0 0">Também conferidas, mas não tão fortes para avisar.</p></div>`, ...boas.map(htmlCartao));
-        // Anúncio antes da 3ª oferta (PROPOSTA 4.6).
-        let n = 0, pos = itens.findIndex((h) => h.startsWith('<button class="cartao"') && ++n === 3);
+        let n = 0; const pos = itens.findIndex((h) => h.startsWith('<button class="cartao"') && ++n === 3);
         if (pos > 0) itens.splice(pos, 0, htmlAnuncio());
         return itens.join("");
       };
-      if (est === "retorno" && E._ultimo !== "ofertas:retorno") { E.retorno = true; E.obrigado = false; }
+      const todas = [OF.protetor, OF.fralda, OF.papinha, OF.creme, OF.lenco, OF.shampoo];
       const retorno = est === "retorno" ? `<div class="retorno" role="region" aria-label="Pergunta sobre o preço">${E.obrigado ? `<span class="t-corpo">Obrigado. Isso ajuda a conferir as próximas.</span>` : `<span class="t-nome">O preço na loja bateu?</span><div class="quebra"><button class="botao-contorno" data-acao="obrigado">Sim</button><button class="botao-contorno" data-acao="obrigado">Não</button><button class="botao-texto" data-acao="obrigado">Não comprei</button></div>`}</div>` : "";
       const resumo = `<p class="t-apoio sec" style="margin:var(--espaco-2) 0 0">Hoje conferimos ${milhar(RESUMO.conferidos)} preços nas suas categorias. ${RESUMO.aprovadas} passaram no teste.</p>`;
       switch (est) {
         case "carregando": corpo = `<div class="lista" aria-label="Carregando ofertas">${esqueleto()}${esqueleto()}${esqueleto()}</div>`; break;
         case "nada": corpo = `<div class="lista">${htmlEstado("verified", "Nada passou no teste hoje", `Conferimos ${milhar(RESUMO.conferidos)} preços nas suas categorias. Nenhum era o menor dos últimos meses. Quando for, a gente avisa.`)}
-          <div class="secao"><h2 class="t-titulo-secao">Boas ofertas</h2><p class="t-apoio sec" style="margin:4px 0 0">Também conferidas, mas não tão fortes para avisar.</p></div>${htmlCartao(OF.shampoo)}${htmlRemedios([OF.paracetamol])}</div>`; break;
+          <div class="secao"><h2 class="t-titulo-secao">Boas ofertas</h2><p class="t-apoio sec" style="margin:4px 0 0">Também conferidas, mas não tão fortes para avisar.</p></div>${htmlCartao(OF.lenco)}</div>`; break;
         case "medindo": corpo = htmlEstado("hourglass_top", "Começando a medir", "Para saber se um preço está baixo de verdade, precisamos de pelo menos 14 dias de preço de cada produto. Faltam 8 dias.", null, null, false,
           `<div class="progresso" role="progressbar" aria-valuemin="0" aria-valuemax="14" aria-valuenow="6" aria-label="6 de 14 dias"><span style="width:${6 / 14 * 100}%"></span></div><span class="t-rotulo" style="color:var(--cor-prova)">6 de 14 dias</span>`); break;
         case "semCategoria": corpo = htmlEstado("tune", "Você não segue nenhuma categoria", null, "Escolher categorias", "ir-categorias"); break;
-        case "semCep": corpo = htmlEstado("home", "Falta o seu CEP", "Serve só para saber quais lojas entregam para você. Não pedimos endereço nem localização.", "Continuar", "ir-cep"); break;
-        case "fora": corpo = htmlEstado("location_on", "Ainda não chegamos aí", "Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.", "Me avise quando chegar", "nada"); break;
+        case "fora": corpo = htmlEstado("location_on", "Ainda não chegamos aí", "Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.", "Trocar CEP", "ir-cep"); break;
         case "erro": corpo = htmlEstado("error", "Não deu para carregar as ofertas", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true); break;
-        case "offline": corpo = `<div class="faixa-aviso neutra" role="status">${ic("cloud_off")}<span class="t-apoio" style="flex:1">Sem internet. Mostrando as ofertas das 09:12.</span><button class="botao-texto" data-acao="tentar">Tentar de novo</button></div><div class="lista">${resumo}${lista([OF.protetor, OF.fralda, OF.shampoo, OF.hidratante])}${htmlRemedios([OF.paracetamol])}</div>`; break;
-        default: corpo = `<div class="lista">${retorno}${resumo}${lista([OF.protetor, OF.fralda, OF.shampoo, OF.hidratante])}${htmlRemedios([OF.paracetamol])}</div>`;
+        case "offline": corpo = `<div class="faixa-aviso neutra" role="status">${ic("cloud_off")}<span class="t-apoio" style="flex:1">Sem internet. Mostrando as ofertas das 09:12.</span><button class="botao-texto" data-acao="tentar">Tentar de novo</button></div><div class="lista">${resumo}${lista(todas)}</div>`; break;
+        default: corpo = `<div class="lista">${retorno}${resumo}${lista(todas)}</div>`;
       }
-      const semCep = est === "semCep";
-      return topo("Ofertas", false) + (semCep ? "" : cepChip) + faixaAvisos() + corpo;
+      const semFiltro = ["semCategoria", "fora", "erro", "carregando", "medindo"].includes(est);
+      return topo("Ofertas", false) + cepChip + (semFiltro ? "" : filtros) + faixaAvisos() + corpo;
     },
   },
   detalhe: {
     nome: "Detalhe da oferta",
-    estados: { protetor: "Ativa, incondicional", fralda: "Leve 3 pague 2", hidratante: "Só com cartão + retirada", shampoo: "Quase o menor, histórico de 94 dias", caiu: "Caiu mais desde o aviso", mudou: "Preço mudou depois do aviso", encerrada: "Encerrada", paracetamol: "Remédio sem receita", carregando: "Carregando", erro: "Erro", offline: "Sem internet" },
+    estados: { protetor: "Ativa, incondicional", fralda: "Fralda, leve 3 pague 2", papinha: "Alimentação infantil (aviso NBCAL)", shampoo: "Só com cartão + retirada", lenco: "Quase o menor, 94 dias de histórico", creme: "Gestação e pós-parto", caiu: "Caiu mais desde o aviso", mudou: "Preço mudou depois do aviso", encerrada: "Encerrada (ativa = false)", carregando: "Carregando", erro: "Erro", naoExiste: "Oferta não existe mais" },
     nota: {
-      _: "Ordem de leitura: o que mudou → condição → produto → preço → prova → cobertura → ação (A07). A prova fica na primeira dobra, não numa aba (R13). O botão \"Ver na loja\" avisa que sai do app. Link de afiliado declarado (CDC art. 36).",
-      fralda: "O preço grande é o efetivo por pacote (comparável ao normal); o total a pagar está na faixa de condição (U09).",
-      encerrada: "Se acabou desde o aviso, isso vem antes de tudo e o botão muda (R8).",
+      _: "Ordem de leitura: o que mudou → condição → produto → preço → aviso legal → prova → cobertura → ação (A07). A prova fica na primeira dobra, não numa aba (R13). O detalhe da API já traz o histórico de 180 dias, que dá o menor preço, os dias medidos e a régua sem campo novo. Link de afiliado declarado quando linkAfiliado = true (CDC art. 36).",
+      fralda: "O preço grande é o efetivo por pacote (precoEfetivoCentavos, comparável ao normal); o total a pagar está na faixa de condição (U09). Tamanho G em etiqueta.",
+      papinha: "Alimentação infantil: o aviso do Ministério da Saúde aparece inteiro logo abaixo do preço, visível sem rolar, sem cortar nem esconder (DECISIONS 46; avisos[] da API). Com 94 dias de histórico, o selo diz \"94 dias\", nunca \"6 meses\".",
+      encerrada: "Com ativa = false a API manda link = null: a promoção acabou e isso vem antes de tudo, e o botão leva às ofertas de hoje (R8).",
       mudou: "Mudança de preço aparece antes do preço (R9).",
-      shampoo: "Com 94 dias de histórico, o selo diz \"94 dias\", nunca \"6 meses\" (princípio de honestidade do dado).",
-      paracetamol: "Remédio: formato de lista de preço, advertência obrigatória, sem selo nem régua (RDC 96/2008; S-27).",
+      creme: "Produto de gestação: dentro do app aparece normalmente; a proteção está na tela bloqueada (N9).",
+      naoExiste: "OFERTA_NAO_ENCONTRADA (404): a notificação pode ser tocada dias depois.",
     },
     render(est) {
       if (est === "carregando") return topo("", true) + `<div class="lista">${esqueleto()}</div>`;
-      if (est === "erro") return topo("", true) + htmlEstado("cloud_off", "Não deu para carregar as ofertas", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true);
-      const o = OF[est === "offline" ? "protetor" : est] || OF.protetor;
+      if (est === "erro") return topo("", true) + htmlEstado("cloud_off", "Não deu para carregar a oferta", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true);
+      if (est === "naoExiste") return topo("", true) + htmlEstado("event_busy", "Esta oferta não existe mais", "A loja tirou o produto do ar. Veja as ofertas de hoje.", "Ver ofertas de hoje", "ir-ofertas");
+      const o = OF[est] || OF.protetor;
       const tc = textoCondicao(o), s = selo(o);
       const abaixo = reais(o.prova.normal - efetivo(o));
       let h = topo("", true, `<button class="botao-icone" data-acao="nada" aria-label="Compartilhar">${ic("share")}</button>`);
-      if (est === "offline") h += `<div class="faixa-aviso neutra" role="status">${ic("cloud_off")}<span class="t-apoio">Sem internet. Mostrando as ofertas das ${o.conferido}.</span></div>`;
-      if (o.encerrada) h += `<div class="faixa-erro" role="status"><span class="linha t-titulo-secao">${ic("event_busy")}Esta oferta acabou</span><span class="t-corpo">Acabou em ${o.encerrada.dia} às ${o.encerrada.hora}. O preço voltou para ${reais(o.encerrada.voltou)}.</span></div>`;
+      if (o.encerrada) h += `<div class="faixa-erro" role="status"><span class="linha t-titulo-secao">${ic("event_busy")}Esta promoção acabou</span><span class="t-corpo">Acabou em ${o.encerrada.dia} às ${o.encerrada.hora}. O preço voltou para ${reais(o.encerrada.voltou)}.</span></div>`;
       if (o.mudou) h += `<div class="faixa-condicao t-rotulo" role="status">${ic("info", "i p")}<span>O preço mudou para ${reais(o.mudou.preco)} às ${o.mudou.hora}.</span></div>`;
       if (tc) h += `<div class="faixa-condicao t-rotulo">${ic("info", "i p")}<span>${esc(tc)}</span></div>`;
       h += `<div class="pad coluna" style="padding-top:var(--espaco-5);padding-bottom:var(--espaco-5)">
         <div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto" style="width:64px;height:64px;flex-basis:64px">${ic(CAT[o.cat].ic)}</div><div class="coluna" style="gap:var(--espaco-1);flex:1">
-          ${o.nivel === "exc" && !o.remedio ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}
+          <span class="quebra" style="gap:var(--espaco-2)">${o.nivel === "exc" ? `<span class="etiqueta-exc t-rotulo-p">${ic("notifications")}Excepcional</span>` : ""}${o.tamanho ? `<span class="chip-tamanho t-rotulo-p">Tamanho ${o.tamanho}</span>` : ""}</span>
           <h1 class="t-titulo-secao">${esc(o.nome)}</h1><span class="t-apoio sec">Embalagem: ${o.emb.rot}</span><span class="t-apoio sec">${o.loja}</span></div></div>`;
-      if (o.remedio) {
-        h += `<div class="t-preco-destaque">${reais(o.preco)}</div><p class="t-rotulo" style="margin:0">SE PERSISTIREM OS SINTOMAS, O MÉDICO DEVERÁ SER CONSULTADO.</p>`;
-      } else {
-        h += htmlPreco(o, true) + `<div class="t-apoio sec">${porUnidade(o)}</div>`;
-        const dias = o.prova.serie.slice().reverse().slice(0, 30);
-        h += `<section class="prova" aria-labelledby="tit-prova"><h2 id="tit-prova" class="t-titulo-secao">Por que é promoção de verdade</h2>
-          <div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
-          <div class="check t-corpo">${ic("check_circle")}<span>${compraMin(o) > 1 ? `Cada uma sai ${abaixo} abaixo` : `Está ${abaixo} abaixo`} do preço normal desta loja, que é a média do que ela cobrou nos últimos 30 dias.</span></div>
-          <div class="check t-corpo">${ic("check_circle")}<span>${s.tipo === "menor" ? `É o menor preço desta loja em ${periodo(o)}.` : `Está a ${pct((efetivo(o) - o.prova.menor) / o.prova.menor)} do menor preço desta loja em ${periodo(o)}.`}</span></div>
-          <div class="check t-corpo">${ic("check_circle")}<span>A loja não aumentou o preço antes da promoção.</span></div>
-          <div class="caixa">${htmlRegua(o, true)}<span class="t-rotulo">Preço nesta loja, últimos 90 dias</span>${grafico(o)}
-            <button class="botao-texto" style="align-self:flex-start;padding-left:0" data-acao="ver-dias" aria-expanded="${E.verDias}">${E.verDias ? "Esconder preços dia a dia" : "Ver preços dia a dia"}</button>
-            ${E.verDias ? `<ul class="dias t-apoio">${dias.map((d) => `<li><span>${d.dia}</span><span>${reais(d.c)}</span></li>`).join("")}</ul>` : ""}</div>
-          <button class="botao-contorno" data-acao="como">Como a gente confere</button></section>`;
-      }
+      // Aviso legal logo depois do preço: visível sem rolar, nunca escondido abaixo da prova (NBCAL).
+      h += htmlPreco(o, true) + `<div class="t-apoio sec">${porUnidade(o)}</div>` + htmlAvisos(o);
+      const dias = o.prova.serie.slice().reverse().slice(0, 30);
+      h += `<section class="prova" aria-labelledby="tit-prova"><h2 id="tit-prova" class="t-titulo-secao">Por que é promoção de verdade</h2>
+        <div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
+        <div class="check t-corpo">${ic("check_circle")}<span>${compraMin(o) > 1 ? `Cada uma sai ${abaixo} abaixo` : `Está ${abaixo} abaixo`} do preço normal desta loja, que é a média do que ela cobrou nos últimos 30 dias.</span></div>
+        <div class="check t-corpo">${ic("check_circle")}<span>${s.tipo === "menor" ? `É o menor preço desta loja em ${periodo(o)}.` : `Está a ${pct((efetivo(o) - o.prova.menor) / o.prova.menor)} do menor preço desta loja em ${periodo(o)}.`}</span></div>
+        <div class="check t-corpo">${ic("check_circle")}<span>A loja não aumentou o preço antes da promoção.</span></div>
+        <div class="caixa">${htmlRegua(o, true)}<span class="t-rotulo">Preço nesta loja, últimos 90 dias</span>${grafico(o)}
+          <button class="botao-texto" style="align-self:flex-start;padding-left:0" data-acao="ver-dias" aria-expanded="${E.verDias}">${E.verDias ? "Esconder preços dia a dia" : "Ver preços dia a dia"}</button>
+          ${E.verDias ? `<ul class="dias t-apoio">${dias.map((d) => `<li><span>${d.dia}</span><span>${reais(d.c)}</span></li>`).join("")}</ul>` : ""}</div>
+        <button class="botao-contorno" data-acao="como">Como a gente confere</button></section>`;
       h += `<div class="linha-apoio t-apoio">${ic(o.cob.tipo === "retirada" ? "storefront" : "local_shipping", "i p")}<span>${textoCobertura(o.cob)}</span></div>
         <div class="linha-apoio t-apoio">${ic("schedule", "i p")}<span>Conferido às ${o.conferido}. O preço e o estoque podem mudar na loja.</span></div>
-        <p class="t-apoio sec" style="margin:0">O economae pode ganhar uma comissão se você comprar por este link. Isso não muda o preço nem a escolha das ofertas.</p></div>`;
+        <p class="t-apoio sec" style="margin:0">O economae pode ganhar uma comissão se você comprar por este link. O preço para você é o mesmo, e isso não muda a escolha das ofertas.</p></div>`;
       h += `<div class="rodape-fixo">${o.encerrada ? `<button class="botao-principal" data-acao="ir" data-destino="ofertas:com">Ver ofertas de hoje</button>` : `<button class="botao-principal" data-acao="loja" data-id="${o.id}" aria-label="Ver na ${o.loja}. Abre fora do app.">Ver na ${o.loja}${ic("open_in_new", "i p")}</button>`}</div>`;
       return h;
     },
@@ -871,37 +1003,37 @@ const TELAS = {
   avisos: {
     nome: "Avisos", principal: true,
     estados: { lista: "Com avisos", vazio: "Vazio", carregando: "Carregando", erro: "Erro" },
-    nota: { _: "Tudo o que já foi avisado, por dia, com Ativa/Encerrada em texto. Existe porque a notificação some (\"Só mostram 4 notificações, não consigo ver as anteriores\", Promobit, 1★). Encerrada não é atenuada: opacidade derrubaria o contraste." },
+    nota: { _: "Tudo o que já foi avisado, por dia, com Ativa/Encerrada em texto. Existe porque a notificação some (\"Só mostram 4 notificações, não consigo ver as anteriores\", Promobit, 1★). Encerrada não é atenuada: opacidade derrubaria o contraste. Dependência: a API ainda não lista entregas por usuário (BACKLOG_UX B-31)." },
     render(est) {
       let corpo;
-      const etiqueta = (ativa) => `<span class="${ativa ? "chip-economia" : "chip-economia"} t-rotulo" style="${ativa ? "" : "background:var(--cor-superficie-container-alta);color:var(--cor-texto)"}">${ativa ? "" : ic("event_busy", "i p")}${ativa ? "Ativa" : "Encerrada"}</span>`;
+      const etiqueta = (ativa) => `<span class="chip-economia t-rotulo" style="${ativa ? "" : "background:var(--cor-superficie-container-alta);color:var(--cor-texto)"}">${ativa ? "" : ic("event_busy", "i p")}${ativa ? "Ativa" : "Encerrada"}</span>`;
       if (est === "vazio") corpo = htmlEstado("notifications", "Nenhum aviso ainda", "Quando algo excepcional aparecer, fica guardado aqui.");
       else if (est === "carregando") corpo = `<div class="lista">${esqueleto()}${esqueleto()}</div>`;
       else if (est === "erro") corpo = htmlEstado("error", "Não deu para carregar seus avisos.", null, "Tentar de novo", "tentar", true);
-      else corpo = `<div class="lista"><div class="secao"><h2 class="t-titulo-secao">Hoje</h2></div>${etiqueta(true)}${htmlCartao(OF.protetor)}${etiqueta(true)}${htmlCartao(OF.fralda)}<div class="secao"><h2 class="t-titulo-secao">Ontem</h2></div>${etiqueta(false)}${htmlCartao(OF.sabonete)}</div>`;
+      else corpo = `<div class="lista"><div class="secao"><h2 class="t-titulo-secao">Hoje</h2></div>${etiqueta(true)}${htmlCartao(OF.fralda)}${etiqueta(true)}${htmlCartao(OF.papinha)}<div class="secao"><h2 class="t-titulo-secao">Ontem</h2></div>${etiqueta(false)}${htmlCartao(OF.sabonete)}</div>`;
       return topo("Avisos", false) + faixaAvisos() + corpo;
     },
   },
   ajustes: {
     nome: "Ajustes", principal: true,
-    estados: { gratuito: "Sem conta, gratuito", premium: "Premium ativo", pendente: "Premium pendente", expirado: "Premium expirado" },
-    nota: { _: "Limite diário (padrão 3) e silêncio (21h–8h) visíveis (U07, S-17). Conta opcional (R1). Apagar dados em dois toques, sem documento (R14). Premium só dá mais CEPs, única regra no código (S-11); o preço vem da Google Play." },
+    estados: { gratuito: "Gratuito", premium: "Premium ativo" },
+    nota: { _: "Junta as telas \"Preferências\" e \"Conta\" da fase 4 num destino só da barra inferior. Limite do dia de 1 a 10 (teto do tenant; padrão 3, DECISIONS 58). Silêncio visível. Tamanho da fralda editável. Sair e excluir a conta em dois toques, sem documento (R14). Premium = mais CEPs, e o próprio responsável achou fraco para este público: a proposta de benefício está em aberto (BACKLOG_UX B-14)." },
     render(est) {
-      const plano = { gratuito: "Acompanhe até 3 CEPs", premium: "Premium ativo até 28/10", pendente: "Pagamento em análise pela Google Play", expirado: "Seu premium acabou. Seu primeiro CEP continua valendo." }[est];
-      const item = (t, apoio, acao) => `<button class="item-ajuste" data-acao="${acao || "nada"}"><span class="coluna"><span class="t-nome">${t}</span>${apoio ? `<span class="t-apoio sec">${apoio}</span>` : ""}</span>${ic("chevron_right")}</button>`;
-      const ordem = Object.keys(CAT).sort((a, b) => (a === E.destacar ? -1 : b === E.destacar ? 1 : 0));
-      const cats = ordem.map((k) => { const c = CAT[k], sel = E.categorias.has(k); return `<button class="categoria" role="checkbox" aria-checked="${sel}" data-cat-alternar="${k}">${ic(c.ic)}<span class="coluna" style="gap:0;flex:1"><span class="t-nome">${c.rot}</span><span class="t-apoio sec">${c.ex}</span></span><span class="marca-sel">${ic(sel ? "check_circle" : "radio_button_unchecked")}</span></button>`; }).join("");
-      const limites = [1, 3, 5, null].map((n) => `<button class="radio" role="radio" aria-checked="${E.limite === n}" data-limite="${n}"><span class="bola"></span><span class="t-corpo">${n == null ? "Sem limite" : n + " por dia"}</span></button>`).join("");
+      const plano = est === "premium" ? "Premium ativo até 30/10" : "Acompanhe até 3 CEPs com o premium";
+      const item = (t, apoio, acao, icone = "chevron_right", cls = "") => `<button class="item-ajuste ${cls}" data-acao="${acao || "nada"}"><span class="coluna"><span class="t-nome">${t}</span>${apoio ? `<span class="t-apoio sec">${apoio}</span>` : ""}</span>${ic(icone)}</button>`;
+      const limites = [1, 3, 5, 10].map((n) => `<button class="radio" role="radio" aria-checked="${E.limite === n}" data-limite="${n}"><span class="bola"></span><span class="t-corpo">${n} por dia${n === 3 ? " (padrão)" : ""}</span></button>`).join("");
       return topo("Ajustes", false) + faixaAvisos() + `<div class="pad" style="padding-bottom:var(--espaco-8)">
         <h2 class="t-titulo-secao" style="margin-top:var(--espaco-3)">Avisos</h2>
-        ${item("Avisos no celular", E.avisos ? "Ligados" : "Desligados. Toque para ligar.", "ligar-avisos")}
+        ${item("Avisos no celular", E.avisos ? "Ligados. Só promoção excepcional, no seu horário e no limite do dia." : "Desligados. Toque para ligar.", "ligar-avisos")}
         <p class="t-nome" style="margin:var(--espaco-4) 0 0" id="rot-limite">Máximo de avisos por dia</p><div role="radiogroup" aria-labelledby="rot-limite">${limites}</div>
         ${item("Não avisar entre", "21:00 e 08:00. Avisos desse horário chegam às 08:00, os melhores primeiro.")}
-        <hr class="div"><h2 class="t-titulo-secao" style="margin-bottom:var(--espaco-3)">Categorias que você segue</h2><div class="coluna" style="gap:var(--espaco-3)">${cats}</div>
-        <hr class="div"><h2 class="t-titulo-secao">Seu CEP</h2>${item(fmtCep(E.cep || "01310100"), null, "ir-cep")}${item("Adicionar outro CEP", plano, "premium")}
-        <hr class="div"><h2 class="t-titulo-secao">Conta</h2><p class="t-corpo sec">Suas escolhas ficam só neste celular. Entre para não perder se trocar de aparelho.</p><button class="botao-contorno" data-acao="nada">Entrar com Google</button>
-        <hr class="div">${item("Como a gente confere", null, "como")}${item("Termos de uso")}${item("Privacidade")}
-        <button class="botao-texto perigo" style="padding-left:0" data-acao="apagar">Apagar meus dados</button></div>`;
+        <hr class="div"><h2 class="t-titulo-secao" style="margin-bottom:var(--espaco-3)">Categorias que você segue</h2><div class="coluna" style="gap:var(--espaco-3)">${htmlCategorias()}</div>
+        ${E.categorias.has("fraldas_lencos") ? `<p class="t-nome" style="margin:var(--espaco-5) 0 var(--espaco-2)">Tamanho da fralda</p>${htmlTamanhos()}<p class="t-apoio sec" style="margin:var(--espaco-2) 0 0">${E.tamanhos.size ? "Lenço e fralda sem tamanho no anúncio aparecem sempre." : "Sem escolha, chegam promoções de todos os tamanhos."}</p>` : ""}
+        <hr class="div"><h2 class="t-titulo-secao">Seu CEP</h2>${item(fmtCep(E.cep || "01310100"), "Só o CEP, nunca o endereço. Atendemos o estado de São Paulo.", "ir-cep")}${item("Adicionar outro CEP", plano, "premium")}
+        <hr class="div"><h2 class="t-titulo-secao">Conta</h2>${item(E.email, "Entrou com e-mail. A sessão dura 90 dias sem uso.", "nada", "mail")}
+        ${item("Sair", "Os avisos param neste celular.", "sair", "logout")}
+        <hr class="div">${item("Como a gente confere", null, "como")}${item("Termos de uso")}${item("Política de privacidade")}
+        <button class="botao-texto perigo" style="padding-left:0" data-acao="apagar">Excluir minha conta</button></div>`;
     },
   },
 };
@@ -919,16 +1051,18 @@ function grafico(o) {
 
 // ======================= Folhas e diálogos =======================
 function htmlSobreposicao() {
-  if (E.folha === "como") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-como" data-parar><span class="alca"></span><h2 id="tit-como" class="t-titulo-tela">Como a gente confere uma promoção</h2>
-    ${["Todo dia, anotamos o preço de cada produto em cada loja.", "Só avisamos quando o preço está pelo menos 25% abaixo do normal da loja. Para comida que estraga, 35%.", "O preço precisa ser o menor dos últimos 6 meses, ou bem perto dele.", "Se a loja aumentou o preço pouco antes para depois “baixar”, a gente descarta.", "Se o frete come a economia, a gente descarta.", "Precisamos de pelo menos 14 dias de preço de um produto para saber se ele está barato."].map((t) => `<div class="linha topo t-corpo"><span style="color:var(--cor-prova)">${ic("check_circle")}</span><span>${t}</span></div>`).join("")}
+  if (E.folha === "como") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-como"><span class="alca"></span><h2 id="tit-como" class="t-titulo-tela">Como a gente confere uma promoção</h2>
+    ${["Todo dia, anotamos o preço de cada produto em cada loja.", "Só avisamos quando o preço está pelo menos 25% abaixo do normal da loja.", "O preço precisa ser o menor dos últimos 6 meses, ou bem perto dele.", "Se a loja aumentou o preço pouco antes para depois “baixar”, a gente descarta.", "Se o frete come a economia, a gente descarta.", "Precisamos de pelo menos 14 dias de preço de um produto para saber se ele está barato.", "Fórmula infantil, mamadeira, bico e chupeta nunca aparecem: a lei proíbe promoção desses produtos."].map((t) => `<div class="linha topo t-corpo"><span style="color:var(--cor-prova)">${ic("check_circle")}</span><span>${t}</span></div>`).join("")}
     <button class="botao-principal" data-acao="fechar">Entendi</button></div></div>`;
-  if (E.folha === "premium") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-premium" data-parar><span class="alca"></span><h2 id="tit-premium" class="t-titulo-tela">Acompanhe até 3 CEPs</h2>
-    <p class="t-corpo sec" style="margin:0">Para quem compra para casa, para o trabalho ou para a família em outro endereço.</p><p class="t-titulo-secao" style="margin:0">[preço da Google Play] por mês</p><p class="t-apoio sec" style="margin:0">Renova sozinho. Cancele quando quiser na Google Play.</p>
+  if (E.folha === "premium") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-premium"><span class="alca"></span><h2 id="tit-premium" class="t-titulo-tela">Acompanhe até 3 CEPs</h2>
+    <p class="t-corpo sec" style="margin:0">Para quem compra para casa, para a casa da avó ou para a creche.</p><p class="t-titulo-secao" style="margin:0">[preço da Google Play] por mês</p><p class="t-apoio sec" style="margin:0">Renova sozinho. Cancele quando quiser na Google Play.</p>
     <button class="botao-principal" data-acao="fechar">Assinar por [preço da Google Play]</button></div></div>`;
-  if (E.dialogo === "apagar") return `<div class="veu centro"><div class="dialogo" role="alertdialog" aria-modal="true" aria-labelledby="tit-apagar"><h2 id="tit-apagar" class="t-titulo-secao">Apagar seus dados?</h2><p class="t-corpo" style="margin:0">Vamos apagar suas categorias, seus CEPs, seus avisos e sua conta, se tiver. Isso não pode ser desfeito.</p>
-    <div class="acoes"><button class="botao-texto" data-acao="fechar">Cancelar</button><button class="botao-texto perigo" data-acao="apagado">Apagar</button></div></div></div>`;
+  if (E.dialogo === "apagar") return `<div class="veu centro"><div class="dialogo" role="alertdialog" aria-modal="true" aria-labelledby="tit-apagar"><h2 id="tit-apagar" class="t-titulo-secao">Excluir a conta?</h2><p class="t-corpo" style="margin:0">Apagamos seu e-mail, CEPs, preferências e histórico de avisos. Não tem volta.</p>
+    <div class="acoes"><button class="botao-texto" data-acao="fechar">Cancelar</button><button class="botao-texto perigo" data-acao="apagado">Excluir</button></div></div></div>`;
   if (E.dialogo === "sistema") return `<div class="veu centro"><div class="dialogo sistema" role="alertdialog" aria-modal="true" aria-labelledby="tit-sis"><h2 id="tit-sis" style="font-size:18px;line-height:24px;margin:0">Permitir que <b>economae</b> envie notificações?</h2><p style="margin:0;font-size:13px">(Diálogo do sistema Android, simulado)</p>
     <div class="acoes"><button class="botao-texto" data-acao="permitir">Permitir</button><button class="botao-texto" data-acao="negar">Não permitir</button></div></div></div>`;
+  if (E.dialogo === "google") return `<div class="veu"><div class="folha dialogo sistema" style="max-width:none;border-radius:28px 28px 0 0" role="dialog" aria-modal="true" aria-labelledby="tit-g"><h2 id="tit-g" style="font-size:18px;line-height:24px;margin:0">Escolha uma conta para continuar no economae</h2><p style="margin:0;font-size:13px">(Seletor de contas do Google, simulado)</p>
+    <button class="item-ajuste" style="color:inherit" data-acao="google-ok">${ic("mail")}<span class="coluna"><span class="t-nome">${esc(E.email)}</span></span></button><div class="acoes"><button class="botao-texto" data-acao="fechar">Cancelar</button></div></div></div>`;
   if (E.foraDoApp) return `<div class="fora-do-app"><p style="font-size:18px;margin:0">Você saiu do app para o site da ${esc(OF[E.foraDoApp]?.loja || "loja")}.</p><p style="margin:0;color:var(--sistema-texto-2)">(Simulação. No celular, o link de afiliado abre no navegador ou no app da loja.)</p><button class="botao-principal" data-acao="voltar-app">Voltar ao economae</button></div>`;
   return "";
 }
@@ -961,12 +1095,14 @@ function render(rolarTopo) {
   $selEstado.value = E.estado;
   const n = t.nota[E.estado] ? t.nota._ + "\n\n" + t.nota[E.estado] : t.nota._;
   $nota.innerHTML = `<strong>Por que é assim</strong>${esc(n).replace(/\n\n/g, "<br><br>")}`;
-  document.querySelectorAll("[data-tema]").forEach((b) => b.tagName === "BUTTON" && b.setAttribute("aria-pressed", b.dataset.tema === E.tema));
+  document.querySelectorAll("button[data-tema]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.tema === E.tema));
   document.querySelectorAll("[data-escala]").forEach((b) => b.setAttribute("aria-pressed", +b.dataset.escala === E.escala));
   document.querySelectorAll("[data-avisos]").forEach((b) => b.setAttribute("aria-pressed", (b.dataset.avisos === "1") === E.avisos));
   history.replaceState(null, "", `#tela=${E.tela}&estado=${E.estado}`);
-  const input = document.getElementById("campo-cep");
-  if (input) input.addEventListener("input", (ev) => { E.cepDigitado = ev.target.value.replace(/\D/g, "").slice(0, 8); ev.target.value = fmtCep(E.cepDigitado); });
+  const liga = (id, prop, filtro, fmt = (v) => v) => { const el = document.getElementById(id); if (el) el.addEventListener("input", (ev) => { E[prop] = filtro(ev.target.value); ev.target.value = fmt(E[prop]); }); };
+  liga("campo-cep", "cepDigitado", (v) => v.replace(/\D/g, "").slice(0, 8), fmtCep);
+  liga("campo-codigo", "codigoDigitado", (v) => v.replace(/\D/g, "").slice(0, 6));
+  liga("campo-email", "emailDigitado", (v) => v.trim());
 }
 $selTela.addEventListener("change", () => ir($selTela.value, null));
 $selEstado.addEventListener("change", () => ir(E.tela, $selEstado.value, false));
@@ -979,17 +1115,17 @@ document.querySelector(".painel").addEventListener("click", (ev) => {
 });
 $nav.addEventListener("click", (ev) => { const b = ev.target.closest("[data-aba]"); if (b) ir(b.dataset.aba, null); });
 $tela.addEventListener("click", (ev) => {
-  const alvo = ev.target.closest("[data-abrir],[data-acao],[data-cat-alternar],[data-limite]");
+  const alvo = ev.target.closest("[data-abrir],[data-acao],[data-cat-alternar],[data-limite],[data-tamanho],[data-filtro]");
   if (!alvo) return;
-  if (alvo.dataset.parar !== undefined && !ev.target.closest("[data-acao]")) return;
-  if (alvo.dataset.abrir) {
-    const id = alvo.dataset.abrir;
-    ir("detalhe", ({ caiu: "caiu", retirada: "protetor", sabonete: "encerrada" })[id] || id); return;
-  }
-  if (alvo.dataset.catAlternar) { const k = alvo.dataset.catAlternar; E.categorias.has(k) ? E.categorias.delete(k) : E.categorias.add(k); render(); return; }
-  if (alvo.dataset.limite !== undefined) { E.limite = alvo.dataset.limite === "null" ? null : +alvo.dataset.limite; render(); return; }
+  if (alvo.dataset.abrir) { const id = alvo.dataset.abrir; ir("detalhe", ({ retirada: "protetor", sabonete: "encerrada" })[id] || id); return; }
+  if (alvo.dataset.catAlternar) { const k = alvo.dataset.catAlternar; E.categorias.has(k) ? E.categorias.delete(k) : E.categorias.add(k); if (E.filtroCat && !E.categorias.has(E.filtroCat)) E.filtroCat = null; render(); return; }
+  if (alvo.dataset.tamanho) { const t = alvo.dataset.tamanho; E.tamanhos.has(t) ? E.tamanhos.delete(t) : E.tamanhos.add(t); render(); return; }
+  // Filtro de categoria como chip de filtro do Material 3: toque de novo volta a mostrar todas.
+  if (alvo.dataset.filtro !== undefined) { E.filtroCat = E.filtroCat === alvo.dataset.filtro ? null : alvo.dataset.filtro; render(); return; }
+  if (alvo.dataset.limite !== undefined) { E.limite = +alvo.dataset.limite; render(); return; }
   const a = alvo.dataset.acao;
-  if (a === "fechar" && ev.target.closest(".folha,.dialogo") && !ev.target.closest("[data-acao='fechar'].botao-principal,[data-acao='fechar'].botao-texto")) return;
+  // Clique dentro da folha não fecha; só o véu ou os botões de fechar.
+  if (a === "fechar" && ev.target.closest(".folha,.dialogo") && !ev.target.closest("button[data-acao='fechar']")) return;
   switch (a) {
     case "ir": { const [t, e] = alvo.dataset.destino.split(":"); ir(t, e); break; }
     case "voltar": { const p = E.pilha.pop(); if (p) ir(p[0], p[1], false); else ir("ofertas", "com", false); break; }
@@ -997,27 +1133,36 @@ $tela.addEventListener("click", (ev) => {
     case "como": E.folha = "como"; render(); break;
     case "premium": E.folha = "premium"; render(); break;
     case "apagar": E.dialogo = "apagar"; render(); break;
-    case "apagado": E.categorias = new Set(); E.cep = ""; ir("ofertas", "semCategoria"); break;
+    case "apagado": case "sair": E.aceitou = false; ir("boasVindas", "padrao"); break;
     case "fechar": E.folha = null; E.dialogo = null; render(); break;
     case "ver-dias": E.verDias = !E.verDias; render(); break;
     case "ajustar": E.destacar = alvo.dataset.cat; ir("ajustes", "gratuito"); break;
     case "loja": E.foraDoApp = alvo.dataset.id || "protetor"; render(); break;
-    case "voltar-app": E.foraDoApp = null; E.retorno = true; E.obrigado = false; ir("ofertas", "retorno"); break;
+    case "voltar-app": E.foraDoApp = null; ir("ofertas", "retorno"); break;
     case "obrigado": E.obrigado = true; render(); break;
-    case "pedir-permissao": E.dialogo = "sistema"; render(); break;
+    case "pedir-permissao": case "ligar-avisos": E.dialogo = "sistema"; render(); break;
     case "permitir": E.avisos = true; ir("ofertas", "com"); break;
     case "negar": E.avisos = false; E.dialogo = null; ir("permissao", "negada", false); break;
-    case "ligar-avisos": E.dialogo = "sistema"; render(); break;
     case "ir-categorias": ir("ajustes", "gratuito"); break;
     case "ir-cep": ir("cep", "vazio"); break;
+    case "ir-ofertas": ir("ofertas", "com"); break;
+    case "aceitar": E.aceitou = !E.aceitou; render(); break;
+    case "google": E.dialogo = "google"; render(); break;
+    case "google-ok": ir("termos", "padrao"); break;
+    case "enviar-codigo": {
+      const v = E.emailDigitado;
+      if (/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(v)) { E.email = v; ir("entrada", "codigo"); } else ir("entrada", "emailInvalido", false);
+      break;
+    }
+    case "verificar-codigo": if (E.codigoDigitado.length === 6 && E.codigoDigitado !== "482913") ir("termos", "padrao"); else ir("entrada", "codigoErrado", false); break;
     case "cep-continuar": {
       E.cepTentou = true; const d = E.cepDigitado;
       if (d.length === 8 && +d >= 1000000 && +d <= 19999999) { E.cep = d; ir("permissao", "padrao"); }
-      else if (d.length === 8 && E._foraConfirmado === d) { E.cep = d; ir("ofertas", "fora"); }
+      else if (d.length === 8 && E._foraConfirmado === d) ir("ofertas", "fora");
       else { if (d.length === 8) E._foraConfirmado = d; render(); }
       break;
     }
-    case "anuncio": case "tentar": case "nada": default: break;
+    default: break;
   }
 });
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && (E.folha || E.dialogo)) { E.folha = null; E.dialogo = null; render(); } });

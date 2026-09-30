@@ -277,3 +277,45 @@ O preço **sempre** vem da Google Play Billing (formatado por ela). Nunca fixo n
 | `a11y_abrir_loja` | Ver na {loja}. Abre fora do app. |
 | `a11y_voltar` | Voltar |
 | `a11y_cep_trocar` | CEP {cep}. Toque para trocar. |
+
+## 12. Versão 2 (2026-09-30): textos novos das fases 3 e 4
+
+Estes textos estão no protótipo. O `strings.xml` do módulo `android/` desta branch ainda é o da versão 1; o app real (branch `claude/awesome-noether-jruv6b`) tem os seus.
+
+| Onde | Texto |
+|---|---|
+| Boas-vindas, texto | De fralda a papinha, da gestação aos primeiros anos. Comparamos com o preço que a própria loja cobrou nos últimos meses. Se não for o menor, a gente não avisa. |
+| Entrar, título | Entre para receber os avisos |
+| Entrar, texto | Mandamos um código de 6 números para o seu e-mail. Não tem senha. |
+| Entrar, campo | Seu e-mail |
+| Entrar, erro | Confira o e-mail. Falta o final, como .com ou .com.br. |
+| Entrar, botões | Receber código por e-mail · Entrar com Google |
+| Entrar, cota do dia | Não conseguimos mandar o e-mail agora. Entre com Google, ou tente de novo daqui a algumas horas. |
+| Código, título | Confira seu e-mail |
+| Código, texto | Enviamos um código de 6 números para {e-mail}. Ele vale por 10 minutos. |
+| Código, erros | Código errado. Você ainda tem {n} tentativas. · Este código venceu. Peça outro. |
+| Código, ajuda | Não chegou? Veja a caixa de spam ou promoções. |
+| Código, botões | Entrar · Enviar outro código · Usar outro e-mail |
+| Termos, título | Antes de começar · (versão nova) Os termos mudaram |
+| Termos, resumo | Mostramos promoções de lojas parceiras. Não vendemos nada: preço, estoque e entrega são da loja. · Quando você compra por um link nosso, podemos receber comissão. O preço para você é o mesmo. · Pedimos só e-mail e CEP. Nunca endereço, localização ou dados do bebê. |
+| Termos, versão nova | Leia a versão nova e aceite de novo para continuar. Suas escolhas continuam salvas. |
+| Termos, aceite | Tenho 18 anos ou mais e aceito os termos de uso. |
+| Termos, botão | Marque para continuar (desabilitado) · Continuar |
+| Categorias (rótulos do tenant) | Fraldas e lenços · Higiene e cuidados do bebê · Alimentação infantil · Gestação e pós-parto |
+| Filtro do feed (curto) | Fraldas · Higiene · Alimentação · Gestação |
+| Nota, alimentação infantil | Fórmula infantil, mamadeira, bico e chupeta não aparecem: a lei proíbe promoção desses produtos (NBCAL). |
+| Nota, gestação | Esta escolha fica só na sua conta. Com o celular bloqueado, o aviso não mostra o produto. |
+| Tamanho, título | Qual tamanho de fralda? |
+| Tamanho, texto | Opcional. Marque um ou dois, se estiver trocando. Sem escolha, chegam promoções de todos os tamanhos. |
+| Tamanho, apoio | Lenço e fralda sem tamanho no anúncio aparecem sempre. |
+| Tamanho, botão | Continuar · Continuar com todos os tamanhos |
+| Etiqueta | Tamanho {G} |
+| Aviso da NBCAL (fixo, `economae.json › nbcal.aviso`) | O Ministério da Saúde informa: o aleitamento materno evita infecções e alergias e é recomendado até os 2 (dois) anos de idade ou mais. |
+| Notificação N9, versão pública | Nova oferta excepcional · Desbloqueie o celular para ver |
+| Feed, filtro vazio | Nada nesta categoria hoje · Quando o preço cair de verdade, a gente avisa. |
+| Detalhe, 404 | Esta oferta não existe mais · A loja tirou o produto do ar. Veja as ofertas de hoje. |
+| Ajustes, conta | Entrou com e-mail. A sessão dura 90 dias sem uso. · Sair · Os avisos param neste celular. |
+| Ajustes, limite | {n} por dia · 3 por dia (padrão), com opções 1, 3, 5, 10 |
+| Excluir conta | Excluir a conta? · Apagamos seu e-mail, CEPs, preferências e histórico de avisos. Não tem volta. · Cancelar · Excluir |
+| Premium | Para quem compra para casa, para a casa da avó ou para a creche. |
+
