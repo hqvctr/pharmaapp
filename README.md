@@ -51,6 +51,10 @@ dos passos 4 e 5 de [docs/operacao/google-cloud.md](docs/operacao/google-cloud.m
 Android e `app/google-services.json`, que fica fora do git). Sem eles o app funciona com login por
 código e sem notificações.
 
+Testar no emulador com dados de exemplo: `./scripts/dev-emulador.sh` sobe a API na porta 3000 com um
+banco próprio já alimentado, e `./scripts/dev-emulador.sh despachar` manda os pushes. Roteiro completo
+em [docs/operacao/prompt-cowork-fase4.md](docs/operacao/prompt-cowork-fase4.md).
+
 Push no backend: `node backend/dist/push/despachar.js --tenant economae`, depois de cada coleta.
 Em desenvolvimento (`FCM_MODO=log`) as notificações saem no log.
 

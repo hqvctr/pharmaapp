@@ -4,7 +4,9 @@ Passo a passo para quem tem as contas. Nenhuma chave vai para o repositório: to
 variável de ambiente ou pela config do tenant. Planos gratuitos conferidos em 2026-09-28; eles mudam,
 então confira de novo ao criar as contas.
 
-Para fazer as seções 2 e 3 com o Cowork no navegador: [prompt-cowork.md](prompt-cowork.md).
+Para fazer as seções 2 e 3 com o Cowork no navegador: [prompt-cowork.md](prompt-cowork.md). Depois do
+critério da Fase 4 (restrição da chave, conta de serviço, teste no emulador):
+[prompt-cowork-fase4.md](prompt-cowork-fase4.md).
 
 ## Valores já criados
 

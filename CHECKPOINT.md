@@ -1,5 +1,23 @@
 # Checkpoint
 
+## Depois do critério da Fase 4: Cowork e teste no emulador (2026-09-30)
+
+`docs/operacao/prompt-cowork-fase4.md` tem duas partes:
+- **Prompt do Cowork:** confere a API do FCM (V1) e restringe a chave de API do app Android (pacote +
+  SHA-1). Confere o usuário de teste do login com Google. Duas etapas são opcionais: a chave da
+  conta de serviço do FCM, só para ver o push chegar, e o app de release `br.com.economae` no
+  Firebase, só com o `applicationId` confirmado.
+- **Roteiro do teste no emulador** (imagem com Google Play), com o formulário do que devolver.
+
+`scripts/dev-emulador.sh` sobe a API na porta 3000 com um banco próprio (`dev_emulador`) já
+alimentado com as lojas fictícias. `despachar` manda os pushes com o `FCM_MODO` do `.env`. Conferido
+aqui: `scripts/fase4/cenario.mjs` passou contra essa API usando o `despachar` do script, com 1 push e
+sem repetição. As duas travas também funcionam: porta ocupada e `fcm` sem conta de serviço. O
+`.gitignore` passou a ignorar o nome padrão da chave da conta de serviço do Firebase.
+
+**Próximo passo:** o responsável roda o prompt do Cowork e o roteiro do emulador e cola os dois
+resultados aqui.
+
 ## Cliente OAuth Android e Firebase configurados (2026-09-30)
 
 O Cowork rodou `docs/operacao/prompt-cowork-android.md` e devolveu:
