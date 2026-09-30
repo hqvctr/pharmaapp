@@ -18,6 +18,10 @@ critério da Fase 4 (restrição da chave, conta de serviço, teste no emulador)
 | Firebase | adicionado ao projeto, plano Spark | app Android e push (fase 4) |
 | Cliente OAuth **Android**, `economae-android-debug` | `984598232826-1i256inbmffo8gdkra3m49vmf698u3hv.apps.googleusercontent.com` (pacote `br.com.economae.debug`, SHA-1 da chave de debug do projeto) | nada a configurar no código: o Google confere pacote + SHA-1 do app |
 | App Android no Firebase | `1:984598232826:android:06850797fd477592849343` (pacote `br.com.economae.debug`) | `android/app/google-services.json`, fora do git |
+| App Android de release no Firebase | `br.com.economae`, registrado em 2026-09-30 sem SHA-1 | o `google-services.json` baixado depois disso traz os dois apps |
+| Chave de API do Firebase para Android (termina em `7WhU`) | restrita a apps Android: `br.com.economae.debug` + SHA-1 de debug (2026-09-30); restrições de API mantidas como o Firebase criou | falta acrescentar `br.com.economae` + SHA-1 de release depois do Play Console |
+| API do FCM | Firebase Cloud Messaging API (V1) ativa; API legada desativada | envio de push pelo despachante |
+| Chave da conta de serviço `firebase-adminsdk` | criada em 2026-09-30, sem validade, guardada no computador do responsável (fora do git) | `FCM_CONTA_SERVICO` no teste do emulador e no deploy |
 | Brevo | conta Free; remetente verificado é um endereço pessoal do Gmail (nome "economae"); chave de API não gerada | `EMAIL_REMETENTE` no deploy |
 
 Configurado pelo Cowork em 2026-09-29 ([prompt-cowork.md](prompt-cowork.md)) e em 2026-09-30

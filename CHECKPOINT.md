@@ -1,5 +1,26 @@
 # Checkpoint
 
+## Resultado do Cowork pós-Fase 4 (2026-09-30)
+
+- **Chave de API do app Android** restrita a `br.com.economae.debug` + SHA-1 de debug, com as
+  restrições de API como o Firebase criou.
+- **API do FCM (V1)** ativa; a legada, desativada.
+- **App de release `br.com.economae`** registrado no Firebase. Tomei isso como a confirmação do
+  `applicationId` (decisão 62). O `google-services.json` novo, com os dois apps, ficou no computador
+  do responsável; o deste ambiente continua só com o debug, o que basta para o critério da fase.
+- **Chave da conta de serviço do FCM** criada, fora do git. Para isso o responsável desligou no
+  projeto a política `iam.disableServiceAccountKeyCreation`.
+
+**Recomendação sobre a política:** religar a política no projeto já. Ela só impede criar chave nova;
+a chave de teste continua funcionando. Se o papel "Administrador da política da organização" foi
+dado só para isso, tirar da conta. No deploy, desligar a política só durante a troca da chave.
+
+**Pendente (BACKLOG):** chave de API "Browser" sem restrição; SHA-1 de release, cliente OAuth
+de release e restrição da chave para o pacote de release, depois do Play Console.
+
+**Próximo passo:** o teste no emulador (parte 2 de `docs/operacao/prompt-cowork-fase4.md`), com
+`FCM_MODO=fcm` e a chave da conta de serviço no `.env`, e o RESULTADO TESTE NO EMULADOR colado aqui.
+
 ## Depois do critério da Fase 4: Cowork e teste no emulador (2026-09-30)
 
 `docs/operacao/prompt-cowork-fase4.md` tem duas partes:
