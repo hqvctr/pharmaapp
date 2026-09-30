@@ -34,8 +34,20 @@ android {
         buildConfigField("boolean", "PUSH_DISPONIVEL", temFirebase.toString())
     }
 
+    signingConfigs {
+        // Chave de debug versionada: o mesmo SHA-1 em qualquer computador, cadastrado no cliente OAuth
+        // Android do Google (docs/operacao/google-cloud.md). Release usa outra chave, fora do git.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         debug {
+            signingConfig = signingConfigs.getByName("debug")
             applicationIdSuffix = ".debug"
             // Emulador alcança o backend local do computador por 10.0.2.2. Outro valor: -Peconomae.apiUrl=...
             buildConfigField("String", "API_URL", "\"${propriedade("economae.apiUrl", "http://10.0.2.2:3000/")}\"")
@@ -60,6 +72,8 @@ android {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+        // Robolectric precisa dos recursos do app para rodar as telas na JVM.
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
@@ -87,4 +101,27 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+// Jornada de ponta a ponta contra o backend local (scripts/pronto-fase4.sh passa os dois valores);
+// sem eles o teste é pulado. As capturas de tela saem em app/build/outputs/roborazzi/.
+tasks.withType<Test>().configureEach {
+    // Robolectric com SDK 36 mexe em campos internos do FileDescriptor (JDK 17+ fecha o acesso).
+    jvmArgs(
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
+    )
+    systemProperty("roborazzi.test.record", "true")
+    listOf("economae.e2e.apiUrl", "economae.e2e.apiLog").forEach { nome ->
+        project.findProperty(nome)?.let { systemProperty(nome, it) }
+    }
 }

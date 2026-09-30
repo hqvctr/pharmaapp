@@ -83,10 +83,10 @@ Se o console insistir no teste gratuito ou no faturamento, feche o aviso ou use 
    - o app Android, como `serverClientId` do Credential Manager (fase 4).
 4. **Clients → Criar cliente → Android**, um para cada certificado que assina o app. Sem ele, o
    login com Google falha no aparelho mesmo com o client ID Web certo.
-   - Debug: nome do pacote `br.com.economae.debug`, SHA-1 do certificado de debug **do computador
-     onde o app é compilado** (cada computador tem o seu):
-     `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`
-     (no Windows, `%USERPROFILE%\.android\debug.keystore`).
+   - Debug: nome do pacote `br.com.economae.debug`, SHA-1
+     `10:88:D4:80:33:01:24:8B:8B:33:F4:8A:2C:4E:B5:AD:35:CF:3B:85`. É o da chave de debug do projeto,
+     versionada em `android/app/debug.keystore`: o mesmo em qualquer computador (decisão 66).
+     Prompt pronto para o Cowork: [prompt-cowork-android.md](prompt-cowork-android.md).
    - Release: nome do pacote `br.com.economae`, SHA-1 da "chave de assinatura de apps" que o Play
      Console mostra depois do primeiro envio.
 5. **Firebase → Configurações do projeto → Seus apps → Adicionar app Android**: registrar

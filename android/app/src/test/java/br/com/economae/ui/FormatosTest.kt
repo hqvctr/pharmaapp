@@ -20,6 +20,9 @@ class FormatosTest {
         assertEquals("32% abaixo", percentualAbaixo(0.3155))
         assertEquals("30/09", diaCurto("2026-09-30"))
         assertEquals("14010-000", cepFormatado("14010000"))
+        // Protetor de 50 ml a R$ 49,90: R$ 998,00 por litro confunde; por 100 ml, não.
+        assertEquals("R$ 99,80 por 100 ml", precoPorUnidadeTexto(99800.0, "l"))
+        assertEquals("R$ 1,39 por unidade", precoPorUnidadeTexto(138.61, "un"))
     }
 
     @Test

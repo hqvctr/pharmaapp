@@ -14,6 +14,17 @@ fun reais(centavos: Long): String {
 
 fun reais(centavos: Double): String = reais(centavos.roundToLong())
 
+/**
+ * Preço por unidade como a mãe compara na prateleira: por 100 ml ou 100 g, ou por unidade (fralda).
+ * O backend manda em centavos por litro, quilo ou unidade.
+ */
+fun precoPorUnidadeTexto(centavosPorUnidadeBase: Double, unidade: String): String = when (unidade) {
+    "l" -> "${reais(centavosPorUnidadeBase / 10)} por 100 ml"
+    "kg" -> "${reais(centavosPorUnidadeBase / 10)} por 100 g"
+    "un" -> "${reais(centavosPorUnidadeBase)} por unidade"
+    else -> "${reais(centavosPorUnidadeBase)} por $unidade"
+}
+
 fun percentualAbaixo(queda: Double): String = "${(queda * 100).roundToLong()}% abaixo"
 
 /** "2026-09-30" → "30/09". */

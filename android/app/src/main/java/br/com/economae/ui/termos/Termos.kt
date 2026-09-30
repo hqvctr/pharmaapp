@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -107,8 +109,12 @@ fun TermosTela(estado: EstadoTermos.Pronto, onAceitar: () -> Unit, onSair: () ->
         if (docs.privacidade.url != null) {
             TextButton(onClick = { abrir.openUri(docs.privacidade.url) }) { Text("Ler a política de privacidade") }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = concordo, onCheckedChange = { concordo = it })
+        // A linha inteira marca e desmarca (alvo de toque maior e leitor de tela lê como caixa de seleção).
+        Row(
+            Modifier.fillMaxWidth().toggleable(value = concordo, role = Role.Checkbox, onValueChange = { concordo = it }),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Checkbox(checked = concordo, onCheckedChange = null)
             Text("Tenho 18 anos ou mais e aceito os termos de uso.")
         }
         Button(onClick = onAceitar, enabled = concordo && !estado.enviando, modifier = Modifier.fillMaxWidth()) {

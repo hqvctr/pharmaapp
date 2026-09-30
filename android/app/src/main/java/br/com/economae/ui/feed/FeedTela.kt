@@ -1,5 +1,6 @@
 package br.com.economae.ui.feed
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -130,7 +131,8 @@ fun CartaoOferta(o: Oferta, onClick: () -> Unit, modifier: Modifier = Modifier) 
                 model = o.imagemUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.size(88.dp).clip(RoundedCornerShape(8.dp)),
+                // Fundo neutro: sem foto (ou foto que não carregou) não vira buraco em branco.
+                modifier = Modifier.size(88.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
             )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(o.produto.nome, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)

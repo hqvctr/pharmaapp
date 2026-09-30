@@ -17,7 +17,7 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 /** Injeção de dependência manual: poucas peças, sem gerador de código. */
-class Container(contexto: Context) {
+class Container(contexto: Context, apiUrl: String = BuildConfig.API_URL) {
     val escopo = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val httpClient: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
@@ -25,7 +25,7 @@ class Container(contexto: Context) {
         .build()
     val sessao: ArmazemSessao = ArmazemSessaoDataStore(contexto.applicationContext)
     val repositorio: RepositorioEconomae = RepositorioRemoto(
-        ApiEconomae(BuildConfig.API_URL.toHttpUrl(), BuildConfig.TENANT, httpClient) { sessao.tokenAtual() },
+        ApiEconomae(apiUrl.toHttpUrl(), BuildConfig.TENANT, httpClient) { sessao.tokenAtual() },
         sessao,
     )
     val push: FontePush = FontePushFirebase(contexto.applicationContext)

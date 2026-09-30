@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Critério de pronto da Fase 4: o caminho até o push (aparelho cadastrado pela API, despacho pelo
-# comando real em modo log), a suíte do backend com integração, e o app Android: testes JVM e APK.
+# comando real em modo log), a suíte do backend com integração, e o app Android: testes JVM, a jornada
+# da mãe no app de verdade (Robolectric) contra esta mesma API, com capturas de tela, e o APK.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -52,9 +53,13 @@ FCM_MODO=log node scripts/fase4/cenario.mjs "http://127.0.0.1:$PORTA" "$LOG" \
 echo "--- backend: npm test (com integração da API e do despacho)"
 (cd backend && TEST_DATABASE_URL="$URL_BASE/$DB_TESTE" npm test 2>&1 | tail -4) || falhou=1
 
-echo "--- app Android: testes JVM (inclui conferência dos modelos contra o contrato) e APK de debug"
-(cd android && ./gradlew --no-daemon -q :app:testDebugUnitTest :app:assembleDebug) || falhou=1
-ls -1 android/app/build/outputs/apk/debug/*.apk
+echo "--- app Android: testes JVM, jornada contra a API local e APK de debug"
+(cd android && ./gradlew --no-daemon -q :app:testDebugUnitTest :app:assembleDebug \
+  -Peconomae.e2e.apiUrl="http://127.0.0.1:$PORTA/" -Peconomae.e2e.apiLog="$LOG") || falhou=1
+# A jornada é pulada sem backend; aqui ela precisa ter rodado de verdade.
+grep -q 'skipped="0"' android/app/build/test-results/testDebugUnitTest/TEST-br.com.economae.e2e.JornadaDaMaeTest.xml \
+  && echo "OK    jornada da mãe no app contra a API local" || { echo "FALHA jornada da mãe não rodou"; falhou=1; }
+ls -1 android/app/build/outputs/roborazzi/*.png android/app/build/outputs/apk/debug/*.apk
 
 [ "$falhou" = 0 ] || { echo "FASE 4: NÃO PRONTA"; exit 1; }
 echo "FASE 4: PRONTA"

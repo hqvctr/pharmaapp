@@ -1,5 +1,33 @@
 # Checkpoint
 
+## Itens 2 e 3 da Fase 4: OAuth Android e teste do app (2026-09-30)
+
+**Item 3, testar o app.** Este ambiente não tem virtualização (sem `/dev/kvm`), então não roda
+emulador. Em troca, o app de verdade roda na JVM com Robolectric (decisão 67): a Activity, os
+ViewModels, o OkHttp e o DataStore, contra a API local alimentada pelo pipeline. O teste
+`JornadaDaMaeTest` percorre login por código → termos → preferências → feed → oferta → conta e
+grava uma captura de cada tela em `android/app/build/outputs/roborazzi/`. Entrou em
+`scripts/pronto-fase4.sh`, que passou inteiro de novo.
+
+As capturas mostraram dois defeitos, já corrigidos:
+- **"R$ 998,00 por l" num protetor de 50 ml.** Agora aparece "R$ 99,80 por 100 ml" (ou por 100 g, ou
+  por unidade), com teste.
+- **Foto que não carrega deixava um buraco em branco.** Agora o espaço tem fundo neutro, e no
+  detalhe some quando a oferta não tem foto.
+
+O que depende do Android real continua sem teste: seletor de contas do Google, permissão de
+notificação, notificação chegando e toque, teclado (BACKLOG).
+
+**Item 2, cliente OAuth Android e Firebase.** Não tenho acesso à conta Google. Preparei:
+- **Chave de debug do projeto versionada** (decisão 66), com o mesmo SHA-1 em qualquer computador:
+  `10:88:D4:80:33:01:24:8B:8B:33:F4:8A:2C:4E:B5:AD:35:CF:3B:85`.
+- **Prompt do Cowork** em `docs/operacao/prompt-cowork-android.md`: cria o cliente OAuth Android de
+  `br.com.economae.debug` e registra o app no Firebase. Devolve o `google-services.json` para colar
+  aqui; ele vai para `android/app/`, fora do git.
+
+**Próximo passo:** rodar o prompt do Cowork e colar o resultado. Com o `google-services.json`, o
+build de debug sai com push.
+
 ## Fase 4 — app Android e push (PRONTA; falta testar no aparelho)
 
 **Critério de pronto:** `./scripts/pronto-fase4.sh` (precisa de `ANDROID_HOME`).

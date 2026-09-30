@@ -1,6 +1,9 @@
 package br.com.economae.ui.oferta
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,6 +45,7 @@ import br.com.economae.ui.Carregando
 import br.com.economae.ui.TelaDeErro
 import br.com.economae.ui.diaCurto
 import br.com.economae.ui.percentualAbaixo
+import br.com.economae.ui.precoPorUnidadeTexto
 import br.com.economae.ui.reais
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -92,7 +96,14 @@ fun OfertaRota(viewModel: OfertaViewModel, onVoltar: () -> Unit) {
 fun OfertaConteudo(o: Oferta, modifier: Modifier = Modifier) {
     val abrir = LocalUriHandler.current
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        AsyncImage(model = o.imagemUrl, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxWidth().height(200.dp))
+        if (o.imagemUrl != null) {
+            AsyncImage(
+                model = o.imagemUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant),
+            )
+        }
         Text(o.produto.nome, style = MaterialTheme.typography.titleLarge)
         Text("${o.loja.nome}${o.prazoEntregaDias?.let { " · entrega em até $it dia(s)" } ?: ""}", style = MaterialTheme.typography.bodyMedium)
 
@@ -111,7 +122,7 @@ fun OfertaConteudo(o: Oferta, modifier: Modifier = Modifier) {
         }
         o.condicao?.let { Text("Condição: $it (preço por embalagem já considera a condição)", style = MaterialTheme.typography.bodyMedium) }
         if (o.precoEfetivoCentavos != o.precoCentavos) Text("Preço anunciado por embalagem: ${reais(o.precoCentavos)}", style = MaterialTheme.typography.bodySmall)
-        Text("${reais(o.precoPorUnidade.centavos)} por ${o.precoPorUnidade.unidade}", style = MaterialTheme.typography.bodySmall)
+        Text(precoPorUnidadeTexto(o.precoPorUnidade.centavos, o.precoPorUnidade.unidade), style = MaterialTheme.typography.bodySmall)
         Text(
             when (o.frete.status) {
                 "conhecido" -> "Frete: ${reais(o.frete.centavos ?: 0L)}"
