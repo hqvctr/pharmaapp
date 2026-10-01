@@ -63,3 +63,14 @@ LGPD: eventos agregados por id interno, apagados na exclusão de conta (`DECISIO
 **Tamanho de amostra.** Sem taxa-base real, não há como fixar o tamanho agora. Com a primeira semana
 de dados, usar o cálculo padrão para duas proporções (α = 0,05, poder 0,8) sobre a taxa observada e o
 menor efeito que vale a pena detectar (sugestão: 5 pontos percentuais em M1).
+
+## 4. Receita sem premium (2026-10-01, DECISIONS 73 a 75)
+
+| Métrica | Como medir | Para quê |
+|---|---|---|
+| Cliques em "Ver na loja" e "Comprar na loja" por pessoa ativa por semana | Evento no app e na página do convidado | Base da comissão (S-35) |
+| Compras confirmadas e comissão por loja | Relatório da rede de afiliados (sem identificar pessoa) | Se a comissão paga a operação |
+| Listas criadas por tipo; itens por lista; convidados que abrem; itens marcados | Eventos da aba Listas e da página | Se as listas trazem gente (S-37) |
+| Presente repetido | Pergunta opcional à dona depois da data da festa | Se "Já comprei" basta (S-38) |
+| Assinaturas "sem anúncios" e cancelamentos | Google Play Console | Se a assinatura compensa o anúncio |
+| Avaliações na Play que citam anúncio; saída do feed logo depois do cartão de anúncio | Classificação das avaliações (método do DOSSIE); evento | Se o anúncio incomoda (S-39); teste A/B de densidade |

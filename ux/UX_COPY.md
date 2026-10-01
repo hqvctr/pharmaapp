@@ -252,6 +252,8 @@ motor continua servindo à auditoria.
 
 ## 10. Premium (segundo CEP)
 
+> **Superada em 2026-10-01** (DECISIONS 73): não há premium. Até 3 CEPs para todos; a única assinatura é "Tirar os anúncios" (§14).
+
 | Chave | Texto |
 |---|---|
 | `premium_titulo` | Acompanhe até 3 CEPs |
@@ -345,3 +347,43 @@ sempre do CEP escolhido no topo das Ofertas; o preço grande continua sem frete 
 | `folha_cep` | Frete e ofertas para qual CEP? · O frete, o prazo e as lojas que entregam mudam com o CEP. · Trocar CEP · Acompanhar até 3 CEPs · (premium) Mudar meus CEPs | Folha |
 | `feed_fora_do_cep` | Para o CEP {cep} ficaram de fora {n} ofertas: {a} com frete maior que a economia e {b} de loja que não entrega aí. Trocar o CEP muda o frete e as ofertas. | Fim da lista |
 | `cep_texto` | Serve para saber quais lojas entregam para você e quanto sai o frete. Não pedimos endereço nem localização. | Primeiro uso, CEP |
+
+## 14. Listas, anúncio e "Tirar os anúncios" (protótipo 2.2, 2026-10-01)
+
+Substitui as linhas de premium da §12 ("Premium", "Acompanhe até 3 CEPs").
+
+| Chave | Texto |
+|---|---|
+| `aba_listas` | Listas |
+| `listas_vazio` | Monte sua lista de presentes · Chá de bebê, casa nova, chá de panela ou casamento. Os convidados compram direto na loja pelo link, sem baixar app. · Criar lista |
+| `listas_cartao` | {nome} · {tipo} · dia {data} · {n} itens · {m} já presenteados |
+| `nova_lista_titulo` | Que lista você quer montar? · Só vê quem recebe o link. A lista não aparece em buscas e não mostra seu endereço. |
+| `nova_lista_campos` | Nome da lista · Data da festa (opcional) · Criar lista · (erro) Dê um nome para a lista. |
+| `lista_resumo` | {m} de {n} itens já presenteados |
+| `lista_acoes` | Adicionar item · Compartilhar lista · Ver como convidado |
+| `lista_sugestoes` | Comece pelo que você mais vai usar |
+| `lista_item` | Faltam {n} de {total} · Presenteado · Deram: {nomes}, {n} pessoa(s) sem nome · Remover |
+| `lista_item_link` | Preço lido do link às {hora}. Ainda não temos o histórico desta loja. |
+| `lista_item_livre` | Item livre: o convidado escolhe onde comprar |
+| `lista_rodape` | Avisamos você quando um item da lista tiver preço baixo de verdade. · Quando um convidado compra pelo link, o economae pode ganhar uma comissão da loja. O preço é o mesmo para ele. Não recebemos nem guardamos dinheiro. |
+| `add_folha` | Como você quer adicionar? · Buscar produto (Mostramos o preço e se ele está baixo de verdade.) · Colar link de uma loja (Ou, no app da loja, toque em Compartilhar e escolha economae.) · Escrever o que você quer (Para itens sem loja certa. O convidado escolhe onde comprar.) |
+| `add_busca_nada` | Ainda não acompanhamos este produto · Por enquanto conferimos preço de fralda, higiene do bebê, papinha e gestação. Cole o link de uma loja ou escreva o que você quer. |
+| `add_busca_nbcal` | Este produto não aparece aqui · Não mostramos loja nem preço de mamadeira, bico, chupeta e fórmula infantil: a lei proíbe a promoção desses produtos (NBCAL). |
+| `add_link` | Link do produto · Ler · (erro) Não conseguimos abrir este link. Ele precisa começar com https:// · Não conseguimos ler o preço nesta página. · Preço (opcional) |
+| `add_livre` | Escreva o que você quer · O que você quer ganhar? · Detalhes para os convidados (opcional) · Quantos você quer? · (erro) Escreva o nome do item. |
+| `add_ok` | {item} entrou na lista. |
+| `compartilhar_lista` | Oi! Fiz minha lista de presentes: {nome}. Dá para comprar direto na loja pelo link, sem baixar nada: {link} · Compartilhar · Copiar link |
+| `convidado_topo` | Compre direto na loja e depois marque aqui, para ninguém repetir. Não precisa baixar app nem criar conta. |
+| `convidado_entrega` | Para a entrega, combine o endereço com {dona}. O frete depende do seu CEP e aparece no carrinho da loja. |
+| `convidado_item` | Comprar na {loja} · Já comprei · Já presenteado · Compre onde preferir |
+| `convidado_voltou` | Comprou {item}? · Marque para ninguém repetir o presente. · Sim, comprei · Ainda não |
+| `convidado_marcar` | Marcar como presenteado · Quantos você comprou? · Seu nome (opcional) · Aparece só para {dona}. · Confirmar |
+| `convidado_obrigado` | Obrigado! {dona} vai ver que {item} já foi dado. · Voltar à lista |
+| `convidado_estados` | Esta lista foi encerrada · Não achamos esta lista · Confira o link com quem enviou para você. |
+| `convidado_rodape` | Comprando pelos links, o economae pode ganhar uma comissão da loja. O preço para você é o mesmo. · Criar minha lista no economae |
+| `notif_lista` | {preço} · {produto} (título, ≤ 30) · Da sua lista · {selo} (≤ 40) · Lembrar convidados · Ver lista |
+| `anuncio_tirar` | Tirar os anúncios |
+| `sem_anuncios_folha` | Tirar os anúncios · Os anúncios ajudam a manter o app gratuito. Se preferir não ver nenhum, assine. · [preço da Google Play] por mês · Ofertas, avisos, listas e até 3 CEPs continuam iguais para todo mundo. Renova sozinho. Cancele quando quiser na Google Play. · Assinar por [preço] · Agora não |
+| `ajustes_anuncios` | Tirar os anúncios · Os anúncios mantêm o app gratuito. Se preferir não ver nenhum, dá para assinar. · (assinante) Sem anúncios · Assinatura ativa até {data}. |
+| `ajustes_ceps` | Seus CEPs · Adicionar outro CEP · Até 3, por exemplo a casa da avó ou a creche. |
+| `cep_adicionar` | Qual CEP você quer acrescentar? · Por exemplo, a casa da avó ou a creche. Você escolhe no topo das Ofertas para qual CEP ver o frete. |

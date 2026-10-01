@@ -1,5 +1,15 @@
 # Checkpoint
 
+## Protótipo 2.1 e 2.2 (2026-09-30 a 2026-10-01)
+
+Só no protótipo (`ux/prototipo.html`) e na documentação de UX; backend e app ainda não mudaram.
+- **2.1, frete de acordo com o CEP:** frete, total e prazo no cartão e no detalhe; troca de CEP no topo do feed.
+  Depende de frete por faixa de CEP (BACKLOG_UX B-36).
+- **2.2, decisões do responsável:** sem premium; receita por comissão de afiliado e anúncio leve; a única assinatura
+  tira os anúncios (DECISIONS 73 e 75). Aba Listas: chá de bebê, casa nova, chá de panela e casamento; o convidado
+  compra direto na loja pelo link, sem o app guardar dinheiro (DECISIONS 74). Dependências: B-37 a B-43, entre elas
+  tirar o premium do backend e do app (B-42) e um site para a página do convidado (B-38).
+
 ## UX aplicada ao produto real (2026-09-30)
 
 Merge das fases 3 e 4 (`claude/awesome-noether-jruv6b`) na branch de UX, e as propostas que não
@@ -23,7 +33,7 @@ entraram como **propostas a confirmar**.
 - Módulo Android v1 da proposta (dados de exemplo) removido; fica no histórico.
 
 **Continua com o responsável:** confirmar 68–72; a assessoria dizer se o aviso da NBCAL precisa
-aparecer já na notificação fechada (S-32); cópia do feed sem internet (B-30); benefício do premium.
+aparecer já na notificação fechada (S-32); cópia do feed sem internet (B-30). O benefício do premium foi resolvido: não há premium (DECISIONS 73).
 
 **Verificação neste ambiente:** Postgres 16 e Redis locais e um substituto de `docker compose` fora do
 repositório (sem daemon Docker); Maven Central por espelho do Google (429 no proxy), como na fase 4.

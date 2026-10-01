@@ -470,3 +470,30 @@ Registrado como DECISIONS 68–72, a confirmar. O que falta está em BACKLOG_UX 
 - **Dado que falta (B-36):** hoje o frete é um valor por oferta (`offers.frete_*`), o prazo é por faixa de CEP da loja
   (`store_service_areas`) e a Lomadee não informa frete. O protótipo supõe frete por faixa de CEP (S-33).
 - Descartado: mostrar o preço com frete como número principal — mistura dois custos e esconde o preço comparável.
+
+## 17. Listas de presente, sem premium e anúncio leve (protótipo 2.2, 2026-10-01)
+
+**Modelo de receita (DECISIONS 73 e 75).** Sem plano premium. O app ganha com a comissão das compras pelos links
+(ofertas e listas) e com pouco anúncio. Até 3 CEPs para todo mundo. A única coisa paga é "Tirar os anúncios": quem paga
+compensa o que o app deixa de ganhar com anúncio para aquela pessoa, e nada mais muda.
+
+**Anúncio leve.** No máximo um a cada 8 cartões do feed, a partir do 3º, com forma própria, a palavra "Anúncio" e
+"Tirar os anúncios" logo abaixo. Nunca na notificação, no primeiro uso, no detalhe da oferta, nas listas nem na página do
+convidado. Sem vídeo, tela cheia, som ou contagem regressiva. Nunca de fórmula, mamadeira, bico, chupeta ou remédio.
+Contextual, sem usar gestação ou idade do bebê para segmentar.
+
+**Aba Listas (DECISIONS 74).** Barra inferior com quatro destinos: Ofertas, Listas, Avisos, Ajustes.
+- *Criar:* tipo (chá de bebê, casa nova, chá de panela, casamento), nome e data opcional. Só vê quem tem o link; a lista
+  não aparece em buscas e não mostra endereço.
+- *Adicionar item, três jeitos:* buscar no que o app acompanha (com preço e selo de prova); colar o link ou, melhor,
+  compartilhar do app da loja para o economae; escrever o item livre. A lista nova mostra sugestões do tipo de lista.
+  Busca de mamadeira, bico, chupeta ou fórmula explica a NBCAL em vez de mostrar resultado.
+- *Dona da lista:* vê o que falta, quem deu (nome opcional) e se o preço está baixo de verdade; recebe o aviso N10
+  quando um item do catálogo passa na conferência, com "Lembrar convidados". Comissão declarada.
+- *Convidado:* página web, sem app e sem conta. "Comprar na loja" (link de afiliado) e "Já comprei", na palavra do
+  convidado; ao voltar da loja, a página pergunta se comprou. Entrega: combinar o endereço com a dona da lista; o frete
+  depende do CEP de quem compra e aparece no carrinho da loja.
+- *Sem dinheiro no app:* o convidado paga a loja. O dinheiro dos presentes guardado numa conta rendendo foi descartado
+  (DECISIONS 74): exigiria ser instituição de pagamento ou parceiro licenciado, põe o app contra quem quer receber
+  rápido e rende pouco.
+- Dependências: B-37 a B-43.

@@ -26,9 +26,9 @@ desenhada e implementada com dados de exemplo, e só funciona de verdade quando 
 | # | Item | Por que ficou de fora | Reavaliar quando |
 |---|---|---|---|
 | B-12 | **Seguir um produto específico** (busca e alerta por item). | Contradiz a curadoria por categoria e abre "por que X não está aqui?"; é o pedido mais comum em Pelando/Zoom, mas também a origem de spam lá (DOSSIE 2.1, R5, R11). | M2 estável ≥ 85% e pedidos recorrentes em avaliação do próprio app |
-| B-13 | **Anúncios.** O componente existe, mas o uso depende de decisão comercial. | Nada no código indica anúncio (S-12). | Decisão do responsável |
-| B-14 | **Assinatura com Google Play Billing** e preço vindo da loja. A folha está desenhada com o preço como variável. | Benefícios e preço do premium não estão definidos (S-11). | Fase 6 |
-| B-15 | **Seletor de CEP no topo do feed para premium** (até 3). | Premium ainda sem definição. | B-14 |
+| B-13 | **Anúncios** com as regras da DECISIONS 75: rede de anúncio com bloqueio de fórmula, mamadeira, bico, chupeta e remédio e sem personalização por gestação. | Decidido em 01/10; falta escolher a rede e ler os termos. | Decisão da rede |
+| B-14 | **Assinatura "Tirar os anúncios"** com Google Play Billing e preço vindo da loja (DECISIONS 75). A folha está desenhada com o preço como variável. | Preço não definido. | Fase 6 |
+| B-15 | ~~Seletor de CEP para premium~~: feito no protótipo 2.1 e vale para todos (DECISIONS 73). | — | — |
 | B-16 | **Editar horário de silêncio** com seletor de hora. Hoje aparece como informação (21h–8h). | Escolha de padrão é mais importante que a edição; S-17 ainda é suposição. | Resultado do teste T3 |
 | B-17 | **"Não sei meu CEP" dentro do app.** Hoje abre a busca dos Correios no navegador. | Busca por endereço exigiria base de logradouros (custo, `DECISIONS.md` 21). | Nunca, salvo base gratuita com termos compatíveis |
 | B-18 | **Exclusão de conta também pela web** (a Play exige um caminho fora do app para apps com conta). | Não há site. | Antes da publicação |
@@ -72,3 +72,14 @@ B-01 (usuário sem conta) sai do backlog: superado pelas DECISIONS 34 e 38. B-06
 | B-35 | **Novo:** o app não tem teste de captura em fonte a 200% nem em tema escuro; a jornada roda só no claro, a 100%. |
 | B-36 | **Novo: frete por faixa de CEP.** Guardar frete (status, valor) por faixa de CEP da loja, ao lado do prazo (`store_service_areas`); servir no item do feed para o `?cep=` consultado; aplicar FRETE_ANULA_ECONOMIA por CEP; no app, bloco de frete no detalhe e chip de CEP no feed (protótipo 2.1, PROPOSTA 16). Depende de fonte que informe frete por CEP (S-33); até lá vale "Frete a confirmar na loja". |
 
+## Versão 2.2 (2026-10-01): listas, sem premium, anúncio leve
+
+| # | Item | Depende de |
+|---|---|---|
+| B-37 | **Listas no backend:** tabelas de lista e item (tipo, nome, data, recado, itens com oferta do catálogo, link ou texto livre, quantidade, presenteados com nome opcional), rotas da dona e rota pública do convidado por código do link; apagar junto com a conta. Item do catálogo entra no alerta (N10), no mesmo limite diário. | Acréscimo de contrato |
+| B-38 | **Página do convidado na web**, sem conta, leve (aparelho de entrada, 4G pré-pago), fora dos buscadores (`noindex`), com o link de afiliado de cada item. | B-18 (não há site) |
+| B-39 | **Alvo de compartilhamento do Android:** receber o link compartilhado do app ou do navegador da loja e abrir "Adicionar item". | B-37 |
+| B-40 | **Leitura do link:** nome e foto pelo Open Graph; preço só quando a página informa; respeitar os termos de cada loja e nunca guardar foto de terceiro sem permissão (mesma regra de B-03). | Termos das lojas |
+| B-41 | **Comissão nas listas:** gerar o link de afiliado também para link colado, quando a loja estiver na rede (deeplink da Lomadee). | Vinculação da Lomadee |
+| B-42 | **Tirar o premium do backend e do app:** `planos.gratuito.maxCeps` = 3 em `economae.json`, o plano `premium` deixa de ser oferecido, `subscriptions` passa a significar "sem anúncios"; a tela Conta do app perde o texto de premium (`ui/conta/Conta.kt`). | DECISIONS 73 |
+| B-43 | **Editar a lista:** mudar quantidade, recado e data; encerrar a lista; ver presenteados por pessoa. O protótipo só adiciona e remove item. | B-37 |

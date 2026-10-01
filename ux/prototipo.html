@@ -320,6 +320,21 @@ svg.i.g { width: 48px; height: 48px; }
 .regua .rotulos { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0 var(--espaco-3); }
 .regua .rotulos .h { color: var(--cor-prova); }
 .linha-apoio { display: flex; align-items: center; gap: var(--espaco-3); color: var(--cor-texto-secundario); }
+.item-lista { border: 1px solid var(--cor-contorno-suave); border-radius: var(--raio-lg); padding: var(--espaco-5); display: flex; flex-direction: column; gap: var(--espaco-3); background: var(--cor-superficie-cartao); }
+.item-lista.dado { background: var(--cor-superficie-container); }
+.item-lista .botao-texto { align-self: flex-start; padding-left: 0; padding-right: 0; }
+.chip-dado { display: inline-flex; align-items: center; gap: var(--espaco-2); align-self: flex-start; background: var(--cor-prova-container); color: var(--cor-sobre-prova-container); border-radius: var(--raio-total); padding: var(--espaco-1) var(--espaco-3); }
+.cartao-lista { display: flex; align-items: center; gap: var(--espaco-4); width: 100%; min-height: var(--alvo-toque-minimo); padding: var(--espaco-5); border-radius: var(--raio-lg); border: 1px solid var(--cor-contorno-suave); background: var(--cor-superficie-cartao); color: var(--cor-texto); cursor: pointer; text-align: left; }
+.cartao-lista .coluna { gap: var(--espaco-1); flex: 1; min-width: 0; }
+.navegador { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; padding: var(--espaco-3) var(--espaco-4); background: var(--cor-superficie-container-alta); color: var(--cor-texto-secundario); }
+.navegador .url { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--espaco-2); background: var(--cor-superficie-cartao); border-radius: var(--raio-total); padding: var(--espaco-2) var(--espaco-4); overflow: hidden; white-space: nowrap; }
+.recado { border-left: 3px solid var(--marca-primaria); padding-left: var(--espaco-4); margin: 0; }
+.contador-qtd { display: flex; align-items: center; gap: var(--espaco-3); }
+.contador-qtd .botao-contorno { min-width: var(--alvo-toque-minimo); padding: 0; }
+.campo textarea { min-height: 96px; font: inherit; font-size: var(--tipo-corpo-tamanho); padding: var(--espaco-3) var(--espaco-4); border: 1px solid var(--cor-contorno); border-radius: var(--raio-xs); background: var(--cor-superficie-cartao); color: var(--cor-texto); resize: vertical; }
+.campo input.texto { font-size: var(--tipo-corpo-tamanho); font-variant-numeric: normal; }
+.anuncio-envoltorio { display: flex; flex-direction: column; gap: 0; }
+.anuncio-envoltorio > .botao-texto { align-self: flex-end; }
 .frete-linha { display: flex; align-items: flex-start; gap: var(--espaco-3); color: var(--cor-texto); }
 .frete-linha > svg { color: var(--cor-texto-secundario); flex: none; margin-top: 2px; }
 .frete-linha .coluna { gap: 0; min-width: 0; }
@@ -496,6 +511,19 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
 <symbol id="i-check_box" viewBox="0 -960 960 960"><path d="m419-407-98-98q-9-9-21.5-8.5T278-504q-9 9-9 21.5t9 21.5l120 119q9 9 21 9t21-9l247-247q9-9 9-21.5t-9-21.5q-9-9-21.5-9t-21.5 9L419-407ZM180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Zm0-600v600-600Z"/></symbol>
 <symbol id="i-check_box_outline_blank" viewBox="0 -960 960 960"><path d="M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Z"/></symbol>
 <symbol id="i-description" viewBox="0 -960 960 960"><path d="M349-250h262q12.75 0 21.38-8.68 8.62-8.67 8.62-21.5 0-12.82-8.62-21.32-8.63-8.5-21.38-8.5H349q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5Zm0-170h262q12.75 0 21.38-8.68 8.62-8.67 8.62-21.5 0-12.82-8.62-21.32-8.63-8.5-21.38-8.5H349q-12.75 0-21.37 8.68-8.63 8.67-8.63 21.5 0 12.82 8.63 21.32 8.62 8.5 21.37 8.5ZM220-80q-24 0-42-18t-18-42v-680q0-24 18-42t42-18h336q12.44 0 23.72 5T599-862l183 183q8 8 13 19.28 5 11.28 5 23.72v496q0 24-18 42t-42 18H220Zm331-584v-156H220v680h520v-494H581q-12.75 0-21.37-8.63Q551-651.25 551-664ZM220-820v186-186 680-680Z"/></symbol>
+<symbol id="i-redeem" viewBox="0 -960 960 960"><path d="M160-280v80h640v-80H160Zm0-440h88q-5-9-6.5-19t-1.5-21q0-50 35-85t85-35q30 0 55.5 15.5T460-826l20 26 20-26q18-24 44-39t56-15q50 0 85 35t35 85q0 11-1.5 21t-6.5 19h88q33 0 56.5 23.5T880-640v440q0 33-23.5 56.5T800-120H160q-33 0-56.5-23.5T80-200v-440q0-33 23.5-56.5T160-720Zm0 320h640v-240H596l84 114-64 46-136-184-136 184-64-46 82-114H160v240Zm228.5-331.5Q400-743 400-760t-11.5-28.5Q377-800 360-800t-28.5 11.5Q320-777 320-760t11.5 28.5Q343-720 360-720t28.5-11.5ZM600-720q17 0 28.5-11.5T640-760q0-17-11.5-28.5T600-800q-17 0-28.5 11.5T560-760q0 17 11.5 28.5T600-720Z"/></symbol>
+<symbol id="i-search" viewBox="0 -960 960 960"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></symbol>
+<symbol id="i-link" viewBox="0 -960 960 960"><path d="M440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm200 160v-80h160q50 0 85-35t35-85q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 83-58.5 141.5T680-280H520Z"/></symbol>
+<symbol id="i-add" viewBox="0 -960 960 960"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></symbol>
+<symbol id="i-edit_note" viewBox="0 -960 960 960"><path d="M160-400v-80h280v80H160Zm0-160v-80h440v80H160Zm0-160v-80h440v80H160Zm360 560v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T863-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z"/></symbol>
+<symbol id="i-content_copy" viewBox="0 -960 960 960"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></symbol>
+<symbol id="i-celebration" viewBox="0 -960 960 960"><path d="m80-80 200-560 360 360L80-80Zm132-132 282-100-182-182-100 282Zm370-246-42-42 224-224q32-32 77-32t77 32l24 24-42 42-24-24q-14-14-35-14t-35 14L582-458ZM422-618l-42-42 24-24q14-14 14-34t-14-34l-26-26 42-42 26 26q32 32 32 76t-32 76l-24 24Zm80 80-42-42 144-144q14-14 14-35t-14-35l-64-64 42-42 64 64q32 32 32 77t-32 77L502-538Zm160 160-42-42 64-64q32-32 77-32t77 32l64 64-42 42-64-64q-14-14-35-14t-35 14l-64 64ZM212-212Z"/></symbol>
+<symbol id="i-check" viewBox="0 -960 960 960"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></symbol>
+<symbol id="i-favorite" viewBox="0 -960 960 960"><path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/></symbol>
+<symbol id="i-skillet" viewBox="0 -960 960 960"><path d="M177-560q14-36 4.5-64T149-680q-33-40-43.5-75.5T102-840h78q-8 38-2.5 62t28.5 52q38 46 48.5 81.5t.5 84.5h-78Zm160 0q14-36 5-64t-32-56q-33-40-44-75.5t-4-84.5h78q-8 38-2.5 62t28.5 52q38 46 48.5 81.5t.5 84.5h-78Zm160 0q14-36 5-64t-32-56q-33-40-44-75.5t-4-84.5h78q-8 38-2.5 62t28.5 52q38 46 48.5 81.5t.5 84.5h-78ZM200-160q-50 0-85-35t-35-85v-200h561q5-34 27-59.5t54-36.5l185-62 25 76-185 62q-12 4-19.5 14.5T720-462v182q0 50-35 85t-85 35H200Zm0-80h400q17 0 28.5-11.5T640-280v-120H160v120q0 17 11.5 28.5T200-240Zm200-80Z"/></symbol>
+<symbol id="i-cottage" viewBox="0 -960 960 960"><path d="M160-120v-375l-72 55-48-64 120-92v-124h80v63l240-183 440 336-48 63-72-54v375H160Zm80-80h200v-160h80v160h200v-356L480-739 240-556v356Zm-80-560q0-50 35-85t85-35q17 0 28.5-11.5T320-920h80q0 50-35 85t-85 35q-17 0-28.5 11.5T240-760h-80Zm80 560h480-480Z"/></symbol>
+<symbol id="i-child_friendly" viewBox="0 -960 960 960"><path d="M297-97q-17-17-17-43t17-43q17-17 43-17t43 17q17 17 17 43t-17 43q-17 17-43 17t-43-17Zm440 0q-17-17-17-43t17-43q17-17 43-17t43 17q17 17 17 43t-17 43q-17 17-43 17t-43-17ZM540-656 384-844q36-18 78-27t90-9q51 0 97.5 14.5T732-824L540-656Zm-60 416q-83 0-141.5-58.5T280-440v-308l-20-24q-14-17-23.5-22.5T216-800q-24 0-40 18t-16 42H80q0-57 39.5-98.5T216-880q30 0 55 14t51 44l428 516q17 20 6.5 43T720-240H480Zm0-80h154L360-652v212q0 50 35 85t85 35Zm17-166Z"/></symbol>
+<symbol id="i-lock_open" viewBox="0 -960 960 960"><path d="M240-640h360v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85h-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640Zm0 480h480v-400H240v400Zm296.5-143.5Q560-327 560-360t-23.5-56.5Q513-440 480-440t-56.5 23.5Q400-393 400-360t23.5 56.5Q447-280 480-280t56.5-23.5ZM240-160v-400 400Z"/></symbol>
 <!-- icones:fim -->
 </svg>
 
@@ -540,13 +568,17 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
       <li><button data-atalho="detalhe:fralda">Leve 3 pague 2</button></li>
       <li><button data-atalho="detalhe:papinha">Aviso da NBCAL</button></li>
       <li><button data-atalho="ofertas:outroCep">Frete em outro CEP</button></li>
+      <li><button data-atalho="listas:com">Listas</button></li>
+      <li><button data-atalho="convidado:padrao">Página do convidado</button></li>
+      <li><button data-atalho="bloqueio:N10">Aviso de item da lista</button></li>
+      <li><button data-atalho="ajustes:padrao">Tirar anúncios</button></li>
       <li><button data-atalho="detalhe:freteCeps">Frete nos 3 CEPs</button></li>
       <li><button data-atalho="bloqueio:N9">Gestação bloqueada</button></li>
     </ul>
 
     <div class="nota" id="nota" aria-live="polite"></div>
-    <details class="nota"><summary><strong>O que mudou na versão 2 e 2.1 (30/09)</strong></summary>
-      <p><strong>2.1:</strong> frete de acordo com o CEP. Cartão e detalhe mostram frete, total e prazo para o CEP escolhido; o chip do topo das Ofertas troca o CEP; o premium compara os 3 CEPs no detalhe; oferta cujo frete come a economia some daquele CEP, com a explicação no fim da lista. Estados novos: Ofertas › Frete em outro CEP e Detalhe › Frete nos seus 3 CEPs.</p><p>Alinhada às fases 3 e 4 do produto: foco em mães, da gestação aos primeiros anos (4 categorias); remédio fora do app; aviso da NBCAL inteiro em alimentação infantil; filtro opcional por tamanho de fralda; entrada por código no e-mail ou Google, e termos 18+ antes de tudo; limite de avisos de 1 a 10; filtro por categoria no feed; oferta que não existe mais. Novo: notificação de gestação escondida com o celular bloqueado (N9) e comparação com o texto que o despachante envia hoje (A1).</p></details>
+    <details class="nota"><summary><strong>O que mudou nas versões 2 a 2.2</strong></summary>
+      <p><strong>2.2 (01/10):</strong> aba Listas (chá de bebê, casa nova, chá de panela e casamento): busca, link ou item livre; página do convidado sem app e sem conta; o convidado compra direto na loja e o app ganha a comissão, sem receber dinheiro. Sem plano premium: até 3 CEPs para todos; anúncio pouco, e a única assinatura é para tirar os anúncios.</p><p><strong>2.1:</strong> frete de acordo com o CEP. Cartão e detalhe mostram frete, total e prazo para o CEP escolhido; o chip do topo das Ofertas troca o CEP; o premium compara os 3 CEPs no detalhe; oferta cujo frete come a economia some daquele CEP, com a explicação no fim da lista. Estados novos: Ofertas › Frete em outro CEP e Detalhe › Frete nos seus 3 CEPs.</p><p>Alinhada às fases 3 e 4 do produto: foco em mães, da gestação aos primeiros anos (4 categorias); remédio fora do app; aviso da NBCAL inteiro em alimentação infantil; filtro opcional por tamanho de fralda; entrada por código no e-mail ou Google, e termos 18+ antes de tudo; limite de avisos de 1 a 10; filtro por categoria no feed; oferta que não existe mais. Novo: notificação de gestação escondida com o celular bloqueado (N9) e comparação com o texto que o despachante envia hoje (A1).</p></details>
     <p class="aviso-exemplo"><strong>Dados de exemplo.</strong> Marcas, lojas e preços são fictícios. Categorias, avisos, limites e regras seguem <code>backend/config/tenants/economae.json</code> e o contrato <code>backend/openapi/v1.json</code> 1.3.0. Faixas de CEP e valores de frete também são de exemplo. Os textos são os de <code>ux/UX_COPY.md</code>.</p>
   </section>
 
@@ -566,6 +598,7 @@ hr.div { border: 0; border-top: 1px solid var(--cor-contorno-suave); margin: var
 // tamanho de fralda (51), login por código ou Google (34), termos 18+ antes de tudo (38),
 // push com limite padrão 3 e teto 10 (58, config do tenant). Contrato da API: backend/openapi/v1.json 1.3.0.
 // Versão 2.1: frete, total e prazo de acordo com o CEP escolhido (PROPOSTA_UX 16; BACKLOG_UX B-36).
+// Versão 2.2: aba Listas, sem premium (até 3 CEPs para todos), anúncio leve e assinatura só para tirar anúncios (PROPOSTA_UX 17).
 
 // ======================= Dados de exemplo (fictícios) =======================
 function serie(normal, menor, maior, semente, dias = 89) {
@@ -605,7 +638,49 @@ OF.caiu = { ...OF.protetor, id: "caiu", preco: 3490, anterior: 3990 };
 OF.encerrada = { ...OF.protetor, id: "encerrada", encerrada: { dia: "30/09", hora: "16:40", voltou: 5990 } };
 OF.mudou = { ...OF.protetor, id: "mudou", mudou: { preco: 4490, hora: "15:20" } };
 OF.retirada = { ...OF.protetor, id: "retirada", frete: { capital: { t: "retirada", km: 1.2 } } };
+OF.fraldaRN = { ...OF.fralda, id: "fraldaRN", tamanho: "RN" };
 OF.sabonete = { ...OF.encerrada, id: "sabonete", nome: "Sabonete Líquido Infantil", emb: { q: 0.2, u: "l", rot: "200 ml" } };
+// ======================= Listas de presente (2.2) =======================
+// O convidado compra direto na loja, pelo link de afiliado; o economae não recebe nem guarda dinheiro (DECISIONS 74).
+// Busca: só no que o app já acompanha (com histórico). Link: lemos nome e foto do cartão de compartilhamento da
+// página; preço, só quando a página informa. Item livre: o convidado escolhe onde comprar.
+const TIPOS_LISTA = {
+  cha_bebe: { rot: "Chá de bebê", ic: "child_friendly", nome: "Chá de bebê da Ana", sugestoes: ["Fralda RN", "Fralda G", "Lenço umedecido", "Pomada para assadura", "Toalha com capuz"] },
+  casa_nova: { rot: "Chá de casa nova", ic: "cottage", nome: "Casa nova da Ana", sugestoes: ["Jogo de toalhas", "Liquidificador", "Jogo de lençol"] },
+  cha_panela: { rot: "Chá de panela", ic: "skillet", nome: "Chá de panela da Ana", sugestoes: ["Jogo de panelas", "Assadeira", "Pano de prato"] },
+  casamento: { rot: "Casamento", ic: "favorite", nome: "Casamento da Ana e do Lucas", sugestoes: ["Jogo de jantar", "Edredom de casal", "Jogo de taças"] },
+};
+const CATALOGO = ["fralda", "fraldaRN", "lenco", "protetor", "shampoo", "papinha", "creme"];
+// NBCAL: nem a busca nem a lista mostram loja ou preço destes produtos.
+const NBCAL_TERMOS = /mamadeira|chupeta|\bbico|formula|leite (em po|infantil)/;
+const LINK_DOMINIO = "economae.app/l/7K2Q"; // endereço de exemplo
+function listaExemplo() {
+  return { tipo: "cha_bebe", nome: "Chá de bebê da Ana", dono: "Ana", data: "15/11", recado: "Qualquer marca de fralda serve. Obrigada!", itens: [
+    { id: "i1", of: "fralda", qtd: 3, dados: ["Tia Cláudia"] },
+    { id: "i2", of: "lenco", qtd: 4, dados: [] },
+    { id: "i3", nome: "Banheira com suporte", loja: "Loja Exemplo", preco: 18990, lido: "13:40", qtd: 1, dados: [] },
+    { id: "i4", nome: "Body manga longa, tamanho P", obs: "Qualquer marca e cor.", qtd: 6, dados: ["Juliana", null] },
+    { id: "i5", of: "protetor", qtd: 1, dados: [null] },
+  ] };
+}
+const semAcento = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+function itemInfo(it) {
+  const o = it.of ? OF[it.of] : null;
+  return { o, nome: o ? nomeCompleto(o) : it.nome, loja: o ? o.loja : it.loja || null, preco: o ? efetivo(o) : it.preco ?? null, falta: Math.max(it.qtd - it.dados.length, 0) };
+}
+function textoDados(it) {
+  const nomes = it.dados.filter(Boolean), anon = it.dados.length - nomes.length;
+  const partes = [...nomes, ...(anon ? [anon === 1 ? "1 pessoa sem nome" : `${anon} pessoas sem nome`] : [])];
+  return partes.length ? "Deram: " + partes.join(", ") : "";
+}
+function buscarCatalogo(termo) {
+  const t = semAcento(termo.trim());
+  if (!t) return { tipo: "vazio", itens: [] };
+  if (NBCAL_TERMOS.test(t)) return { tipo: "nbcal", itens: [] };
+  const palavras = t.split(/\s+/);
+  const itens = CATALOGO.map((k) => OF[k]).filter((o) => { const alvo = semAcento(nomeCompleto(o) + " " + CAT[o.cat].rot + " " + CAT[o.cat].ex); return palavras.every((w) => alvo.includes(w.replace(/s$/, ""))); });
+  return { tipo: itens.length ? "achou" : "nada", itens };
+}
 const ANUNCIO = { anunciante: "Loja Exemplo", texto: "Kit de banho infantil com 15% de desconto no app da Loja Exemplo." };
 const RESUMO = { conferidos: 1284, aprovadas: 3 };
 // Frete por CEP. A loja atende faixas de CEP (store_service_areas: cep_inicio, cep_fim, prazo_dias) e,
@@ -616,8 +691,8 @@ const FAIXAS = [
   { id: "capital", de: 1000000, ate: 5999999 }, { id: "capital", de: 8000000, ate: 8499999 },
   { id: "grande", de: 6000000, ate: 9999999 }, { id: "litoral", de: 11000000, ate: 11999999 }, { id: "interior", de: 12000000, ate: 19999999 },
 ];
-// CEPs de exemplo do premium: casa (São Paulo), casa da avó (Campinas) e creche (Santos).
-const CEPS_PREMIUM = ["01310100", "13010000", "11010000"];
+// CEPs de exemplo (até 3 para todo mundo): casa (São Paulo), casa da avó (Campinas) e creche (Santos).
+const CEPS_EXEMPLO = ["01310100", "13010000", "11010000"];
 
 // ======================= Regras (espelham a API e a proposta) =======================
 function milhar(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
@@ -758,7 +833,7 @@ const visivel = (o) => visivelCategoria(o) && entregaOk(o);
 const E = {
   tela: "bloqueio", estado: "N1", tema: "claro", escala: 1, avisos: true,
   categorias: new Set(["fraldas_lencos", "higiene_cuidados_bebe", "alimentacao_infantil"]), tamanhos: new Set(["G"]), filtroCat: null,
-  cep: "01310100", ceps: ["01310100"], premium: false, cepDigitado: "", cepTentou: false, email: "voce@exemplo.com", emailDigitado: "", codigoDigitado: "", aceitou: false,
+  cep: "01310100", ceps: ["01310100"], cepModo: null, cepEditando: null, semAnuncios: false, lista: listaExemplo(), novaTipo: "cha_bebe", novaNome: "", novaData: "", busca: "", linkUrl: "", linkLido: null, addNome: "", addObs: "", addPreco: "", addQtd: 1, addErro: false, toast: null, convItem: "i2", convNome: "", convQtd: 1, foraLoja: null, foraVolta: null, cepDigitado: "", cepTentou: false, email: "voce@exemplo.com", emailDigitado: "", codigoDigitado: "", aceitou: false,
   limite: 3, expandida: false, verDias: false, folha: null, dialogo: null, pilha: [], destacar: null, foraDoApp: null, retorno: false, obrigado: false,
 };
 const esc = (s) => String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
@@ -796,6 +871,38 @@ function htmlFreteDetalhe(o) {
   const lista = outros.length ? `<p class="t-rotulo" style="margin:var(--espaco-2) 0 0">Nos seus outros CEPs</p><ul class="outros-ceps t-apoio">${outros.map((c) => `<li><span>${fmtCep(c)}</span><span>${resumoCurto(o, c)}</span></li>`).join("")}</ul>` : "";
   return `<section class="bloco-frete" aria-labelledby="tit-frete"><div class="quebra" style="justify-content:space-between"><h2 id="tit-frete" class="t-titulo-secao">Frete para o CEP ${fmtCep(E.cep)}</h2><button class="botao-texto" data-acao="folha-cep" aria-label="Trocar o CEP do frete">Trocar CEP</button></div>${miolo}${lista}</section>`;
 }
+function htmlItemDono(it) {
+  const inf = itemInfo(it), o = inf.o, dado = !inf.falta;
+  const icone = o ? CAT[o.cat].ic : it.loja ? "link" : "edit_note";
+  return `<div class="item-lista${dado ? " dado" : ""}"><div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto">${ic(icone)}</div><div class="coluna" style="gap:var(--espaco-1);flex:1;min-width:0">
+      <span class="t-nome">${esc(inf.nome)}</span><span class="t-apoio sec">${inf.loja ? esc(inf.loja) + (inf.preco ? " · " + reais(inf.preco) : " · preço na loja") : "Item livre: o convidado escolhe onde comprar"}</span></div></div>
+    ${o && !dado && textoCondicao(o) ? `<div class="faixa-condicao t-rotulo">${ic("info", "i p")}<span>${esc(textoCondicao(o))}</span></div>` : ""}
+    ${o && !dado ? `<div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>` : ""}
+    ${!o && it.loja && it.lido ? `<span class="t-apoio sec">Preço lido do link às ${it.lido}. Ainda não temos o histórico desta loja.</span>` : ""}
+    ${it.obs ? `<span class="t-apoio">${esc(it.obs)}</span>` : ""}
+    ${dado ? `<span class="chip-dado t-rotulo">${ic("check", "i p")}Presenteado</span>` : `<span class="t-corpo">Faltam ${inf.falta} de ${it.qtd}</span>`}
+    ${textoDados(it) ? `<span class="t-apoio sec">${esc(textoDados(it))}</span>` : ""}
+    ${it.dados.length ? "" : `<button class="botao-texto perigo" data-acao="remover-item" data-item="${it.id}" aria-label="Remover ${esc(inf.nome)} da lista">Remover</button>`}</div>`;
+}
+function htmlItemConvidado(it) {
+  const inf = itemInfo(it), o = inf.o;
+  if (!inf.falta) return `<div class="item-lista dado"><span class="t-nome">${esc(inf.nome)}</span><span class="chip-dado t-rotulo">${ic("check", "i p")}Já presenteado</span></div>`;
+  return `<div class="item-lista"><div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto">${ic(o ? CAT[o.cat].ic : it.loja ? "redeem" : "edit_note")}</div><div class="coluna" style="gap:var(--espaco-1);flex:1;min-width:0">
+      <span class="t-nome">${esc(inf.nome)}</span><span class="t-apoio sec">${inf.loja ? esc(inf.loja) + " · " + (inf.preco ? reais(inf.preco) : "preço na loja") : "Compre onde preferir"}</span></div></div>
+    ${o && textoCondicao(o) ? `<div class="faixa-condicao t-rotulo">${ic("info", "i p")}<span>${esc(textoCondicao(o))}</span></div>` : ""}
+    ${o ? `<div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>` : ""}
+    ${it.obs ? `<span class="t-apoio">${esc(it.obs)}</span>` : ""}
+    <span class="t-corpo">Faltam ${inf.falta} de ${it.qtd}</span>
+    <div class="quebra">${inf.loja ? `<button class="botao-principal" style="width:auto" data-acao="conv-comprar" data-item="${it.id}" aria-label="Comprar ${esc(inf.nome)} na ${esc(inf.loja)}. Abre o site da loja.">Comprar na ${esc(inf.loja)}${ic("open_in_new", "i p")}</button>` : ""}<button class="botao-contorno" data-acao="conv-ja-comprei" data-item="${it.id}">Já comprei</button></div></div>`;
+}
+// Leitura do link (simulada): nome pelo endereço; preço só na loja de exemplo.
+function lerLink(url) {
+  if (!/^https?:\/\/[^\s/]+\.[^\s/]+/.test(url)) return null;
+  const host = url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0], slug = url.split("/").filter(Boolean).pop() || "";
+  const nome = slug.replace(/[-_]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+  const loja = host.split(".")[0].replace(/^\w/, (c) => c.toUpperCase()).replace("exemplo", " Exemplo").replace("loja", "Loja").replace("Outraloja", "Outra Loja");
+  return { nome: nome || "Produto", loja, preco: host.startsWith("lojaexemplo") ? 18990 : null };
+}
 const htmlAvisos = (o) => o.avisos.map((a) => `<p class="aviso-legal t-apoio">${esc(a)}</p>`).join("");
 function htmlCartao(o) {
   const tc = textoCondicao(o);
@@ -815,9 +922,9 @@ function htmlCartao(o) {
     </div></button>`;
 }
 function htmlAnuncio() {
-  return `<button class="anuncio" data-acao="anuncio" aria-label="${esc("Anúncio. " + ANUNCIO.anunciante + ". " + ANUNCIO.texto)}"><div class="coluna" aria-hidden="true">
+  return `<div class="anuncio-envoltorio"><button class="anuncio" data-acao="anuncio" aria-label="${esc("Anúncio. " + ANUNCIO.anunciante + ". " + ANUNCIO.texto)}"><div class="coluna" aria-hidden="true">
     <span class="linha t-rotulo">${ic("campaign", "i p")}Anúncio · ${ANUNCIO.anunciante}</span>
-    <span class="t-corpo">${ANUNCIO.texto}</span><span class="t-apoio">Anúncio pago. Não passou pela nossa conferência.</span></div></button>`;
+    <span class="t-corpo">${ANUNCIO.texto}</span><span class="t-apoio">Anúncio pago. Não passou pela nossa conferência.</span></div></button><button class="botao-texto" data-acao="sem-anuncios">Tirar os anúncios</button></div>`;
 }
 const esqueleto = () => `<div class="esqueleto" aria-hidden="true"><div class="linha" style="gap:var(--espaco-4)"><i style="width:56px;height:56px"></i><div class="coluna" style="flex:1;gap:var(--espaco-3)"><i style="width:80%;height:16px"></i><i style="width:40%;height:14px"></i></div></div><i style="width:50%;height:32px"></i><i style="width:100%;height:6px;border-radius:999px"></i></div>`;
 function htmlEstado(icone, titulo, texto, acao, dataAcao, erro, extra = "") {
@@ -844,7 +951,7 @@ function htmlTamanhos() {
 const TELAS = {
   bloqueio: {
     nome: "Notificação (tela de bloqueio)",
-    estados: { N1: "N1 · incondicional, sem foto", N2: "N2 · com foto", N3: "N3 · fralda, leve 3 pague 2", N4: "N4 · só com cartão da loja", N5: "N5 · caiu mais desde o último aviso", N6: "N6 · retirada na loja", N7: "N7 · duas ao mesmo tempo (grupo)", N8: "N8 · alimentação infantil, com aviso da NBCAL", N9: "N9 · gestação, celular bloqueado", A1: "Hoje: texto que o despachante da fase 4 envia" },
+    estados: { N1: "N1 · incondicional, sem foto", N2: "N2 · com foto", N3: "N3 · fralda, leve 3 pague 2", N4: "N4 · só com cartão da loja", N5: "N5 · caiu mais desde o último aviso", N6: "N6 · retirada na loja", N7: "N7 · duas ao mesmo tempo (grupo)", N8: "N8 · alimentação infantil, com aviso da NBCAL", N9: "N9 · gestação, celular bloqueado", N10: "N10 · item da sua lista em promoção", A1: "Hoje: texto que o despachante da fase 4 envia" },
     nota: {
       _: "A notificação é a tela principal (princípio 1). Título ≤ 30 caracteres começando pelo preço; texto ≤ 40 com a prova. Toque no corpo abre o detalhe; a seta expande. O contador abaixo mostra os caracteres. Evidência: diretriz Android de notificação; R5, R7, R11.",
       N3: "A condição abre o texto recolhido e o título mostra o que sai do bolso (R$ 161,40 por 3). O tamanho da fralda entra no nome porque o filtro por tamanho existe (DECISIONS 51). Princípio 4; R10.",
@@ -852,6 +959,7 @@ const TELAS = {
       N7: "Duas ofertas no mesmo minuto viram um grupo, não uma rajada (R5).",
       N8: "Alimentação infantil sai sempre com o aviso do Ministério da Saúde, inteiro (NBCAL, DECISIONS 46). Recolhida, a notificação mostra a prova; o aviso aparece inteiro ao expandir, no feed e no detalhe — é o mesmo arranjo do despachante (aviso no corpo, depois da primeira linha). Falta a assessoria confirmar se o aviso precisa aparecer já na notificação recolhida (SUPOSICOES S-32).",
       N9: "\"Gestação e pós-parto\" revela gravidez por inferência (CHECKPOINT, revisão 3). Com o celular bloqueado, o aviso mostra só \"Nova oferta excepcional\" (VISIBILITY_PRIVATE com versão pública do Android); o produto aparece depois de desbloquear. Proposta nova, ainda não implementada (BACKLOG_UX B-29).",
+      N10: "Item de uma lista que o app acompanha passou na mesma conferência das ofertas: é o mesmo tipo de aviso, conta no limite do dia (R5). \"Lembrar convidados\" abre o compartilhamento com o link da lista.",
       A1: "Como a fase 4 monta o aviso hoje (regras.ts): título = nome do produto; corpo = condição, \"preço (referência X, Y% abaixo)\" e loja. Recolhido, o Android corta o corpo em uma linha e a pessoa vê o nome, não o preço. A proposta põe o preço no título e troca \"referência\" e \"% abaixo\" por \"preço normal\" e economia em reais (princípios 2 e 8; Inaf). Compare com N3, que é a mesma oferta.",
     },
     render(est) {
@@ -877,6 +985,12 @@ const TELAS = {
         corpo = `<article class="notif" aria-label="Notificação de economae">${cab(null, false)}
           <button class="miolo" data-abrir="creme"><span class="txt"><div class="titulo">Nova oferta excepcional</div><div class="texto">Desbloqueie o celular para ver</div></span><span class="icone-grande">${ic("lock")}</span></button></article>
           <div class="contador" aria-hidden="true">versão pública; o conteúdo aparece depois de desbloquear</div>`;
+      } else if (est === "N10") {
+        const o = OF.fralda, t = tituloNotif(o), x = "Da sua lista · " + textoSelo(o).replace("Menor preço", "menor preço");
+        corpo = `<article class="notif" aria-label="Notificação de economae">${cab(o)}
+          <button class="miolo" data-acao="abrir-lista"><span class="txt"><div class="titulo">${esc(t)}</div><div class="texto ${E.expandida ? "grande" : ""}">${esc(E.expandida ? x + "\nItem da lista " + E.lista.nome + ". Faltam 2 de 3.\nPreço normal nesta loja: " + reais(o.prova.normal) + "." : x)}</div></span><span class="icone-grande">${ic("redeem")}</span></button>
+          ${E.expandida ? `<div class="acoes"><button data-acao="compartilhar-lista">Lembrar convidados</button><button data-acao="abrir-lista">Ver lista</button></div>` : ""}
+        </article><div class="contador" aria-hidden="true">título ${[...t].length}/30 · texto ${[...x].length}/40</div>`;
       } else if (est === "A1") {
         const m = mensagemAtual(OF.fralda), primeira = m.corpo.split("\n")[0];
         corpo = `<article class="notif" aria-label="Notificação de economae">${cab(OF.fralda)}
@@ -969,7 +1083,7 @@ const TELAS = {
       if (E._ultimo !== "cep:" + est) { E.cepDigitado = { vazio: "", incompleto: "0131", fora: "20040002", valido: "01310100" }[est]; E.cepTentou = est === "incompleto" || est === "fora"; }
       const d = E.cepDigitado, valido = d.length === 8, sp = valido && +d >= 1000000 && +d <= 19999999;
       const erro = E.cepTentou && !valido, fora = E.cepTentou && valido && !sp;
-      return passo("Qual é o seu CEP?", "Serve para saber quais lojas entregam para você e quanto sai o frete. Não pedimos endereço nem localização.",
+      return (E.cepModo ? topo("", true) : "") + passo(E.cepModo === "adicionar" ? "Qual CEP você quer acrescentar?" : "Qual é o seu CEP?", E.cepModo === "adicionar" ? "Por exemplo, a casa da avó ou a creche. Você escolhe no topo das Ofertas para qual CEP ver o frete." : "Serve para saber quais lojas entregam para você e quanto sai o frete. Não pedimos endereço nem localização.",
         `<div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-cep">CEP</label><input id="campo-cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${fmtCep(d)}" aria-invalid="${erro}" ${erro ? 'aria-describedby="erro-cep"' : ""}>
          ${erro ? `<span id="erro-cep" class="msg-erro t-apoio">${ic("error", "i p")}O CEP tem 8 números.</span>` : ""}</div>
          ${fora ? `<div class="caixa-info" role="status"><h2 class="t-titulo-secao">Ainda não chegamos aí</h2><p class="t-corpo sec" style="margin:0">Começamos pelo estado de São Paulo. Guardamos seu CEP e avisamos quando chegar na sua região.</p></div>` : ""}`,
@@ -988,19 +1102,19 @@ const TELAS = {
   },
   ofertas: {
     nome: "Ofertas", principal: true,
-    estados: { com: "Com ofertas", carregando: "Carregando", nada: "Nada passou no teste hoje", medindo: "Começando a medir", semCategoria: "Sem categoria", fora: "Fora da região", erro: "Erro", offline: "Sem internet (cópia salva)", retorno: "Voltou da loja", outroCep: "Frete em outro CEP (premium)" },
+    estados: { com: "Com ofertas", carregando: "Carregando", nada: "Nada passou no teste hoje", medindo: "Começando a medir", semCategoria: "Sem categoria", fora: "Fora da região", erro: "Erro", offline: "Sem internet (cópia salva)", retorno: "Voltou da loja", outroCep: "Frete em outro CEP (3 CEPs)" },
     nota: {
-      _: "Resumo do dia no topo, filtro por categoria (o feed da API aceita ?categoria=), Excepcionais (avisadas) e Boas ofertas separadas por seção e etiqueta, fralda com o tamanho e só nos tamanhos escolhidos, alimentação infantil sempre com o aviso da NBCAL inteiro, anúncio só a partir da 3ª posição e com forma própria (princípio 9). Remédio saiu do app (DECISIONS 45). Selo e régua do cartão vêm de prova no item do feed (contrato 1.3.0, DECISIONS 68). Frete: cada cartão mostra, logo abaixo do preço, o frete e o total para o CEP escolhido no topo, e o prazo; o chip do topo troca o CEP. Hoje a API guarda um frete só por oferta e o prazo por faixa de CEP da loja, e a Lomadee não informa frete (sempre a confirmar); frete por faixa de CEP é acréscimo (BACKLOG_UX B-36). O preço grande continua sem frete, para comparar com o preço normal da loja, que também não inclui frete.",
+      _: "Resumo do dia no topo, filtro por categoria (o feed da API aceita ?categoria=), Excepcionais (avisadas) e Boas ofertas separadas por seção e etiqueta, fralda com o tamanho e só nos tamanhos escolhidos, alimentação infantil sempre com o aviso da NBCAL inteiro, anúncio pouco e sem agressividade (princípio 9): um a cada 8 cartões, a partir do 3º, com forma própria, a palavra “Anúncio” e “Tirar os anúncios” logo abaixo; nunca na notificação, no primeiro uso, no detalhe da oferta, nas listas nem na página do convidado; sem vídeo, tela cheia, som ou contagem regressiva; nunca de fórmula, mamadeira, bico, chupeta ou remédio; escolhido pela categoria da tela, sem usar gestação ou idade do bebê para segmentar (DECISIONS 75). Remédio saiu do app (DECISIONS 45). Selo e régua do cartão vêm de prova no item do feed (contrato 1.3.0, DECISIONS 68). Frete: cada cartão mostra, logo abaixo do preço, o frete e o total para o CEP escolhido no topo, e o prazo; o chip do topo troca o CEP. Hoje a API guarda um frete só por oferta e o prazo por faixa de CEP da loja, e a Lomadee não informa frete (sempre a confirmar); frete por faixa de CEP é acréscimo (BACKLOG_UX B-36). O preço grande continua sem frete, para comparar com o preço normal da loja, que também não inclui frete.",
       nada: "Ausência de oferta é funcionalidade (princípio 5): os números do dia provam a curadoria (U06).",
       medindo: "Partida a frio explicada com contagem (U02). Sem 14 dias de histórico nada é avisado.",
       carregando: "Esqueleto estático, sem brilho animado (custo em aparelho de entrada, S-01).",
       offline: "Última cópia salva com a hora (princípio 7). A fase 4 escolheu não guardar feed no aparelho (DECISIONS 61, \"preço que muda engana\"); a proposta mantém a cópia só com a hora bem visível. Decisão a tomar com o responsável (BACKLOG_UX B-30).",
       retorno: "Ao voltar da loja, uma pergunta opcional fecha o ciclo (U23).",
-      outroCep: "Premium com 3 CEPs, vendo o de Campinas. O frete e o prazo mudam com o CEP; a fralda passa a custar R$ 14,90 de frete. A papinha some: R$ 8,90 de frete para uma economia de R$ 2,59 é o caso FRETE_ANULA_ECONOMIA do motor. O shampoo some porque a loja só tem retirada na capital (o feed da API já filtra por faixa de CEP da loja). A caixa no fim diz quantas ficaram de fora e por quê: ausência explicada (princípio 5).",
+      outroCep: "Com 3 CEPs (casa, avó e creche; até 3 para todo mundo), vendo o de Campinas. O frete e o prazo mudam com o CEP; a fralda passa a custar R$ 14,90 de frete. A papinha some: R$ 8,90 de frete para uma economia de R$ 2,59 é o caso FRETE_ANULA_ECONOMIA do motor. O shampoo some porque a loja só tem retirada na capital (o feed da API já filtra por faixa de CEP da loja). A caixa no fim diz quantas ficaram de fora e por quê: ausência explicada (princípio 5).",
     },
     render(est) {
       if (est === "retorno" && E._ultimo !== "ofertas:retorno") { E.retorno = true; E.obrigado = false; }
-      if (est === "outroCep" && E._ultimo !== "ofertas:outroCep") { E.premium = true; E.ceps = CEPS_PREMIUM.slice(); E.cep = "13010000"; }
+      if (est === "outroCep" && E._ultimo !== "ofertas:outroCep") { E.ceps = CEPS_EXEMPLO.slice(); E.cep = "13010000"; }
       let corpo;
       const cepChip = E.cep ? `<div class="pad"><button class="chip-cep" data-acao="folha-cep" aria-label="Frete e ofertas para o CEP ${fmtCep(E.cep)}. Toque para trocar.">${ic("location_on", "i p")}Frete para ${fmtCep(E.cep)}${ic("keyboard_arrow_down", "i p")}</button></div>` : "";
       const filtros = E.categorias.size > 1 ? `<div class="pad quebra filtros" role="group" aria-label="Filtrar por categoria. Toque de novo para ver todas.">
@@ -1016,8 +1130,9 @@ const TELAS = {
         const itens = [];
         if (exc.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Excepcionais</h2><p class="t-apoio sec" style="margin:4px 0 0">Menor preço dos últimos meses. Estas a gente avisa.</p></div>`, ...exc.map(htmlCartao));
         if (boas.length) itens.push(`<div class="secao"><h2 class="t-titulo-secao">Boas ofertas</h2><p class="t-apoio sec" style="margin:4px 0 0">Também conferidas, mas não tão fortes para avisar.</p></div>`, ...boas.map(htmlCartao));
+        // Anúncio: um a cada 8 cartões, a partir do 3º; nunca para quem assinou "sem anúncios".
         let n = 0; const pos = itens.findIndex((h) => h.startsWith('<button class="cartao"') && ++n === 3);
-        if (pos > 0) itens.splice(pos, 0, htmlAnuncio());
+        if (pos > 0 && !E.semAnuncios) itens.splice(pos, 0, htmlAnuncio());
         if (!exc.length && !boas.length) return htmlEstado("verified", "Nada nesta categoria hoje", "Quando o preço cair de verdade, a gente avisa.") + foraCep;
         return itens.join("") + foraCep;
       };
@@ -1042,7 +1157,7 @@ const TELAS = {
   },
   detalhe: {
     nome: "Detalhe da oferta",
-    estados: { protetor: "Ativa, incondicional", fralda: "Fralda, leve 3 pague 2", papinha: "Alimentação infantil (aviso NBCAL)", shampoo: "Só com cartão + retirada", lenco: "Quase o menor, 94 dias de histórico", creme: "Gestação e pós-parto", freteCeps: "Frete nos seus 3 CEPs (premium)", caiu: "Caiu mais desde o aviso", mudou: "Preço mudou depois do aviso", encerrada: "Encerrada (ativa = false)", carregando: "Carregando", erro: "Erro", naoExiste: "Oferta não existe mais" },
+    estados: { protetor: "Ativa, incondicional", fralda: "Fralda, leve 3 pague 2", papinha: "Alimentação infantil (aviso NBCAL)", shampoo: "Só com cartão + retirada", lenco: "Quase o menor, 94 dias de histórico", creme: "Gestação e pós-parto", freteCeps: "Frete nos seus 3 CEPs", caiu: "Caiu mais desde o aviso", mudou: "Preço mudou depois do aviso", encerrada: "Encerrada (ativa = false)", carregando: "Carregando", erro: "Erro", naoExiste: "Oferta não existe mais" },
     nota: {
       _: "Ordem de leitura: o que mudou → condição → produto → preço → aviso legal → frete e total → prova → frete detalhado → ação (A07). O frete com o total fica junto do preço, antes do clique (princípio 4): quem vai pagar R$ 9,90 de entrega precisa saber disso antes de sair do app. A prova fica na primeira dobra, não numa aba (R13). O detalhe da API já traz o histórico de 180 dias, que dá o menor preço, os dias medidos e a régua sem campo novo. Link de afiliado declarado quando linkAfiliado = true (CDC art. 36).",
       fralda: "O preço grande é o efetivo por pacote (precoEfetivoCentavos, comparável ao normal); o total a pagar está na faixa de condição (U09). Tamanho G em etiqueta. O frete de R$ 9,90 é da compra toda (3 pacotes), por isso o total é R$ 171,30.",
@@ -1051,13 +1166,13 @@ const TELAS = {
       mudou: "Mudança de preço aparece antes do preço (R9).",
       creme: "Produto de gestação: dentro do app aparece normalmente; a proteção está na tela bloqueada (N9).",
       naoExiste: "OFERTA_NAO_ENCONTRADA (404): a notificação pode ser tocada dias depois.",
-      freteCeps: "Premium: o bloco de frete compara os CEPs da pessoa (casa, avó, creche). Em Santos a loja não entrega, e o texto diz isso em vez de esconder. \"Trocar CEP\" muda o CEP de referência de todo o app, não só desta tela.",
+      freteCeps: "Com mais de um CEP, o bloco de frete compara os CEPs da pessoa (casa, avó, creche). Em Santos a loja não entrega, e o texto diz isso em vez de esconder. \"Trocar CEP\" muda o CEP de referência de todo o app, não só desta tela.",
     },
     render(est) {
       if (est === "carregando") return topo("", true) + `<div class="lista">${esqueleto()}</div>`;
       if (est === "erro") return topo("", true) + htmlEstado("cloud_off", "Não deu para carregar a oferta", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true);
       if (est === "naoExiste") return topo("", true) + htmlEstado("event_busy", "Esta oferta não existe mais", "A loja tirou o produto do ar. Veja as ofertas de hoje.", "Ver ofertas de hoje", "ir-ofertas");
-      if (est === "freteCeps" && E._ultimo !== "detalhe:freteCeps") { E.premium = true; E.ceps = CEPS_PREMIUM.slice(); E.cep = CEPS_PREMIUM[0]; }
+      if (est === "freteCeps" && E._ultimo !== "detalhe:freteCeps") { E.ceps = CEPS_EXEMPLO.slice(); E.cep = CEPS_EXEMPLO[0]; }
       const o = OF[est === "freteCeps" ? "fralda" : est] || OF.protetor;
       const tc = textoCondicao(o), s = selo(o);
       const abaixo = reais(o.prova.normal - efetivo(o));
@@ -1104,15 +1219,14 @@ const TELAS = {
   },
   ajustes: {
     nome: "Ajustes", principal: true,
-    estados: { gratuito: "Gratuito", premium: "Premium ativo" },
-    nota: { _: "Junta as telas \"Preferências\" e \"Conta\" da fase 4 num destino só da barra inferior. Limite do dia de 1 a 10 (teto do tenant; padrão 3, DECISIONS 58). Silêncio visível. Tamanho da fralda editável. Sair e excluir a conta em dois toques, sem documento (R14). Premium = mais CEPs, e o próprio responsável achou fraco para este público: a proposta de benefício está em aberto (BACKLOG_UX B-14)." },
+    estados: { padrao: "Com anúncios", semAnuncios: "Assinou sem anúncios" },
+    preparar(est) { E.semAnuncios = est === "semAnuncios"; },
+    nota: {
+      _: "Junta as telas \"Preferências\" e \"Conta\" da fase 4 num destino só da barra inferior. Limite do dia de 1 a 10 (teto do tenant; padrão 3, DECISIONS 58). Silêncio visível. Tamanho da fralda editável. Até 3 CEPs para todo mundo (casa, avó, creche): sem plano premium, o app ganha com a comissão das compras e com pouco anúncio (DECISIONS 73 a 75). A única coisa paga é tirar os anúncios, porque aí o app deixa de ganhar com eles para aquela pessoa. Sair e excluir a conta em dois toques, sem documento (R14).",
+      semAnuncios: "Quem assinou não vê anúncio nenhum; tudo o mais é igual para todos. O preço vem da Google Play, nunca de texto fixo (S-14).",
+    },
     render(est) {
-      if (E._ultimo !== "ajustes:" + est) {
-        if (est === "premium" && !E.premium) { E.premium = true; E.ceps = CEPS_PREMIUM.slice(); E.cep = E.ceps[0]; }
-        if (est === "gratuito" && E.premium) { E.premium = false; E.ceps = [E.ceps[0]]; E.cep = E.ceps[0]; }
-      }
-      const plano = est === "premium" ? `Premium ativo até 30/10 · ${E.ceps.length} de 3 CEPs` : "Acompanhe até 3 CEPs com o premium";
-      const item = (t, apoio, acao, icone = "chevron_right", cls = "") => `<button class="item-ajuste ${cls}" data-acao="${acao || "nada"}"><span class="coluna"><span class="t-nome">${t}</span>${apoio ? `<span class="t-apoio sec">${apoio}</span>` : ""}</span>${ic(icone)}</button>`;
+      const item = (t, apoio, acao, icone = "chevron_right", extra = "") => `<button class="item-ajuste" data-acao="${acao || "nada"}" ${extra}><span class="coluna"><span class="t-nome">${t}</span>${apoio ? `<span class="t-apoio sec">${apoio}</span>` : ""}</span>${ic(icone)}</button>`;
       const limites = [1, 3, 5, 10].map((n) => `<button class="radio" role="radio" aria-checked="${E.limite === n}" data-limite="${n}"><span class="bola"></span><span class="t-corpo">${n} por dia${n === 3 ? " (padrão)" : ""}</span></button>`).join("");
       return topo("Ajustes", false) + faixaAvisos() + `<div class="pad" style="padding-bottom:var(--espaco-8)">
         <h2 class="t-titulo-secao" style="margin-top:var(--espaco-3)">Avisos</h2>
@@ -1121,11 +1235,159 @@ const TELAS = {
         ${item("Não avisar entre", "21:00 e 08:00. Avisos desse horário chegam às 08:00, os melhores primeiro.")}
         <hr class="div"><h2 class="t-titulo-secao" style="margin-bottom:var(--espaco-3)">Categorias que você segue</h2><div class="coluna" style="gap:var(--espaco-3)">${htmlCategorias()}</div>
         ${E.categorias.has("fraldas_lencos") ? `<p class="t-nome" style="margin:var(--espaco-5) 0 var(--espaco-2)">Tamanho da fralda</p>${htmlTamanhos()}<p class="t-apoio sec" style="margin:var(--espaco-2) 0 0">${E.tamanhos.size ? "Lenço e fralda sem tamanho no anúncio aparecem sempre." : "Sem escolha, chegam promoções de todos os tamanhos."}</p>` : ""}
-        <hr class="div"><h2 class="t-titulo-secao">${E.ceps.length > 1 ? "Seus CEPs" : "Seu CEP"}</h2>${E.ceps.map((c, i) => item(fmtCep(c), i === 0 ? "Só o CEP, nunca o endereço. O frete e as ofertas são calculados para ele." : "Frete e ofertas também para este CEP.", "ir-cep")).join("")}${E.ceps.length < 3 ? item("Adicionar outro CEP", plano, "premium") : `<p class="t-apoio sec" style="margin:0">${plano}</p>`}
+        <hr class="div"><h2 class="t-titulo-secao">${E.ceps.length > 1 ? "Seus CEPs" : "Seu CEP"}</h2>${E.ceps.map((c, i) => item(fmtCep(c), i === 0 ? "Só o CEP, nunca o endereço. O frete e as ofertas são calculados para ele. Toque para trocar." : "Frete e ofertas também para este CEP. Toque para trocar.", "trocar-cep", "chevron_right", `data-cep-editar="${c}"`)).join("")}${E.ceps.length < 3 ? item("Adicionar outro CEP", "Até 3, por exemplo a casa da avó ou a creche.", "add-cep", "add") : ""}
+        <hr class="div"><h2 class="t-titulo-secao">Anúncios</h2>${E.semAnuncios ? item("Sem anúncios", "Assinatura ativa até 30/10. Cancele quando quiser na Google Play.", "nada", "check") : item("Tirar os anúncios", "Os anúncios mantêm o app gratuito. Se preferir não ver nenhum, dá para assinar.", "sem-anuncios")}
         <hr class="div"><h2 class="t-titulo-secao">Conta</h2>${item(E.email, "Entrou com e-mail. A sessão dura 90 dias sem uso.", "nada", "mail")}
         ${item("Sair", "Os avisos param neste celular.", "sair", "logout")}
         <hr class="div">${item("Como a gente confere", null, "como")}${item("Termos de uso")}${item("Política de privacidade")}
         <button class="botao-texto perigo" style="padding-left:0" data-acao="apagar">Excluir minha conta</button></div>`;
+    },
+  },
+  listas: {
+    nome: "Listas", principal: true,
+    estados: { com: "Com uma lista", vazio: "Nenhuma lista", carregando: "Carregando", erro: "Erro" },
+    preparar(est) { if (est === "com") E.lista = listaExemplo(); },
+    nota: {
+      _: "Lista de presentes para chá de bebê, casa nova, chá de panela e casamento (DECISIONS 74). O convidado compra direto na loja pelo link e o economae ganha a comissão da loja; o app não recebe nem guarda dinheiro, então não precisa ser instituição de pagamento. Sem anúncio nas listas. Chá de bebê vem primeiro porque é o público do app; as outras listas só têm busca e alerta de preço para o que o app acompanha (S-37).",
+      vazio: "Ausência explicada em uma frase e uma ação só.",
+    },
+    render(est) {
+      let corpo;
+      if (est === "vazio") corpo = htmlEstado("redeem", "Monte sua lista de presentes", "Chá de bebê, casa nova, chá de panela ou casamento. Os convidados compram direto na loja pelo link, sem baixar app.", "Criar lista", "nova-lista");
+      else if (est === "carregando") corpo = `<div class="lista">${esqueleto()}</div>`;
+      else if (est === "erro") corpo = htmlEstado("cloud_off", "Não deu para carregar suas listas", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true);
+      else {
+        const l = E.lista, t = TIPOS_LISTA[l.tipo], dados = l.itens.filter((it) => !itemInfo(it).falta).length;
+        corpo = `<div class="lista" style="padding-top:var(--espaco-3)"><button class="cartao-lista" data-acao="abrir-lista">${ic(t.ic)}<span class="coluna"><span class="t-nome">${esc(l.nome)}</span><span class="t-apoio sec">${t.rot}${l.data ? " · dia " + esc(l.data) : ""}</span><span class="t-apoio sec">${l.itens.length} ${l.itens.length === 1 ? "item" : "itens"} · ${dados} já ${dados === 1 ? "presenteado" : "presenteados"}</span></span>${ic("chevron_right")}</button>
+          <button class="botao-contorno" style="align-self:flex-start" data-acao="nova-lista">${ic("add", "i p")} Criar outra lista</button></div>`;
+      }
+      return topo("Listas", false) + corpo;
+    },
+  },
+  novaLista: {
+    nome: "Listas · Criar lista",
+    estados: { padrao: "Escolher tipo", semNome: "Sem nome (erro)" },
+    preparar(est) { E.novaTipo = "cha_bebe"; E.novaNome = est === "semNome" ? "" : TIPOS_LISTA.cha_bebe.nome; E.novaData = ""; },
+    nota: { _: "Três escolhas e nada mais: tipo, nome e data (opcional). A lista não aparece em buscas; só vê quem recebe o link. Chá de bebê revela a gravidez, por isso nada é público por padrão.", semNome: "Erro com cor, ícone e texto, no próprio campo." },
+    render(est) {
+      const erro = est === "semNome";
+      const tipos = Object.entries(TIPOS_LISTA).map(([k, t]) => `<button class="categoria" role="radio" aria-checked="${E.novaTipo === k}" data-tipo-lista="${k}">${ic(t.ic)}<span class="t-nome" style="flex:1">${t.rot}</span><span class="marca-sel">${ic(E.novaTipo === k ? "check_circle" : "radio_button_unchecked")}</span></button>`).join("");
+      return topo("", true) + passo("Que lista você quer montar?", "Só vê quem recebe o link. A lista não aparece em buscas e não mostra seu endereço.",
+        `<div class="coluna" role="radiogroup" aria-label="Tipo de lista" style="gap:var(--espaco-3)">${tipos}</div>
+         <div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-nome-lista">Nome da lista</label><input class="texto" id="campo-nome-lista" value="${esc(E.novaNome)}" aria-invalid="${erro}" ${erro ? 'aria-describedby="erro-nome"' : ""}>${erro ? `<span id="erro-nome" class="msg-erro t-apoio">${ic("error", "i p")}Dê um nome para a lista.</span>` : ""}</div>
+         <div class="campo"><label class="t-apoio" for="campo-data-lista">Data da festa (opcional)</label><input class="texto" id="campo-data-lista" inputmode="numeric" placeholder="dd/mm" value="${esc(E.novaData)}"></div>`,
+        `<button class="botao-principal" data-acao="criar-lista">Criar lista</button>`);
+    },
+  },
+  lista: {
+    nome: "Listas · Minha lista",
+    estados: { com: "Com itens", nova: "Recém-criada (vazia)", carregando: "Carregando", erro: "Erro" },
+    preparar(est) { if (est === "com") E.lista = listaExemplo(); if (est === "nova") E.lista = { tipo: "cha_bebe", nome: "Chá de bebê da Ana", dono: "Ana", data: "15/11", recado: "", itens: [] }; },
+    nota: {
+      _: "A dona da lista vê o que falta, quem deu (o nome é opcional para o convidado) e se o preço está baixo de verdade, com o mesmo selo das ofertas. Itens do que o app acompanha entram no alerta: quando o preço cai de verdade, ela recebe um aviso e pode lembrar os convidados (N10, mesmo limite diário). Comissão declarada (CDC art. 36). Três jeitos de adicionar, na folha \"Adicionar item\".",
+      nova: "Lista vazia com sugestões do tipo de lista: um toque busca o produto (ou cria item livre, quando o app não acompanha aquele produto).",
+    },
+    render(est) {
+      if (est === "carregando") return topo("", true) + `<div class="lista">${esqueleto()}</div>`;
+      if (est === "erro") return topo("", true) + htmlEstado("cloud_off", "Não deu para carregar a lista", "Pode ser a internet. Tente de novo em instantes.", "Tentar de novo", "tentar", true);
+      const l = E.lista, t = TIPOS_LISTA[l.tipo], toast = E.toast; E.toast = null;
+      const dados = l.itens.filter((it) => !itemInfo(it).falta).length;
+      let h = topo("", true, `<button class="botao-icone" data-acao="compartilhar-lista" aria-label="Compartilhar a lista">${ic("share")}</button>`);
+      if (toast) h += `<div class="faixa-aviso neutra" role="status">${ic("check_circle")}<span class="t-apoio" style="flex:1">${esc(toast)}</span></div>`;
+      h += `<div class="pad coluna" style="padding-top:var(--espaco-3);padding-bottom:var(--espaco-5)">
+        <span class="chip-tamanho t-rotulo-p" style="align-self:flex-start;gap:var(--espaco-2)">${ic(t.ic, "i p")}${t.rot}</span>
+        <h1 class="t-titulo-tela" style="margin:0">${esc(l.nome)}</h1>${l.data ? `<span class="t-apoio sec">Dia ${esc(l.data)}</span>` : ""}
+        ${l.itens.length ? `<span class="t-corpo">${dados} de ${l.itens.length} ${l.itens.length === 1 ? "item já presenteado" : "itens já presenteados"}</span><div class="progresso" role="progressbar" aria-valuemin="0" aria-valuemax="${l.itens.length}" aria-valuenow="${dados}" aria-label="${dados} de ${l.itens.length} itens presenteados"><span style="width:${(dados / l.itens.length) * 100}%"></span></div>` : ""}
+        ${l.recado ? `<p class="recado t-corpo">${esc(l.recado)}</p>` : ""}
+        <button class="botao-principal" data-acao="adicionar-item">${ic("add", "i p")}Adicionar item</button>
+        <div class="quebra"><button class="botao-contorno" data-acao="compartilhar-lista">Compartilhar lista</button><button class="botao-texto" data-acao="ver-convidado">Ver como convidado</button></div></div>`;
+      if (!l.itens.length) h += `<div class="pad coluna" style="gap:var(--espaco-3)"><h2 class="t-titulo-secao">Comece pelo que você mais vai usar</h2><div class="quebra">${t.sugestoes.map((x) => `<button class="chip-filtro t-rotulo" data-sugestao="${esc(x)}">${ic("add", "i p")}${esc(x)}</button>`).join("")}</div></div>`;
+      else h += `<div class="lista">${l.itens.map(htmlItemDono).join("")}</div>`;
+      h += `<div class="pad coluna" style="padding-bottom:var(--espaco-8);gap:var(--espaco-3)"><div class="linha-apoio t-apoio">${ic("notifications", "i p")}<span>Avisamos você quando um item da lista tiver preço baixo de verdade.</span></div>
+        <p class="t-apoio sec" style="margin:0">Quando um convidado compra pelo link, o economae pode ganhar uma comissão da loja. O preço é o mesmo para ele. Não recebemos nem guardamos dinheiro.</p></div>`;
+      return h;
+    },
+  },
+  adicionar: {
+    nome: "Listas · Adicionar item",
+    estados: { busca: "Buscar (lupa)", buscaNada: "Busca sem resultado", buscaNbcal: "Busca de item da NBCAL", link: "Link lido", linkSemPreco: "Link sem preço", linkInvalido: "Link que não abre", livre: "Item livre", livreErro: "Item livre sem nome" },
+    preparar(est) {
+      E.addErro = est === "livreErro"; E.addQtd = 1; E.addObs = ""; E.addPreco = "";
+      E.busca = { busca: "fralda", buscaNada: "jogo de panelas", buscaNbcal: "mamadeira" }[est] ?? E.busca;
+      if (est.startsWith("link")) { E.linkUrl = { link: "https://www.lojaexemplo.com.br/banheira-com-suporte", linkSemPreco: "https://www.outraloja.com.br/p/toalha-com-capuz", linkInvalido: "banheira bebe" }[est]; E.linkLido = est === "linkInvalido" ? null : lerLink(E.linkUrl); E.addNome = E.linkLido?.nome || ""; }
+      if (est.startsWith("livre")) E.addNome = est === "livre" ? "Body manga longa, tamanho P" : "";
+    },
+    nota: {
+      _: "Três jeitos, do mais fácil ao mais livre. Busca: só no que o app já acompanha, com preço e selo de prova (a lupa no Mercado Livre foi descartada: a busca deles deu 403 e não há API de afiliado, DECISIONS 26). Link: colar ou, melhor, compartilhar do app da loja direto para o economae (alvo de compartilhamento do Android). Item livre: para o que não tem loja certa.",
+      buscaNada: "Casa nova, chá de panela e casamento: o app ainda não acompanha esses produtos, e a tela diz isso e oferece os outros dois caminhos (S-37).",
+      buscaNbcal: "NBCAL: mamadeira, bico, chupeta e fórmula infantil não aparecem com loja nem preço (Lei 11.265/2006, DECISIONS 46). Se a pessoa pode pedir como item livre, sem loja e sem preço, falta a assessoria confirmar (S-36).",
+      link: "Nome e foto vêm do cartão de compartilhamento da página (Open Graph); o preço, só quando a página informa. O texto diz a hora em que o preço foi lido e que o app ainda não tem histórico desta loja.",
+      linkSemPreco: "Sem preço na página, o campo pede o preço como opcional; o convidado vê \"Preço na loja\".",
+    },
+    render(est) {
+      let h = topo("Adicionar item", true);
+      const qtd = `<div class="campo"><span class="t-apoio" id="rot-qtd">Quantos você quer?</span><div class="contador-qtd" role="group" aria-labelledby="rot-qtd"><button class="botao-contorno" data-acao="qtd-menos" aria-label="Menos um">−</button><span class="t-titulo-secao" aria-live="polite">${E.addQtd}</span><button class="botao-contorno" data-acao="qtd-mais" aria-label="Mais um">+</button></div></div>`;
+      if (est.startsWith("busca")) {
+        const r = buscarCatalogo(E.busca);
+        h += `<div class="pad coluna" style="gap:var(--espaco-3)"><div class="campo"><label class="t-apoio" for="campo-busca">O que você quer ganhar?</label><div class="linha"><input class="texto" id="campo-busca" style="flex:1;min-width:0" value="${esc(E.busca)}" enterkeyhint="search"><button class="botao-icone" data-acao="buscar" aria-label="Buscar">${ic("search")}</button></div></div></div>`;
+        if (r.tipo === "nbcal") h += htmlEstado("info", "Este produto não aparece aqui", "Não mostramos loja nem preço de mamadeira, bico, chupeta e fórmula infantil: a lei proíbe a promoção desses produtos (NBCAL).", "Escrever o que você quer", "add-livre");
+        else if (r.tipo === "nada") h += htmlEstado("search", "Ainda não acompanhamos este produto", "Por enquanto conferimos preço de fralda, higiene do bebê, papinha e gestação. Cole o link de uma loja ou escreva o que você quer.", null, null, false, `<div class="quebra" style="justify-content:center"><button class="botao-contorno" data-acao="add-link">${ic("link", "i p")} Colar link</button><button class="botao-contorno" data-acao="add-livre">${ic("edit_note", "i p")} Escrever</button></div>`);
+        else if (r.tipo === "achou") h += `<div class="lista" style="padding-top:var(--espaco-3)">${r.itens.map((o) => `<div class="item-lista"><div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto">${ic(CAT[o.cat].ic)}</div><div class="coluna" style="gap:var(--espaco-1);flex:1;min-width:0"><span class="t-nome">${esc(nomeCompleto(o))} · ${esc(o.emb.rot)}</span><span class="t-apoio sec">${esc(o.loja)} · ${reais(efetivo(o))}</span></div></div>
+            ${textoCondicao(o) ? `<div class="faixa-condicao t-rotulo">${ic("info", "i p")}<span>${esc(textoCondicao(o))}</span></div>` : ""}<div class="selo t-rotulo">${ic("verified", "i p")}<span>${textoSelo(o)}</span></div>
+            <button class="botao-contorno" style="align-self:flex-start" data-add-of="${o.id}" aria-label="Adicionar ${esc(nomeCompleto(o))} à lista">Adicionar à lista</button></div>`).join("")}</div>`;
+        return h;
+      }
+      if (est.startsWith("link")) {
+        const invalido = est === "linkInvalido", L = E.linkLido;
+        h += `<div class="pad coluna" style="padding-bottom:var(--espaco-8)"><div class="campo${invalido ? " erro" : ""}"><label class="t-apoio" for="campo-link">Link do produto</label><div class="linha"><input class="texto" id="campo-link" style="flex:1;min-width:0" inputmode="url" value="${esc(E.linkUrl)}" aria-invalid="${invalido}" ${invalido ? 'aria-describedby="erro-link"' : ""}><button class="botao-contorno" data-acao="ler-link">Ler</button></div>
+          ${invalido ? `<span id="erro-link" class="msg-erro t-apoio">${ic("error", "i p")}Não conseguimos abrir este link. Ele precisa começar com https://.</span>` : ""}</div>
+          <div class="linha-apoio t-apoio">${ic("info", "i p")}<span>Mais fácil: no app da loja, toque em Compartilhar e escolha economae.</span></div>`;
+        if (invalido) h += `<button class="botao-texto" style="align-self:flex-start;padding-left:0" data-acao="add-livre">Escrever o que você quer</button>`;
+        if (L) h += `<div class="item-lista"><div class="linha topo" style="gap:var(--espaco-4)"><div class="icone-produto">${ic("redeem")}</div><div class="coluna" style="gap:var(--espaco-1);flex:1;min-width:0"><span class="t-apoio sec">${esc(L.loja)}</span>${L.preco ? `<span class="t-preco-cartao">${reais(L.preco)}</span><span class="t-apoio sec">Preço lido do link às 13:40. Ainda não temos o histórico desta loja.</span>` : `<span class="t-apoio sec">Não conseguimos ler o preço nesta página.</span>`}</div></div>
+            <div class="campo"><label class="t-apoio" for="campo-add-nome">Nome do item</label><input class="texto" id="campo-add-nome" value="${esc(E.addNome)}"></div>
+            ${L.preco ? "" : `<div class="campo"><label class="t-apoio" for="campo-add-preco">Preço (opcional)</label><input class="texto" id="campo-add-preco" inputmode="decimal" placeholder="R$ 0,00" value="${esc(E.addPreco)}"></div>`}
+            ${qtd}<button class="botao-principal" data-acao="add-link-ok">Adicionar à lista</button></div>`;
+        return h + `</div>`;
+      }
+      const erro = est === "livreErro";
+      return h + passo("Escreva o que você quer", "Para itens sem loja certa. O convidado escolhe onde comprar.",
+        `<div class="campo${erro ? " erro" : ""}"><label class="t-apoio" for="campo-add-nome">O que você quer ganhar?</label><input class="texto" id="campo-add-nome" value="${esc(E.addNome)}" aria-invalid="${erro}" ${erro ? 'aria-describedby="erro-livre"' : ""}>${erro ? `<span id="erro-livre" class="msg-erro t-apoio">${ic("error", "i p")}Escreva o nome do item.</span>` : ""}</div>
+         <div class="campo"><label class="t-apoio" for="campo-add-obs">Detalhes para os convidados (opcional)</label><textarea id="campo-add-obs" placeholder="Tamanho, cor, marca...">${esc(E.addObs)}</textarea></div>${qtd}`,
+        `<button class="botao-principal" data-acao="add-livre-ok">Adicionar à lista</button>`);
+    },
+  },
+  convidado: {
+    nome: "Página do convidado (navegador)",
+    estados: { padrao: "Lista", voltou: "Voltou da loja", marcar: "Marcar como presenteado", obrigado: "Obrigado", encerrada: "Lista encerrada", naoExiste: "Link errado", carregando: "Carregando", erro: "Sem internet" },
+    preparar(est) { E.lista = listaExemplo(); E.convItem = "i2"; E.convNome = ""; E.convQtd = 1; },
+    nota: {
+      _: "Página web, sem app e sem conta (R1 é a reclamação nº 1). Cada item tem \"Comprar na loja\" (link de afiliado, comissão declarada) e \"Já comprei\", para ninguém repetir: é na palavra do convidado, sem reserva. Itens já dados vão para o fim, sem botão. O endereço não aparece: o convidado combina a entrega com a dona da lista. O frete depende do CEP de quem compra e aparece no carrinho da loja. Sem anúncio. Depende de um site (BACKLOG_UX B-18, B-38).",
+      voltou: "Ao voltar da loja, uma pergunta fecha o ciclo e evita presente repetido.",
+      marcar: "Nome opcional: aparece só para a dona da lista.",
+    },
+    render(est) {
+      const l = E.lista, t = TIPOS_LISTA[l.tipo];
+      const barra = `<div class="navegador" aria-hidden="true"><span class="url t-apoio">${ic("lock", "i p")}${LINK_DOMINIO}</span></div>`;
+      if (est === "carregando") return barra + `<div class="lista" style="padding-top:var(--espaco-5)">${esqueleto()}</div>`;
+      if (est === "erro") return barra + htmlEstado("cloud_off", "Sem internet", "Confira a conexão e tente de novo.", "Tentar de novo", "tentar", true);
+      if (est === "naoExiste") return barra + htmlEstado("search", "Não achamos esta lista", "Confira o link com quem enviou para você.");
+      if (est === "encerrada") return barra + htmlEstado("event_busy", "Esta lista foi encerrada", `A festa já passou ou ${esc(l.dono)} fechou a lista. Obrigado pelo carinho!`);
+      const it = l.itens.find((x) => x.id === E.convItem) || l.itens[0], inf = itemInfo(it);
+      if (est === "marcar") return barra + passo("Marcar como presenteado", esc(inf.nome),
+        `${inf.falta > 1 ? `<div class="campo"><span class="t-apoio" id="rot-cqtd">Quantos você comprou?</span><div class="contador-qtd" role="group" aria-labelledby="rot-cqtd"><button class="botao-contorno" data-acao="conv-menos" aria-label="Menos um">−</button><span class="t-titulo-secao" aria-live="polite">${E.convQtd}</span><button class="botao-contorno" data-acao="conv-mais" aria-label="Mais um">+</button></div></div>` : ""}
+         <div class="campo"><label class="t-apoio" for="campo-conv-nome">Seu nome (opcional)</label><input class="texto" id="campo-conv-nome" value="${esc(E.convNome)}" autocomplete="name"><span class="t-apoio sec">Aparece só para ${esc(l.dono)}.</span></div>`,
+        `<button class="botao-principal" data-acao="conv-confirmar">Confirmar</button><button class="botao-texto" data-acao="conv-voltar">Cancelar</button>`);
+      if (est === "obrigado") return barra + htmlEstado("celebration", "Obrigado!", `${esc(l.dono)} vai ver que ${esc(inf.nome)} já foi dado.`, "Voltar à lista", "conv-voltar");
+      const ordem = [...l.itens.filter((x) => itemInfo(x).falta), ...l.itens.filter((x) => !itemInfo(x).falta)];
+      let h = barra;
+      if (est === "voltou") h += `<div class="pad" style="padding-top:var(--espaco-4)"><div class="retorno" role="region" aria-label="Pergunta sobre a compra"><span class="t-nome">Comprou ${esc(inf.nome)}?</span><span class="t-apoio sec">Marque para ninguém repetir o presente.</span><div class="quebra"><button class="botao-principal" style="width:auto" data-acao="conv-ja-comprei" data-item="${it.id}">Sim, comprei</button><button class="botao-texto" data-acao="conv-voltar">Ainda não</button></div></div></div>`;
+      h += `<div class="pad coluna" style="padding-top:var(--espaco-5);padding-bottom:var(--espaco-4)"><span class="chip-tamanho t-rotulo-p" style="align-self:flex-start;gap:var(--espaco-2)">${ic(t.ic, "i p")}${t.rot}</span>
+        <h1 class="t-titulo-tela" style="margin:0">${esc(l.nome)}</h1>${l.data ? `<span class="t-apoio sec">Dia ${esc(l.data)}</span>` : ""}${l.recado ? `<p class="recado t-corpo">${esc(l.recado)}</p>` : ""}
+        <p class="t-corpo" style="margin:0">Compre direto na loja e depois marque aqui, para ninguém repetir. Não precisa baixar app nem criar conta.</p>
+        <div class="frete-linha t-apoio">${ic("local_shipping", "i p")}<span>Para a entrega, combine o endereço com ${esc(l.dono)}. O frete depende do seu CEP e aparece no carrinho da loja.</span></div></div>
+        <div class="lista">${ordem.map(htmlItemConvidado).join("")}</div>
+        <div class="pad coluna" style="padding-bottom:var(--espaco-8);gap:var(--espaco-3)"><p class="t-apoio sec" style="margin:0">Comprando pelos links, o economae pode ganhar uma comissão da loja. O preço para você é o mesmo.</p><button class="botao-texto" style="align-self:flex-start;padding-left:0" data-acao="nada">Criar minha lista no economae</button></div>`;
+      return h;
     },
   },
 };
@@ -1149,17 +1411,24 @@ function htmlSobreposicao() {
   if (E.folha === "cep") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-cep"><span class="alca"></span><h2 id="tit-cep" class="t-titulo-tela">Frete e ofertas para qual CEP?</h2>
     <p class="t-corpo sec" style="margin:0">O frete, o prazo e as lojas que entregam mudam com o CEP.</p>
     <div role="radiogroup" aria-labelledby="tit-cep">${E.ceps.map((c) => `<button class="radio" role="radio" aria-checked="${c === E.cep}" data-cep="${c}"><span class="bola"></span><span class="t-corpo">CEP ${fmtCep(c)}</span></button>`).join("")}</div>
-    ${E.premium ? `<button class="botao-contorno" data-acao="ir" data-destino="ajustes:premium">Mudar meus CEPs</button>` : `<button class="botao-contorno" data-acao="ir-cep">Trocar CEP</button><button class="botao-texto" data-acao="premium">Acompanhar até 3 CEPs</button>`}</div></div>`;
-  if (E.folha === "premium") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-premium"><span class="alca"></span><h2 id="tit-premium" class="t-titulo-tela">Acompanhe até 3 CEPs</h2>
-    <p class="t-corpo sec" style="margin:0">Para quem compra para casa, para a casa da avó ou para a creche.</p><p class="t-titulo-secao" style="margin:0">[preço da Google Play] por mês</p><p class="t-apoio sec" style="margin:0">Renova sozinho. Cancele quando quiser na Google Play.</p>
-    <button class="botao-principal" data-acao="fechar">Assinar por [preço da Google Play]</button></div></div>`;
-  if (E.dialogo === "apagar") return `<div class="veu centro"><div class="dialogo" role="alertdialog" aria-modal="true" aria-labelledby="tit-apagar"><h2 id="tit-apagar" class="t-titulo-secao">Excluir a conta?</h2><p class="t-corpo" style="margin:0">Apagamos seu e-mail, CEPs, preferências e histórico de avisos. Não tem volta.</p>
+    <div class="quebra">${E.ceps.length < 3 ? `<button class="botao-contorno" data-acao="add-cep">${ic("add", "i p")} Adicionar outro CEP</button>` : ""}<button class="botao-texto" data-acao="trocar-cep" data-cep-editar="${E.cep}">Trocar este CEP</button></div></div></div>`;
+  if (E.folha === "semAnuncios") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-sem"><span class="alca"></span><h2 id="tit-sem" class="t-titulo-tela">Tirar os anúncios</h2>
+    <p class="t-corpo sec" style="margin:0">Os anúncios ajudam a manter o app gratuito. Se preferir não ver nenhum, assine.</p><p class="t-titulo-secao" style="margin:0">[preço da Google Play] por mês</p>
+    <p class="t-apoio sec" style="margin:0">Ofertas, avisos, listas e até 3 CEPs continuam iguais para todo mundo. Renova sozinho. Cancele quando quiser na Google Play.</p>
+    <button class="botao-principal" data-acao="assinar">Assinar por [preço da Google Play]</button><button class="botao-texto" data-acao="fechar">Agora não</button></div></div>`;
+  if (E.folha === "adicionarItem") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-add"><span class="alca"></span><h2 id="tit-add" class="t-titulo-tela">Como você quer adicionar?</h2>
+    ${[["add-busca", "search", "Buscar produto", "Mostramos o preço e se ele está baixo de verdade."], ["add-link", "link", "Colar link de uma loja", "Ou, no app da loja, toque em Compartilhar e escolha economae."], ["add-livre", "edit_note", "Escrever o que você quer", "Para itens sem loja certa. O convidado escolhe onde comprar."]].map(([a, i, t, x]) => `<button class="item-ajuste" data-acao="${a}">${ic(i)}<span class="coluna"><span class="t-nome">${t}</span><span class="t-apoio sec">${x}</span></span>${ic("chevron_right")}</button>`).join("")}</div></div>`;
+  if (E.folha === "compartilharLista") return `<div class="veu" data-acao="fechar"><div class="folha" role="dialog" aria-modal="true" aria-labelledby="tit-comp"><span class="alca"></span><h2 id="tit-comp" class="t-titulo-tela">Compartilhar a lista</h2>
+    <div class="caixa-info"><span class="t-rotulo">Mensagem</span><span class="t-corpo">Oi! Fiz minha lista de presentes: ${esc(E.lista.nome)}. Dá para comprar direto na loja pelo link, sem baixar nada: ${LINK_DOMINIO}</span></div>
+    <p class="t-apoio sec" style="margin:0">Só vê quem tem o link. A lista não aparece em buscas e não mostra seu endereço.</p>
+    <button class="botao-principal" data-acao="compartilhar-sistema">${ic("share", "i p")}Compartilhar</button><button class="botao-contorno" data-acao="copiar-link">${ic("content_copy", "i p")} Copiar link</button></div></div>`;
+  if (E.dialogo === "apagar") return `<div class="veu centro"><div class="dialogo" role="alertdialog" aria-modal="true" aria-labelledby="tit-apagar"><h2 id="tit-apagar" class="t-titulo-secao">Excluir a conta?</h2><p class="t-corpo" style="margin:0">Apagamos seu e-mail, CEPs, preferências, listas e histórico de avisos. Não tem volta.</p>
     <div class="acoes"><button class="botao-texto" data-acao="fechar">Cancelar</button><button class="botao-texto perigo" data-acao="apagado">Excluir</button></div></div></div>`;
   if (E.dialogo === "sistema") return `<div class="veu centro"><div class="dialogo sistema" role="alertdialog" aria-modal="true" aria-labelledby="tit-sis"><h2 id="tit-sis" style="font-size:18px;line-height:24px;margin:0">Permitir que <b>economae</b> envie notificações?</h2><p style="margin:0;font-size:13px">(Diálogo do sistema Android, simulado)</p>
     <div class="acoes"><button class="botao-texto" data-acao="permitir">Permitir</button><button class="botao-texto" data-acao="negar">Não permitir</button></div></div></div>`;
   if (E.dialogo === "google") return `<div class="veu"><div class="folha dialogo sistema" style="max-width:none;border-radius:28px 28px 0 0" role="dialog" aria-modal="true" aria-labelledby="tit-g"><h2 id="tit-g" style="font-size:18px;line-height:24px;margin:0">Escolha uma conta para continuar no economae</h2><p style="margin:0;font-size:13px">(Seletor de contas do Google, simulado)</p>
     <button class="item-ajuste" style="color:inherit" data-acao="google-ok">${ic("mail")}<span class="coluna"><span class="t-nome">${esc(E.email)}</span></span></button><div class="acoes"><button class="botao-texto" data-acao="fechar">Cancelar</button></div></div></div>`;
-  if (E.foraDoApp) return `<div class="fora-do-app"><p style="font-size:18px;margin:0">Você saiu do app para o site da ${esc(OF[E.foraDoApp]?.loja || "loja")}.</p><p style="margin:0;color:var(--sistema-texto-2)">(Simulação. No celular, o link de afiliado abre no navegador ou no app da loja.)</p><button class="botao-principal" data-acao="voltar-app">Voltar ao economae</button></div>`;
+  if (E.foraDoApp) return `<div class="fora-do-app"><p style="font-size:18px;margin:0">${E.foraVolta ? "Você foi para o site" : "Você saiu do app para o site"} da ${esc(E.foraLoja || OF[E.foraDoApp]?.loja || "loja")}.</p><p style="margin:0;color:var(--sistema-texto-2)">(Simulação. No celular, o link de afiliado abre no navegador ou no app da loja.)</p><button class="botao-principal" data-acao="voltar-app">${E.foraVolta ? "Voltar à lista" : "Voltar ao economae"}</button></div>`;
   return "";
 }
 
@@ -1168,7 +1437,11 @@ const $tela = document.getElementById("tela"), $nav = document.getElementById("n
 const $selTela = document.getElementById("sel-tela"), $selEstado = document.getElementById("sel-estado"), $nota = document.getElementById("nota");
 $selTela.innerHTML = Object.entries(TELAS).map(([k, t]) => `<option value="${k}">${t.nome}</option>`).join("");
 
+// Pelo painel (seletor, atalho, endereço), um estado pode preparar dados de exemplo; a navegação no app não.
+function irPainel(tela, estado) { const t = TELAS[tela]; estado = estado ?? Object.keys(t.estados)[0]; t.preparar?.(estado); ir(tela, estado); }
+function voltar() { const p = E.pilha.pop(); if (p) ir(p[0], p[1], false); else ir("ofertas", "com", false); }
 function ir(tela, estado, empilhar = true) {
+  if (tela !== "cep") E.cepModo = null;
   if (empilhar && (E.tela !== tela || E.estado !== estado)) E.pilha.push([E.tela, E.estado]);
   E._ultimo = E.tela + ":" + E.estado;
   E.tela = tela; E.estado = estado ?? Object.keys(TELAS[tela].estados)[0];
@@ -1184,7 +1457,7 @@ function render(rolarTopo) {
   E._ultimo = E.tela + ":" + E.estado;
   if (rolarTopo) $tela.scrollTop = 0; else $tela.scrollTop = topoAntes;
   $nav.hidden = !t.principal;
-  $nav.innerHTML = t.principal ? [["ofertas", "Ofertas", "sell"], ["avisos", "Avisos", "notifications"], ["ajustes", "Ajustes", "tune"]].map(([k, r, i]) =>
+  $nav.innerHTML = t.principal ? [["ofertas", "Ofertas", "sell"], ["listas", "Listas", "redeem"], ["avisos", "Avisos", "notifications"], ["ajustes", "Ajustes", "tune"]].map(([k, r, i]) =>
     `<button data-aba="${k}" ${E.tela === k ? 'aria-current="page"' : ""}><span class="pilula">${ic(i)}</span>${r}</button>`).join("") : "";
   $selTela.value = E.tela;
   $selEstado.innerHTML = Object.entries(t.estados).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
@@ -1199,19 +1472,23 @@ function render(rolarTopo) {
   liga("campo-cep", "cepDigitado", (v) => v.replace(/\D/g, "").slice(0, 8), fmtCep);
   liga("campo-codigo", "codigoDigitado", (v) => v.replace(/\D/g, "").slice(0, 6));
   liga("campo-email", "emailDigitado", (v) => v.trim());
+  liga("campo-nome-lista", "novaNome", (v) => v); liga("campo-data-lista", "novaData", (v) => v.replace(/[^\d/]/g, "").slice(0, 5));
+  liga("campo-busca", "busca", (v) => v); liga("campo-link", "linkUrl", (v) => v.trim()); liga("campo-add-nome", "addNome", (v) => v);
+  liga("campo-add-obs", "addObs", (v) => v); liga("campo-add-preco", "addPreco", (v) => v); liga("campo-conv-nome", "convNome", (v) => v);
+  const busca = document.getElementById("campo-busca"); if (busca) busca.addEventListener("keydown", (ev) => { if (ev.key === "Enter") ir("adicionar", "busca", false); });
 }
-$selTela.addEventListener("change", () => ir($selTela.value, null));
-$selEstado.addEventListener("change", () => ir(E.tela, $selEstado.value, false));
+$selTela.addEventListener("change", () => irPainel($selTela.value, null));
+$selEstado.addEventListener("change", () => { TELAS[E.tela].preparar?.($selEstado.value); ir(E.tela, $selEstado.value, false); });
 document.querySelector(".painel").addEventListener("click", (ev) => {
   const b = ev.target.closest("button"); if (!b) return;
   if (b.dataset.tema) { E.tema = b.dataset.tema; render(); }
   if (b.dataset.escala) { E.escala = +b.dataset.escala; render(); }
   if (b.dataset.avisos) { E.avisos = b.dataset.avisos === "1"; render(); }
-  if (b.dataset.atalho) { const [t, e] = b.dataset.atalho.split(":"); ir(t, e); }
+  if (b.dataset.atalho) { const [t, e] = b.dataset.atalho.split(":"); irPainel(t, e); }
 });
 $nav.addEventListener("click", (ev) => { const b = ev.target.closest("[data-aba]"); if (b) ir(b.dataset.aba, null); });
 $tela.addEventListener("click", (ev) => {
-  const alvo = ev.target.closest("[data-abrir],[data-acao],[data-cat-alternar],[data-limite],[data-tamanho],[data-filtro],[data-cep]");
+  const alvo = ev.target.closest("[data-abrir],[data-acao],[data-cat-alternar],[data-limite],[data-tamanho],[data-filtro],[data-cep],[data-tipo-lista],[data-sugestao],[data-add-of]");
   if (!alvo) return;
   if (alvo.dataset.abrir) { const id = alvo.dataset.abrir; ir("detalhe", ({ retirada: "protetor", sabonete: "encerrada" })[id] || id); return; }
   if (alvo.dataset.catAlternar) { const k = alvo.dataset.catAlternar; E.categorias.has(k) ? E.categorias.delete(k) : E.categorias.add(k); if (E.filtroCat && !E.categorias.has(E.filtroCat)) E.filtroCat = null; render(); return; }
@@ -1220,29 +1497,69 @@ $tela.addEventListener("click", (ev) => {
   if (alvo.dataset.filtro !== undefined) { E.filtroCat = E.filtroCat === alvo.dataset.filtro ? null : alvo.dataset.filtro; render(); return; }
   if (alvo.dataset.limite !== undefined) { E.limite = +alvo.dataset.limite; render(); return; }
   if (alvo.dataset.cep) { E.cep = alvo.dataset.cep; E.folha = null; render(true); return; }
+  if (alvo.dataset.tipoLista) { const k = alvo.dataset.tipoLista, padrao = Object.values(TIPOS_LISTA).some((t) => t.nome === E.novaNome); E.novaTipo = k; if (!E.novaNome || padrao) E.novaNome = TIPOS_LISTA[k].nome; render(); return; }
+  if (alvo.dataset.sugestao) { const x = alvo.dataset.sugestao; E.addQtd = 1; E.addObs = ""; if (buscarCatalogo(x).tipo === "achou") { E.busca = x; ir("adicionar", "busca"); } else { E.addNome = x; E.addErro = false; ir("adicionar", "livre"); } return; }
+  if (alvo.dataset.addOf) { const o = OF[alvo.dataset.addOf]; E.lista.itens.push({ id: "n" + Date.now(), of: o.id, qtd: 1, dados: [] }); E.toast = `${nomeCompleto(o)} entrou na lista.`; ir("lista", "com"); return; }
   const a = alvo.dataset.acao;
   // Clique dentro da folha não fecha; só o véu ou os botões de fechar.
   if (a === "fechar" && ev.target.closest(".folha,.dialogo") && !ev.target.closest("button[data-acao='fechar']")) return;
   switch (a) {
     case "ir": { const [t, e] = alvo.dataset.destino.split(":"); ir(t, e); break; }
-    case "voltar": { const p = E.pilha.pop(); if (p) ir(p[0], p[1], false); else ir("ofertas", "com", false); break; }
+    case "voltar": voltar(); break;
     case "expandir": E.expandida = !E.expandida; render(); break;
     case "como": E.folha = "como"; render(); break;
-    case "premium": E.folha = "premium"; render(); break;
+    case "sem-anuncios": E.folha = "semAnuncios"; render(); break;
+    case "assinar": E.semAnuncios = true; E.folha = null; render(); break;
+    case "add-cep": E.folha = null; ir("cep", "vazio"); E.cepModo = "adicionar"; E.cepDigitado = ""; render(); break;
+    case "trocar-cep": { const c = alvo.dataset.cepEditar || E.cep; E.folha = null; ir("cep", "vazio"); E.cepModo = "trocar"; E.cepEditando = c; render(); break; }
+    case "nova-lista": E.novaTipo = "cha_bebe"; E.novaNome = TIPOS_LISTA.cha_bebe.nome; E.novaData = ""; ir("novaLista", "padrao"); break;
+    case "criar-lista":
+      if (!E.novaNome.trim()) { ir("novaLista", "semNome", false); break; }
+      E.lista = { tipo: E.novaTipo, nome: E.novaNome.trim(), dono: "Ana", data: E.novaData, recado: "", itens: [] }; ir("lista", "nova"); break;
+    case "abrir-lista": ir("lista", "com"); break;
+    case "adicionar-item": E.folha = "adicionarItem"; render(); break;
+    case "add-busca": E.busca = ""; ir("adicionar", "busca"); break;
+    case "add-link": E.linkUrl = ""; E.linkLido = null; E.addQtd = 1; ir("adicionar", "link"); break;
+    case "add-livre": E.addNome = ""; E.addObs = ""; E.addQtd = 1; E.addErro = false; ir("adicionar", "livre"); break;
+    case "buscar": ir("adicionar", "busca", false); break;
+    case "ler-link": E.linkLido = lerLink(E.linkUrl); E.addNome = E.linkLido?.nome || ""; ir("adicionar", E.linkLido ? (E.linkLido.preco ? "link" : "linkSemPreco") : "linkInvalido", false); break;
+    case "qtd-menos": E.addQtd = Math.max(1, E.addQtd - 1); render(); break;
+    case "qtd-mais": E.addQtd = Math.min(20, E.addQtd + 1); render(); break;
+    case "add-link-ok": {
+      const L = E.linkLido; if (!L) break;
+      const preco = L.preco ?? (Math.round(parseFloat(E.addPreco.replace(/[^\d,]/g, "").replace(",", ".")) * 100) || null);
+      E.lista.itens.push({ id: "n" + Date.now(), nome: E.addNome.trim() || L.nome, loja: L.loja, preco, lido: L.preco ? "13:40" : null, qtd: E.addQtd, dados: [] });
+      E.toast = `${E.addNome.trim() || L.nome} entrou na lista.`; ir("lista", "com"); break;
+    }
+    case "add-livre-ok":
+      if (!E.addNome.trim()) { ir("adicionar", "livreErro", false); break; }
+      E.lista.itens.push({ id: "n" + Date.now(), nome: E.addNome.trim(), obs: E.addObs.trim(), qtd: E.addQtd, dados: [] });
+      E.toast = `${E.addNome.trim()} entrou na lista.`; ir("lista", "com"); break;
+    case "remover-item": E.lista.itens = E.lista.itens.filter((x) => x.id !== alvo.dataset.item); E.toast = "Item removido."; render(); break;
+    case "compartilhar-lista": if (E.tela === "bloqueio") ir("lista", "com"); E.folha = "compartilharLista"; render(); break;
+    case "compartilhar-sistema": E.folha = null; E.toast = "Abrimos o compartilhamento do celular (simulado)."; render(); break;
+    case "copiar-link": E.folha = null; E.toast = "Link copiado."; render(); break;
+    case "ver-convidado": ir("convidado", "padrao"); break;
+    case "conv-comprar": { const it = E.lista.itens.find((x) => x.id === alvo.dataset.item); E.convItem = it.id; E.foraLoja = itemInfo(it).loja; E.foraVolta = ["convidado", "voltou"]; E.foraDoApp = "loja"; render(); break; }
+    case "conv-ja-comprei": E.convItem = alvo.dataset.item; E.convQtd = 1; E.convNome = ""; ir("convidado", "marcar"); break;
+    case "conv-menos": E.convQtd = Math.max(1, E.convQtd - 1); render(); break;
+    case "conv-mais": { const it = E.lista.itens.find((x) => x.id === E.convItem); E.convQtd = Math.min(itemInfo(it).falta, E.convQtd + 1); render(); break; }
+    case "conv-confirmar": { const it = E.lista.itens.find((x) => x.id === E.convItem); for (let i = 0; i < Math.min(E.convQtd, itemInfo(it).falta); i++) it.dados.push(E.convNome.trim() || null); ir("convidado", "obrigado"); break; }
+    case "conv-voltar": ir("convidado", "padrao"); break;
     case "folha-cep": E.folha = "cep"; render(); break;
     case "apagar": E.dialogo = "apagar"; render(); break;
     case "apagado": case "sair": E.aceitou = false; ir("boasVindas", "padrao"); break;
     case "fechar": E.folha = null; E.dialogo = null; render(); break;
     case "ver-dias": E.verDias = !E.verDias; render(); break;
-    case "ajustar": E.destacar = alvo.dataset.cat; ir("ajustes", "gratuito"); break;
+    case "ajustar": E.destacar = alvo.dataset.cat; ir("ajustes", "padrao"); break;
     case "loja": E.foraDoApp = alvo.dataset.id || "protetor"; render(); break;
-    case "voltar-app": E.foraDoApp = null; ir("ofertas", "retorno"); break;
+    case "voltar-app": { E.foraDoApp = null; const v = E.foraVolta; E.foraVolta = null; E.foraLoja = null; if (v) ir(v[0], v[1]); else ir("ofertas", "retorno"); break; }
     case "obrigado": E.obrigado = true; render(); break;
     case "pedir-permissao": case "ligar-avisos": E.dialogo = "sistema"; render(); break;
     case "permitir": E.avisos = true; ir("ofertas", "com"); break;
     case "negar": E.avisos = false; E.dialogo = null; ir("permissao", "negada", false); break;
-    case "ir-categorias": ir("ajustes", "gratuito"); break;
-    case "ir-cep": ir("cep", "vazio"); break;
+    case "ir-categorias": ir("ajustes", "padrao"); break;
+    case "ir-cep": ir("cep", "vazio"); E.cepModo = "trocar"; E.cepEditando = E.cep; render(); break;
     case "ir-ofertas": ir("ofertas", "com"); break;
     case "aceitar": E.aceitou = !E.aceitou; render(); break;
     case "google": E.dialogo = "google"; render(); break;
@@ -1255,7 +1572,14 @@ $tela.addEventListener("click", (ev) => {
     case "verificar-codigo": if (E.codigoDigitado.length === 6 && E.codigoDigitado !== "482913") ir("termos", "padrao"); else ir("entrada", "codigoErrado", false); break;
     case "cep-continuar": {
       E.cepTentou = true; const d = E.cepDigitado;
-      if (d.length === 8 && +d >= 1000000 && +d <= 19999999) { const i = E.ceps.indexOf(E.cep); if (i >= 0) E.ceps[i] = d; else E.ceps.unshift(d); E.cep = d; ir("permissao", "padrao"); }
+      if (d.length === 8 && +d >= 1000000 && +d <= 19999999) {
+        if (E.cepModo === "adicionar") { if (!E.ceps.includes(d)) E.ceps.push(d); voltar(); break; }
+        const antigo = E.cepModo === "trocar" ? E.cepEditando : E.cep, i = E.ceps.indexOf(antigo);
+        if (i >= 0) E.ceps[i] = d; else E.ceps.unshift(d);
+        E.ceps = [...new Set(E.ceps)]; if (E.cep === antigo || !E.ceps.includes(E.cep)) E.cep = d;
+        if (E.cepModo === "trocar") { voltar(); break; }
+        ir("permissao", "padrao");
+      }
       else if (d.length === 8 && E._foraConfirmado === d) ir("ofertas", "fora");
       else { if (d.length === 8) E._foraConfirmado = d; render(); }
       break;
@@ -1269,7 +1593,7 @@ document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && (E.fol
 (function () {
   const p = new URLSearchParams(location.hash.slice(1));
   const t = p.get("tela"), e = p.get("estado");
-  if (t && TELAS[t]) { E.tela = t; E.estado = e && TELAS[t].estados[e] ? e : Object.keys(TELAS[t].estados)[0]; }
+  if (t && TELAS[t]) { E.tela = t; E.estado = e && TELAS[t].estados[e] ? e : Object.keys(TELAS[t].estados)[0]; TELAS[t].preparar?.(E.estado); }
   render(true);
 })();
 </script>
