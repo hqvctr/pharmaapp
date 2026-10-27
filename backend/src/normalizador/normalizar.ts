@@ -4,12 +4,16 @@ import type { Embalagem } from '../curadoria/tipos.js';
 import type { OfertaBruta } from '../fontes/contrato.js';
 import { extrairEmbalagem, removerEmbalagem } from './embalagem.js';
 import { normalizarTexto, triarMedicamento, type ListasMedicamentos, type CodigoBloqueioMedicamento } from './medicamentos.js';
+import { triarNbcal, type CodigoAdvertenciaNbcal, type RegrasNbcal } from './nbcal.js';
 
 export interface ConfigNormalizacao {
   /** Nome da categoria na fonte (normalizado) → categoria do app. Fora do mapa: ignorada. */
   mapaCategorias: Record<string, string>;
   categoriaMedicamentos: string;
+  nbcal: RegrasNbcal;
 }
+
+export type CodigoBloqueio = CodigoBloqueioMedicamento | 'NBCAL_VEDADO' | 'NBCAL_CAUTELA';
 
 export interface ProdutoNormalizado {
   gtin: string | null;
@@ -20,12 +24,14 @@ export interface ProdutoNormalizado {
   categoria: string;
   embalagem: Embalagem;
   ehMedicamento: boolean;
+  /** Advertências do Decreto 9.579/2018, art. 6º; vazio = livre. */
+  advertencias: CodigoAdvertenciaNbcal[];
 }
 
 export type ResultadoNormalizacao =
   | { tipo: 'ok'; produto: ProdutoNormalizado; oferta: OfertaBruta }
   | { tipo: 'categoria_ignorada'; categoriaFonte: string }
-  | { tipo: 'bloqueado'; codigo: CodigoBloqueioMedicamento; detalhe: string; revisaoHumana: boolean };
+  | { tipo: 'bloqueado'; codigo: CodigoBloqueio; detalhe: string; revisaoHumana: boolean };
 
 function sha256(s: string): string {
   return createHash('sha256').update(s).digest('hex');
@@ -53,6 +59,16 @@ export function normalizarOferta(
   if (!triagem.liberado) {
     return { tipo: 'bloqueado', codigo: triagem.codigo, detalhe: triagem.detalhe, revisaoHumana: triagem.revisaoHumana };
   }
+  // NBCAL também antes do descarte por categoria: o tipo do produto decide, não a categoria da fonte.
+  const nbcal = triarNbcal(bruta.titulo, bruta.descricao, config.nbcal);
+  if (nbcal.tipo === 'vedado' || nbcal.tipo === 'cautela') {
+    return {
+      tipo: 'bloqueado',
+      codigo: nbcal.tipo === 'vedado' ? 'NBCAL_VEDADO' : 'NBCAL_CAUTELA',
+      detalhe: `regra "${nbcal.regra}" (termo "${nbcal.termo}"): ${nbcal.base}; regras ${config.nbcal.versao}`,
+      revisaoHumana: false,
+    };
+  }
   if (categoriaMapeada === undefined && !triagem.ehMedicamento) {
     return { tipo: 'categoria_ignorada', categoriaFonte: bruta.categoriaFonte };
   }
@@ -74,6 +90,7 @@ export function normalizarOferta(
       categoria: triagem.categoria,
       embalagem,
       ehMedicamento: triagem.ehMedicamento,
+      advertencias: nbcal.tipo === 'advertencia' ? nbcal.advertencias : [],
     },
   };
 }

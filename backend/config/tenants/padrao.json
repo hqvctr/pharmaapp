@@ -33,6 +33,147 @@
     "categoria": "medicamentos_isentos",
     "notificar": false
   },
+  "nbcal": {
+    "versao": "parecer-d33-2026-10-27",
+    "notificarComAdvertencia": false,
+    "listas": {
+      "formula": ["formula infantil", "formulas infantis", "formula de seguimento", "formulas de seguimento", "formula para lactentes", "formula lactea", "formula de partida", "formula de nutrientes", "nan", "nestogeno", "aptamil", "enfamil", "similac", "milupa", "novamil", "pregomin", "alfare", "neocate"],
+      "lactente": ["lactente", "lactentes", "recem nascido", "recem nascidos", "0 a 6 meses", "6 a 12 meses", "0 a 12 meses", "0 6 meses", "6 12 meses", "0 12 meses", "ate 6 meses", "ate 12 meses", "primeiro semestre", "segundo semestre"],
+      "primeira_infancia": ["primeira infancia", "a partir de 1 ano", "a partir de 12 meses", "a partir dos 12 meses", "1 a 3 anos", "acima de 1 ano", "maiores de 1 ano", "apos 1 ano", "apos o 1 ano"],
+      "dietoterapico": ["dietoterapica", "dietoterapicas", "dietoterapico", "sem lactose", "zero lactose", "ar", "antirregurgitacao", "anti regurgitacao", "hidrolisada", "hidrolisado", "aminoacidos", "soja", "soy", "ha", "hipoalergenica", "comfor", "confor", "pepti"],
+      "alimento": ["suco", "sucos", "biscoito", "biscoitos", "bolacha", "bolachas", "bebida", "bebidas", "iogurte", "leite", "cereal", "cereais", "lanche", "snack", "snacks", "petisco", "achocolatado", "gelatina", "mingau", "sopa", "fruta", "frutas", "cha", "alimento", "alimentos", "pure", "bolinho", "barra de cereal", "barrinha", "agua de coco"],
+      "nao_alimento": ["shampoo", "xampu", "sabonete", "condicionador", "hidratante", "locao", "colonia", "perfume", "lenco", "lencos", "fralda", "fraldas", "pomada", "talco", "oleo", "creme para", "creme de pentear", "creme preventivo", "assadura", "assaduras", "protetor solar", "repelente", "escova", "mordedor", "termometro", "brinquedo", "roupa", "body", "toalha", "desodorante", "banho"],
+      "idade_ate_6_anos": ["meses", "1 ano", "2 anos", "3 anos", "4 anos", "5 anos", "6 anos"],
+      "nao_leite": ["doce de leite", "creme de leite", "leite fermentado", "leites fermentados", "leite de rosas", "leite de coco", "ao leite", "pao de leite", "bebida lactea", "bebidas lacteas", "soro de leite", "leite de colonia", "leite hidratante", "leite corporal", "leite de limpeza", "leite demaquilante", "leite de magnesia", "sabonete", "shampoo", "condicionador", "hidratante", "locao", "biscoito", "bolacha", "sorvete", "pudim", "iogurte", "queijo", "manteiga", "requeijao", "whey", "bombom", "cafe"]
+    },
+    "regras": [
+      {
+        "id": "mamadeira_chupeta",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, VII, e 5º",
+        "termos": ["mamadeira", "mamadeiras", "chupeta", "chupetas"]
+      },
+      {
+        "id": "bico",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, VII, e 5º",
+        "termos": ["bico", "bicos"],
+        "exceto": ["dosador", "aplicador", "bico de pato", "pulverizador"]
+      },
+      {
+        "id": "formula_alto_risco",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, II, 5º e 16, § 4º",
+        "termos": ["fortificante de leite materno", "fm85", "fm 85", "pre nan", "prenan", "recem nascido de alto risco", "recem nascidos de alto risco"]
+      },
+      {
+        "id": "formula_prematuro",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, II, 5º e 16, § 4º",
+        "termos": ["prematuro", "prematuros", "pre termo", "alto risco"],
+        "com": [["@formula", "formula", "leite", "nutrientes", "fortificante"]]
+      },
+      {
+        "id": "formula_lactente",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, IV, e 5º",
+        "termos": ["@formula"],
+        "com": [["@lactente"]]
+      },
+      {
+        "id": "formula_generica_lactente",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, IV, e 5º",
+        "termos": ["formula", "formulas"],
+        "com": [["@lactente"]],
+        "exceto": ["@nao_alimento"]
+      },
+      {
+        "id": "formula_infantil",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, IV, e 5º (fórmula sem idade explícita de primeira infância)",
+        "termos": ["@formula"],
+        "exceto": ["@primeira_infancia"]
+      },
+      {
+        "id": "composto_lacteo_lactente",
+        "classe": "vedado",
+        "base": "Decreto 9.579/2018, arts. 3º, IV, e 5º (equiparação; parecer D33, pergunta 2)",
+        "termos": ["composto lacteo", "compostos lacteos"],
+        "com": [["@lactente"]]
+      },
+      {
+        "id": "formula_dietoterapica",
+        "classe": "cautela",
+        "base": "Decreto 9.579/2018, art. 3º, V: sem restrição na letra; bloqueio por risco de confusão com o inciso IV (parecer D33, pergunta 4)",
+        "termos": ["@formula"],
+        "com": [["@dietoterapico"]]
+      },
+      {
+        "id": "protetor_de_mamilo",
+        "classe": "cautela",
+        "base": "Sem norma vigente confirmada; RDC 221/2002 revogada pela RDC 908/2024 (parecer D33, pergunta 3)",
+        "termos": ["protetor de mamilo", "protetores de mamilo", "protetor para mamilo", "protetor de seio", "protetor de bico do seio", "intermediario de silicone", "mamilo de silicone"]
+      },
+      {
+        "id": "formula_seguimento_primeira_infancia",
+        "classe": "advertencia",
+        "advertencia": "nbcal_aleitamento_2_anos",
+        "base": "Decreto 9.579/2018, arts. 3º, III, e 6º, I",
+        "termos": ["@formula"],
+        "com": [["@primeira_infancia"]]
+      },
+      {
+        "id": "composto_lacteo",
+        "classe": "advertencia",
+        "advertencia": "nbcal_aleitamento_2_anos",
+        "base": "Decreto 9.579/2018, arts. 3º, III ou VI, e 6º, I (parecer D33, pergunta 2)",
+        "termos": ["composto lacteo", "compostos lacteos"]
+      },
+      {
+        "id": "leite",
+        "classe": "advertencia",
+        "advertencia": "nbcal_aleitamento_2_anos",
+        "base": "Decreto 9.579/2018, arts. 3º, VI, e 6º, I",
+        "campo": "titulo",
+        "termos": ["leite", "leites"],
+        "exceto": ["@nao_leite"]
+      },
+      {
+        "id": "bebida_vegetal",
+        "classe": "advertencia",
+        "advertencia": "nbcal_aleitamento_2_anos",
+        "base": "Decreto 9.579/2018, arts. 3º, VI (similares de origem vegetal), e 6º, I",
+        "campo": "titulo",
+        "termos": ["bebida vegetal", "bebidas vegetais", "bebida de soja", "bebida a base de soja", "bebida de aveia", "bebida de amendoa", "bebida de arroz", "bebida de castanha", "bebida de castanhas", "bebida de coco", "bebida de amendoim", "bebida de ervilha", "ades"]
+      },
+      {
+        "id": "alimento_transicao",
+        "classe": "advertencia",
+        "advertencia": "nbcal_apos_6_meses",
+        "base": "Decreto 9.579/2018, arts. 3º, I, e 6º, II",
+        "termos": ["papinha", "papinhas", "papa de fruta", "papa infantil", "papa salgada", "sopinha", "sopinhas", "cereal infantil", "cereais infantis", "mingau infantil", "mucilon", "farinha lactea", "nestum", "alimento infantil", "alimentos infantis", "comida de bebe"]
+      },
+      {
+        "id": "alimento_para_bebe",
+        "classe": "advertencia",
+        "advertencia": "nbcal_apos_6_meses",
+        "base": "Decreto 9.579/2018, arts. 3º, I, e 6º, II",
+        "termos": ["@alimento"],
+        "com": [["bebe", "bebes", "baby", "lactente", "lactentes"]],
+        "exceto": ["@nao_alimento"]
+      },
+      {
+        "id": "alimento_para_crianca_ate_6_anos",
+        "classe": "advertencia",
+        "advertencia": "nbcal_apos_6_meses",
+        "base": "Decreto 9.579/2018, arts. 3º, I, e 6º, II",
+        "termos": ["@alimento"],
+        "com": [["infantil", "infantis", "kids", "crianca", "criancas", "toddler", "junior"], ["@idade_ate_6_anos"]],
+        "exceto": ["@nao_alimento"]
+      }
+    ]
+  },
   "fontes": {
     "lomadee": {
       "baseUrl": "https://api.lomadee.com/",

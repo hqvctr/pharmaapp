@@ -10,6 +10,7 @@ import {
 } from '../curadoria/config.js';
 import type { ConfigDeduplicacao } from '../avaliador/deduplicacao.js';
 import { normalizarTexto } from '../normalizador/medicamentos.js';
+import { compilarRegrasNbcal, type RegrasNbcal } from '../normalizador/nbcal.js';
 
 export const DIR_CONFIG = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../config');
 
@@ -27,6 +28,7 @@ export interface ConfigTenant {
   cobertura: ConfigCobertura;
   deduplicacao: ConfigDeduplicacao;
   medicamentos: { categoria: string; notificar: boolean };
+  nbcal: RegrasNbcal;
   fontes: { lomadee?: ConfigFonteLomadee };
 }
 
@@ -56,6 +58,7 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
     cobertura: validarConfigCobertura(bruto.cobertura),
     deduplicacao: dedup,
     medicamentos: bruto.medicamentos,
+    nbcal: compilarRegrasNbcal(bruto.nbcal),
     fontes: { lomadee },
   };
 }

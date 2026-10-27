@@ -1540,12 +1540,14 @@ components:
         Advertência legal obrigatória. O app mostra `texto` inteiro, sem cortar nem reescrever.
         Códigos conhecidos (lista aberta):
         - `medicamento_isento`: RDC 96/2008; texto a validar com assessoria jurídica.
-        - `nbcal_aleitamento_2_anos`: Decreto 9.579/2018, art. 6º, I (leites, bebidas vegetais, fórmula de
-          seguimento para crianças na primeira infância).
-        - `nbcal_apos_6_meses`: Decreto 9.579/2018, art. 6º, II (alimentos de transição e à base de cereais).
+        - `nbcal_aleitamento_2_anos`: Decreto 9.579/2018, art. 6º, I (leites, inclusive condensado e
+          aromatizado, bebidas vegetais, composto lácteo, fórmula de seguimento para crianças na primeira
+          infância).
+        - `nbcal_apos_6_meses`: Decreto 9.579/2018, art. 6º, II (alimentos de transição, à base de cereais e
+          qualquer alimento apresentado para criança de até 6 anos).
         Para `nbcal_*` o app segue o art. 6º, §§ 1º e 2º: em moldura, junto do produto, caixa alta, negrito,
         com no mínimo 20% da altura do maior caractere da oferta (o preço) e nunca menos de 2 mm
-        (docs/juridico/nbcal.md).
+        (docs/juridico/nbcal.md; docs/juridico/parecer-d33-nbcal.md, pergunta 6).
       properties:
         codigo: { type: string, example: nbcal_apos_6_meses }
         texto: { type: string, example: 'O Ministério da Saúde informa: após os 6 (seis) meses de idade, continue amamentando seu filho e ofereça novos alimentos' }

@@ -64,6 +64,7 @@ export async function executarColeta(ctx: ContextoColeta): Promise<ResumoColeta>
     const norm = normalizarOferta(bruta, ctx.listas, {
       mapaCategorias: ctx.mapaCategorias,
       categoriaMedicamentos: ctx.config.medicamentos.categoria,
+      nbcal: ctx.config.nbcal,
     });
     if (norm.tipo === 'bloqueado') {
       resumo.bloqueadas++;
@@ -160,6 +161,11 @@ async function processarOferta(
   if (produto.ehMedicamento && !ctx.config.medicamentos.notificar && (decisao === 'notificar' || decisao === 'aguardar_aprovacao')) {
     decisao = 'somente_feed';
     motivo = `Medicamento: somente feed até validação jurídica (RDC 96/2008). ${motivo}`;
+  }
+  // NBCAL: o push do sistema não cumpre a forma do Decreto 9.579/2018, art. 6º, §§ 1º e 2º.
+  if (produto.advertencias.length > 0 && !ctx.config.nbcal.notificarComAdvertencia && (decisao === 'notificar' || decisao === 'aguardar_aprovacao')) {
+    decisao = 'somente_feed';
+    motivo = `NBCAL: somente feed, com advertência ${produto.advertencias.join(', ')} (Decreto 9.579/2018, art. 6º). ${motivo}`;
   }
   resumo.decisoes[decisao]++;
   await repo.registrarAvaliacao(db, tenantId, offerId, decisao, motivo, agora);
