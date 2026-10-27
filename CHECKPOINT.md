@@ -1,5 +1,82 @@
 # Checkpoint
 
+## Fase 3 — API do app (EM PROPOSTA, aguardando aprovação)
+
+Nada implementado ainda. Entregue só o rascunho do contrato: `backend/openapi/openapi.yaml`
+(OpenAPI 3.1, validado com Redocly; 15 operações em `/v1`). Regra da fase: o contrato congelado precisa
+de aprovação antes de qualquer rota ou tela.
+
+**Proposta L1 — login por código de 6 dígitos enviado por e-mail** (fecha o item `[fase 0]` do BACKLOG).
+- Fluxo: `POST /v1/auth/email/codigo` → `POST /v1/auth/email/verificar` → sessão. A conta nasce no
+  primeiro código válido (tabela `users` já tem `email` único por tenant).
+- Código guardado só como HMAC no Redis, TTL 10 min, 5 tentativas, 1 pedido/60 s e 5/h por e-mail,
+  20/h por IP. Resposta de pedido é sempre 202 (não revela quem tem conta).
+- Descartado: **link mágico**. No Android abrir o link dentro do app exige App Links (arquivo
+  `assetlinks.json` servido em HTTPS por um domínio nosso) e o link costuma abrir no navegador errado;
+  com orçamento zero e sem domínio definido, o código é mais simples e não depende de nada fora do app.
+- Descartado por ora: **Google Sign-In**. É melhor para o usuário e não exige envio de e-mail, mas
+  precisa de cliente OAuth e da impressão digital do app. Entra depois como endpoint aditivo
+  (`users.google_sub` já existe), sem quebrar o contrato.
+
+**Proposta L2 — sessão com tokens opacos, sem JWT.** Access token de 1 h e refresh de 60 dias, ambos
+aleatórios de 256 bits, guardados só como hash em tabela `sessions` (migration 0003). Refresh de uso
+único com detecção de reuso (reuso revoga a sessão inteira). Motivo: revogação imediata (sair, excluir
+conta, token roubado) sem lista de bloqueio; uma consulta por requisição é aceitável no volume do MVP.
+Descartado: JWT (revogar antes de expirar exige o mesmo estado no servidor).
+
+**Proposta L3 — tenant.** Rotas públicas (`/v1/configuracao`, `/v1/auth/email/*`) recebem `X-Tenant`
+(slug, definido pelo flavor do app). Rota autenticada tira o tenant do token e ignora o cabeçalho.
+
+**Proposta L4 — termos antes de tudo (LGPD).** Até aceitar a versão vigente dos termos, só `/v1/me*` e
+`/v1/auth/*` respondem; o resto dá 403 `termos_pendentes`. Aceite de termos e consentimento de
+notificação são campos separados (como já está em `users`).
+
+**Proposta L5 — o recurso do app é o alerta.** O feed (`GET /v1/alertas`) lista alertas `notificar`,
+`aguardar_aprovacao` e `somente_feed` com oferta ainda disponível e válida, na categoria escolhida e
+coberta para algum CEP do usuário (usa `verificarCobertura`). `descartar` nunca aparece. Medicamento
+sai com `avisos` preenchido (RDC 96/2008, texto a validar com assessoria jurídica).
+
+**Proposta L6 — `alerts.motivo` não vai para o app.** O texto atual é de auditoria ("Aprovada para
+notificação", "R$ 5,00/kg → R$ 3,50/kg"). O contrato expõe campos estruturados (`queda`, preços,
+`rotulo_condicao`, `entrega_a_confirmar`) e o app redige a frase. Protetor em R$/l (BACKLOG) fica
+resolvido: o app mostra `preco_centavos` da embalagem; preço por unidade é só para comparação.
+
+**O que o contrato inclui:** configuração pública, 4 rotas de autenticação/sessão, conta (consultar,
+excluir com confirmação, consentimentos), preferências (GET/PUT inteiro), feed paginado por cursor,
+detalhe com histórico de 30 dias, eventos de abertura/clique, registro de token de push (fase 4).
+**Fica de fora, de propósito:** superfície administrativa (aprovar alerta/loja, oferta manual TIPO E),
+validação de compra do Google Play (fase 6), exportação de dados do titular.
+
+**Perguntas abertas para o responsável**
+1. Aprova o contrato como está, ou o que muda? (Lembrete: depois de aprovado, mudança incompatível
+   vira `/v2`.)
+2. Confirma L1 (código por e-mail) como login do MVP, com Google Sign-In depois?
+3. Provedor de envio de e-mail: nenhum escolhido. Precisa ter camada gratuita e entregar sem domínio
+   próprio. **Não verifiquei limites nem preços de nenhum provedor**; ver antes de escolher. A
+   implementação começa com uma interface `EmailSender` e uma versão que só escreve o código no log,
+   então esta pergunta não bloqueia o desenvolvimento, só a ida para produção.
+4. Premium: o contrato só diz que mais de 1 CEP exige premium (3 no máximo, regra já comentada em
+   `user_preferences`). Há outros limites do plano gratuito (pushes por dia, categorias)? Se houver,
+   precisam entrar em `limites` da configuração.
+5. O feed deve mostrar também alertas `aguardar_aprovacao` (fonte de baixa confiabilidade) antes da
+   aprovação humana? O comentário em `tipos.ts` diz que sim; sem a superfície administrativa, ficariam
+   no feed sem ninguém para aprovar. Minha sugestão: não mostrar até existir a aprovação.
+
+**Pontos que o contrato força na implementação (já anotados)**
+- Marcar oferta indisponível quando some da coleta (BACKLOG, fase 2). Só depois de coleta completa da
+  fonte: página que falha no meio não pode zerar o feed.
+- `categorias[].rotulo` precisa entrar no config do tenant (hoje só há o slug).
+- `deliveries.canal` hoje só aceita `push`; eventos de clique no feed (`origem: feed`) exigem
+  `'feed'` no CHECK.
+- Cobertura de loja física precisa da economia em centavos, que `alerts` não guarda (só preço por
+  unidade); calcular da quantidade do produto. Loja física só vale com CEP → coordenada (fase 5); até lá
+  só entrega por faixa de CEP.
+
+**Plano depois da aprovação:** migration 0003 (`sessions`, `deliveries.canal`, rótulo de categoria,
+tabela de dispositivos na fase 4) → autenticação e sessão → preferências → feed e detalhe →
+marcação de oferta indisponível → `scripts/pronto-fase3.sh` (sobe a API, percorre login, preferências
+e feed contra o banco semeado pela fase 2, e valida as respostas contra o OpenAPI).
+
 ## Fase 2 — uma fonte ponta a ponta (PRONTA)
 
 **Critério de pronto:** `./scripts/pronto-fase2.sh`. Num banco descartável (`pronto_fase2`), roda o
