@@ -1,12 +1,12 @@
 openapi: 3.1.0
 info:
   title: economae API (app)
-  version: 1.0.0-rascunho.2
+  version: 1.0.0
   license:
     name: Proprietária
     identifier: LicenseRef-Proprietaria
   description: |
-    **RASCUNHO PARA APROVAÇÃO. Não congelado.** Contrato do núcleo do app (PRODUTO.md, itens 1 a 10).
+    **APROVADO pelo responsável em 2026-10-27; congelado.** Contrato do núcleo do app (PRODUTO.md, itens 1 a 10).
     A área do operador (item 11) está em `admin.yaml`. Depois da aprovação, mudança que quebre este
     contrato exige `/v2`; campo opcional novo, endpoint novo e valor novo de enum em resposta entram em
     `/v1` sem aprovação nova.

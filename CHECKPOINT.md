@@ -221,8 +221,13 @@ quebrando um exemplo de propósito). Mudanças:
   `liberacao_nao_permitida` (422) e ação de auditoria `triagem_liberada` (D20).
 - Ainda sem decisão de valor: prazo padrão da oferta manual sem data (config).
 
-**Próximo passo:** o responsável revisa o contrato rascunho 2 (já com os ajustes acima) e o aprova. Só depois:
-migrations. Pendentes de terceiros: consulta jurídica da D7, termos da Lomadee (D14), listas CMED/Portaria 344.
+**Contrato 1.0.0 APROVADO e congelado (2026-10-27, DECISIONS 51–52).** Prazo padrão da oferta manual sem data: 7 dias.
+
+**Próximo passo:** migrations das 16 mudanças listadas acima (sessions, operadores, silenciamentos, seguidos,
+avisos, alert_events, avaliações e denúncias, revisão do alerta, dispositivos etc.), depois as rotas por
+fase (tabela "Rota → fase"). Antes do código, definir o critério de pronto da fase 3 (`scripts/pronto-fase3.sh`),
+como nas fases anteriores. Pendentes de terceiros: consulta jurídica da D7, termos da Lomadee (D14), listas
+CMED/Portaria 344.
 
 ## Fase 3 — rascunho 1 (SUPERADO pelo rascunho 2 onde diverge)
 
