@@ -16,8 +16,9 @@ assessoria jurídica antes de virar regra.
   títulos.
 - Lidos em 2026-10-27. O Planalto (planalto.gov.br) recusa acesso automatizado deste ambiente; conferir
   lá antes de publicar.
-- Não lidos: RDC 221/2002 e RDC 908/2024 da Anvisa (requisitos de bicos, chupetas e mamadeiras), citadas
-  por material secundário.
+- RDC 908/2024 da Anvisa (requisitos de bicos, chupetas e mamadeiras): lida depois, em cópia
+  secundária. Revoga as RDCs 221/2002 e 222/2002 (art. 12) e não trata de protetor de mamilo. Ver
+  [parecer-d33-nbcal.md](parecer-d33-nbcal.md).
 
 ## O que a norma diz (trechos literais)
 
