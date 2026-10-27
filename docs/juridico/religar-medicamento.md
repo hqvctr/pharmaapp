@@ -14,7 +14,7 @@ O que o desligado faz hoje:
 
 | # | Passo | Quem | Estado |
 |---|-------|------|--------|
-| 1 | Consulta formal à Anvisa sobre comparador de preços com afiliado (RDC 44/2009, art. 53, § 2º; Lei 15.357/2026). Minuta: [consulta-anvisa-minuta.md](consulta-anvisa-minuta.md) | responsável ou advogado | minuta pronta, não enviada |
+| 1 | Consulta formal à Anvisa sobre comparador de preços com afiliado (RDC 44/2009, art. 53, § 2º; Lei 15.357/2026). Minuta: [consulta-anvisa-minuta.md](consulta-anvisa-minuta.md) | responsável ou advogado | minuta pronta, não enviada; prompt para o consultor revisar e refinar: [PROMPT_ANVISA.md](PROMPT_ANVISA.md) |
 | 2 | Advogado inscrito na OAB revisa o parecer: pendências em [resumo-advogado-rdc96.md](resumo-advogado-rdc96.md) | responsável | resumo pronto |
 | 3 | Conferir no DOU a RDC 96 consolidada, o Anexo III e a Lei 15.357/2026 (o consultor leu fontes secundárias) | equipe | aberto |
 | 4 | Fonte com GTIN (a Lomadee não envia) ou outra forma de identificar o registro na Anvisa de cada produto | responsável | aberto |
