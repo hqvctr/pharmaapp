@@ -12,13 +12,12 @@ onde diverge). Só contrato e documentação: nenhuma rota, migration ou tela.
   0 avisos. A regra `no-invalid-media-type-examples` confere todo exemplo contra o esquema (testado
   quebrando um exemplo de propósito).
 
-> **Atenção antes de aprovar (D1).** Existe uma linha paralela, `claude/awesome-noether-jruv6b` e
-> `claude/determined-meitner-8zeag7`, que também parte da Fase 2 (`cf6cd26`) e já tem um contrato `/v1`
-> **aprovado e congelado** (`backend/openapi/v1-aprovado.json`, 1.0.0), servidor e app Android das
-> fases 3 e 4, e decisões 34–67 no DECISIONS.md dela. Várias contradizem o PRODUTO.md: foco em mães com
-> outras categorias, medicamento fora do app (decisão 45 de lá) em vez de "só no feed", sessão de
-> 90 dias deslizante, tenant `economae`, rotas `/v1/eu`, `/v1/feed`, `/v1/ofertas/{id}`, e-mail pelo
-> Brevo. Este rascunho segue o PRODUTO.md e o pedido, sem misturar as duas linhas.
+> **D1 decidida (2026-10-27, DECISIONS 34).** O responsável decidiu que este rascunho e o PRODUTO.md
+> prevalecem sobre a linha paralela (`claude/awesome-noether-jruv6b` e `claude/determined-meitner-8zeag7`),
+> que tinha um `/v1` aprovado (`v1-aprovado.json`), servidor e app Android das fases 3 e 4. O que lá
+> diverge daqui fica superado: foco em mães, medicamento fora do app, sessão de 90 dias, tenant
+> `economae`, rotas `/v1/eu`, `/v1/feed`, `/v1/ofertas/{id}`, Brevo. O código daquela linha não está
+> nesta branch; reaproveitar algum pedaço dele é escolha de implementação, sempre seguindo este contrato.
 
 ### O que mudou em relação ao rascunho 1
 - **Escopo.** De 15 para 34 operações no app, mais 22 de operador. Novas: login Google e Apple,
@@ -131,7 +130,7 @@ valor de enum desconhecidos.
 
 ### Decisões em aberto
 Cada uma com recomendação (R) e alternativa descartada (A). Os números são citados nos YAML.
-- D1. Linha paralela com `/v1` aprovado. R: escolher uma fonte de verdade antes de aprovar este rascunho. Se a linha aprovada continuar valendo, trazer para o PRODUTO.md o que ela decidiu e ainda vale, e usar os nomes de rota já implementados lá onde o significado bate. Mudar nomes ainda no rascunho custa pouco e evita reescrever servidor e app. A: manter as duas linhas evoluindo em paralelo.
+- D1. **Decidida** (DECISIONS 34): este contrato e o PRODUTO.md prevalecem sobre a linha paralela. Descartado: manter o `/v1` aprovado de lá.
 - D2. Cadastro de operador. R: lista mantida por comando de linha, sem rota, no MVP. A: rota de convite (sem níveis de permissão, qualquer conta de operador comprometida criaria outras).
 - D3. Validade do refresh do operador. R: 7 dias, em config. A: 60 dias como no app (a conta aprova push para a base toda).
 - D4. Login social com e-mail de conta já existente. R: vincular à conta existente quando o provedor declara o e-mail verificado (campo de cada provedor a verificar). A: contas separadas (duas contas e dois premiums para a mesma pessoa).
@@ -160,6 +159,7 @@ Cada uma com recomendação (R) e alternativa descartada (A). Os números são c
 - D27. Tetos de config: `queda_percentual` de 5 a 90, 100 seguidos, 50 silenciamentos (exemplos do contrato). R: o responsável confirma os valores. A: sem teto.
 - D28. Rede de anúncios e consentimento de anúncio personalizado. Nada escolhido nem verificado. R: anúncio não personalizado até existir consentimento próprio, separado dos termos e do push. A: personalizado por padrão.
 - D29. Exigências das lojas de apps (login com Apple quando há login social, exclusão de conta, assinatura): conferir as regras vigentes antes da fase 6. R: o contrato já tem as rotas; só falta a verificação. A: nenhuma.
+- D30. NBCAL (Lei 11.265/2006). A linha paralela registrou, com validação da assessoria jurídica, que a lei veda a promoção comercial de fórmula infantil, mamadeira, bico e chupeta. Isso é regra legal, não escolha de produto, e vale aqui se esses itens entrarem pela categoria `higiene_bebe` (a Lomadee mapeia "Higiene do Bebê" para ela). R: trazer o bloqueio para a triagem (falha fechada), com a advertência do Ministério da Saúde em alimentação infantil via `advertencias`, depois de reconfirmar com a assessoria jurídica. A: deixar a curadoria decidir pelo desconto.
 
 ### Inconsistências entre contrato e banco
 1. `deliveries.canal` só aceita `push`: eventos de feed, central e produto, e o compartilhamento, não
@@ -183,7 +183,7 @@ Cada uma com recomendação (R) e alternativa descartada (A). Os números são c
 13. Exclusão em cascata (DECISIONS 7) precisa valer para todas as tabelas novas do usuário; a
     contagem de denúncias cai quando quem denunciou exclui a conta.
 
-**Próximo passo:** o responsável decide a D1 e aprova ou ajusta o contrato. Só depois: migrations.
+**Próximo passo:** o responsável aprova ou ajusta o contrato e responde as decisões D2–D30. Só depois: migrations.
 
 ## Fase 3 — rascunho 1 (SUPERADO pelo rascunho 2 onde diverge)
 
