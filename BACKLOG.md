@@ -9,7 +9,7 @@ Problemas encontrados fora do escopo da fase em andamento. Não são consertados
 - [fase 1] O Dockerfile ainda não copia `config/tenants/`. Precisa entrar quando o avaliador rodar em contêiner (fase 2).
 - [fase 1] Resolução de CEP → coordenada (centróide) para a cobertura por distância: precisa de uma base de CEPs; decidir a fonte na fase 2 ou 3.
 - [fase 2] Conflito na especificação: fonte TIPO E (manual) deveria "fechar buraco de cobertura", mas sem 14 observações o motor descarta. Decisão do responsável pendente.
-- [fase 2] RDC 96/2008 exige advertências na divulgação de preço de medicamento isento. Validar com assessoria jurídica antes de liberar push de medicamento; conflita com "nenhuma orientação de uso".
+- [fase 2] RDC 96/2008 exige advertências na divulgação de preço de medicamento isento. Validar com assessoria jurídica antes de liberar push de medicamento; conflita com "nenhuma orientação de uso". Prompt de consulta pronto em `docs/juridico/PROMPT_RDC96.md` (resposta volta como documento Markdown para colar no repositório).
 - [fase 4/6] Google Play Console cobra taxa única de registro de desenvolvedor: é o único custo inevitável para publicar.
 - [fase 2] Carregador das listas reais (CMED, Portaria 344) depende de baixar os arquivos; este ambiente bloqueia gov.br. Sem as listas o normalizador não sobe (falha fechada).
 - [fase 2] Formato da oferta Lomadee é presumido (id, name, price, link, category.name, store.id). Na vinculação: gravar uma resposta real, substituir os fixtures sintéticos e ajustar `parseOferta`. Nomes de categoria em `fontes.lomadee.mapaCategorias` também são presumidos.
