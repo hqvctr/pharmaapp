@@ -211,11 +211,17 @@ D6 (Brevo por enquanto), D7 (aguarda consulta jurídica; vale a opção restriti
 produtos cadastrados), D20 (listas + liberação pelo operador, só para cautela e texto) e D21 (`valida_ate`
 opcional, com aviso).
 
-**A fazer no contrato antes de aprová-lo:** `valida_ate` opcional na oferta manual (D21); `privacidade`,
-`versao_minima` e `imagem_url` em `/v1/configuracao` e no produto; `limite_diario` com padrão 3; rota de
-liberação de bloqueio de triagem restrita a cautela e texto (D20); regra de marca por lista (D15).
+**Contrato ajustado às decisões (2026-10-27).** `redocly lint` dos dois arquivos: 0 erros, 0 avisos (testado
+quebrando um exemplo de propósito). Mudanças:
+- `openapi.yaml`: `privacidade` e `versao_minima {android, ios}` em `Configuracao` (D11, D25);
+  `limites.limite_diario_padrao` (D10, exemplo 3); `ProdutoResumo.imagem_url` opcional, só https (D13);
+  descrição de `marca` pela lista do tenant (D15).
+- `admin.yaml`: `valida_ate` deixa de ser obrigatório no pedido da oferta manual; a resposta traz
+  `validade_padrao_aplicada` (D21). Triagem: `BloqueioTriagem.liberavel`, resultado `liberado`, código de erro
+  `liberacao_nao_permitida` (422) e ação de auditoria `triagem_liberada` (D20).
+- Ainda sem decisão de valor: prazo padrão da oferta manual sem data (config).
 
-**Próximo passo:** o responsável revisa o contrato rascunho 2 já com esses ajustes e o aprova. Só depois:
+**Próximo passo:** o responsável revisa o contrato rascunho 2 (já com os ajustes acima) e o aprova. Só depois:
 migrations. Pendentes de terceiros: consulta jurídica da D7, termos da Lomadee (D14), listas CMED/Portaria 344.
 
 ## Fase 3 — rascunho 1 (SUPERADO pelo rascunho 2 onde diverge)

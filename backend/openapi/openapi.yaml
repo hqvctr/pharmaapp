@@ -1247,12 +1247,20 @@ components:
     # ------------------------------------------------------------ configuração
     Configuracao:
       type: object
-      required: [tenant, nome_app, fuso, termos, metodos_login, categorias, regiao, limites, planos]
+      required: [tenant, nome_app, fuso, termos, privacidade, versao_minima, metodos_login, categorias, regiao, limites, planos]
       properties:
         tenant: { type: string, example: padrao }
         nome_app: { type: string, example: economae }
         fuso: { type: string, description: Fuso IANA do tenant., example: America/Sao_Paulo }
         termos: { $ref: '#/components/schemas/DocumentoLegal' }
+        privacidade:
+          description: Política de privacidade, com versão própria (decisão D11). O aceite continua sendo dos termos.
+          allOf:
+            - $ref: '#/components/schemas/DocumentoLegal'
+        versao_minima:
+          description: Versão mínima do app por plataforma (decisão D25). Abaixo dela o app pede atualização e não segue.
+          allOf:
+            - $ref: '#/components/schemas/VersaoMinima'
         metodos_login:
           type: array
           description: Métodos ligados neste tenant. `apple` só quando existir o app de iPhone.
@@ -1266,6 +1274,12 @@ components:
           type: array
           description: Produtos de assinatura à venda em cada loja de apps. Vazio enquanto não houver premium publicado.
           items: { $ref: '#/components/schemas/PlanoNaLoja' }
+    VersaoMinima:
+      type: object
+      required: [android, ios]
+      properties:
+        android: { type: [string, 'null'], description: 'Versão semântica mínima; null = sem mínimo.', example: 1.0.0 }
+        ios: { type: [string, 'null'], description: 'Versão semântica mínima; null = sem mínimo.', example: null }
     DocumentoLegal:
       type: object
       required: [versao, url]
@@ -1287,7 +1301,7 @@ components:
     Limites:
       type: object
       description: Tetos em config por tenant. Diferença de plano é só `ceps_gratuito` × `ceps_premium`.
-      required: [ceps_gratuito, ceps_premium, max_produtos_seguidos, max_silenciamentos, queda_percentual_min, queda_percentual_max]
+      required: [ceps_gratuito, ceps_premium, max_produtos_seguidos, max_silenciamentos, queda_percentual_min, queda_percentual_max, limite_diario_padrao]
       properties:
         ceps_gratuito: { type: integer, minimum: 1, example: 1 }
         ceps_premium: { type: integer, minimum: 1, maximum: 3, example: 3 }
@@ -1295,6 +1309,7 @@ components:
         max_silenciamentos: { type: integer, minimum: 1 }
         queda_percentual_min: { type: integer, minimum: 1, maximum: 99 }
         queda_percentual_max: { type: integer, minimum: 1, maximum: 99 }
+        limite_diario_padrao: { type: integer, minimum: 1, description: Pushes por dia quando a pessoa não escolheu (decisão D10)., example: 3 }
     PlanoNaLoja:
       type: object
       required: [plano, loja, produto_loja_id]
@@ -1441,7 +1456,7 @@ components:
         limite_diario:
           type: [integer, 'null']
           minimum: 1
-          description: Máximo de pushes por dia. null = padrão do tenant (decisão D10).
+          description: Máximo de pushes por dia. null = `limites.limite_diario_padrao` do tenant (decisão D10).
         ceps_ignorados_pelo_plano:
           type: array
           readOnly: true
@@ -1510,13 +1525,20 @@ components:
         id: { type: string, format: uuid }
         nome: { type: string }
         marca:
-          description: null quando a fonte não informa marca estruturada.
+          description: |
+            null quando nenhuma marca da lista do tenant aparece no nome. A lista é montada a partir dos
+            produtos cadastrados e casa palavra inteira (decisão D15); sem marca, não há silenciamento por marca.
           oneOf:
             - $ref: '#/components/schemas/Marca'
             - type: 'null'
         categoria: { $ref: '#/components/schemas/Slug' }
         gtin: { type: [string, 'null'], pattern: '^[0-9]{8,14}$' }
         embalagem: { $ref: '#/components/schemas/Embalagem' }
+        imagem_url:
+          type: [string, 'null']
+          format: uri
+          pattern: '^https://'
+          description: Foto da fonte, só https (decisão D13). null = sem foto; o app mostra um espaço neutro.
     Frete:
       type: object
       required: [status, centavos]
@@ -1949,12 +1971,14 @@ components:
         nome_app: economae
         fuso: America/Sao_Paulo
         termos: { versao: '2026-10-27', url: 'https://example.com/termos' }
+        privacidade: { versao: '2026-10-27', url: 'https://example.com/privacidade' }
+        versao_minima: { android: 1.0.0, ios: null }
         metodos_login: [email, google]
         categorias:
           - { slug: cuidados_pessoais, rotulo: Cuidados pessoais }
           - { slug: higiene_bebe, rotulo: Higiene do bebê }
         regiao: { cep_inicio: '01000000', cep_fim: '19999999' }
-        limites: { ceps_gratuito: 1, ceps_premium: 3, max_produtos_seguidos: 100, max_silenciamentos: 50, queda_percentual_min: 5, queda_percentual_max: 90 }
+        limites: { ceps_gratuito: 1, ceps_premium: 3, max_produtos_seguidos: 100, max_silenciamentos: 50, queda_percentual_min: 5, queda_percentual_max: 90, limite_diario_padrao: 3 }
         planos: []
     Usuario:
       value:

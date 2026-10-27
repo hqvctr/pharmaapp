@@ -452,9 +452,12 @@ paths:
       operationId: adminRevisarTriagem
       summary: Registra a revisão humana do bloqueio (idempotente)
       description: |
-        A triagem continua em falha fechada: `falso_positivo` não libera o item sozinho, só registra
-        para ajustar as listas (efeito: decisão D20). Mesmo resultado repetido devolve 200; diferente dá
-        409 `ja_revisado`.
+        A triagem continua em falha fechada: `bloqueio_correto` e `falso_positivo` só registram a revisão
+        (o falso positivo serve para ajustar as listas). `liberado` registra o falso positivo e deixa o
+        item passar a partir da próxima coleta, só quando `BloqueioTriagem.liberavel` é true (cautela da
+        NBCAL e filtro de texto de medicamento); em `NBCAL_VEDADO` e medicamento achado por GTIN na CMED
+        dá 422 `liberacao_nao_permitida` e só o ajuste das listas muda o resultado (decisão D20). Mesmo
+        resultado repetido devolve 200; diferente dá 409 `ja_revisado`.
       parameters:
         - $ref: '#/components/parameters/Id'
       requestBody:
@@ -475,7 +478,14 @@ paths:
         '401': { $ref: '#/components/responses/R401' }
         '404': { $ref: '#/components/responses/R404' }
         '409': { $ref: '#/components/responses/R409JaRevisado' }
-        '422': { $ref: '#/components/responses/R422' }
+        '422':
+          description: Corpo inválido, ou `liberado` num bloqueio que não pode ser liberado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErroAdmin' }
+              examples:
+                validacao: { $ref: '#/components/examples/ErroValidacao' }
+                liberacao_nao_permitida: { $ref: '#/components/examples/ErroLiberacaoNaoPermitida' }
 
   # ---------------------------------------------------------------- ofertas manuais
   /v1/admin/ofertas-manuais:
@@ -723,6 +733,7 @@ components:
         - `validacao` (422): todas com corpo ou parâmetro.
         - `codigo_invalido`, `codigo_expirado` (422): `/v1/admin/auth/email/verificar`.
         - `bloqueado_pela_triagem` (422): `POST /v1/admin/ofertas-manuais`.
+        - `liberacao_nao_permitida` (422): `PUT .../triagem/{id}/revisao` com `liberado` em bloqueio não liberável.
         - `muitas_requisicoes` (429): `/v1/admin/auth/*`.
         - `servico_indisponivel` (503): `/v1/admin/auth/email/codigo`.
         - `erro_interno` (500): qualquer rota.
@@ -742,6 +753,7 @@ components:
         - codigo_invalido
         - codigo_expirado
         - bloqueado_pela_triagem
+        - liberacao_nao_permitida
         - muitas_requisicoes
         - servico_indisponivel
         - erro_interno
@@ -1017,7 +1029,7 @@ components:
     BloqueioTriagem:
       type: object
       description: Igual a `triagem_bloqueios`, mais a revisão.
-      required: [id, fonte, id_externo, titulo, codigo, detalhe, revisao_humana, primeira_vez_em, ultima_vez_em, resultado, revisao_por]
+      required: [id, fonte, id_externo, titulo, codigo, detalhe, revisao_humana, liberavel, primeira_vez_em, ultima_vez_em, resultado, revisao_por]
       properties:
         id: { type: string, format: uuid }
         fonte: { $ref: '#/components/schemas/FonteResumo' }
@@ -1026,9 +1038,10 @@ components:
         codigo: { type: string, description: Código da triagem que barrou o item. }
         detalhe: { type: string }
         revisao_humana: { type: boolean, description: true quando a triagem pediu revisão humana. }
+        liberavel: { type: boolean, description: 'true só para cautela da NBCAL e filtro de texto de medicamento; false em NBCAL_VEDADO e medicamento por GTIN na CMED (decisão D20).' }
         primeira_vez_em: { type: string, format: date-time }
         ultima_vez_em: { type: string, format: date-time }
-        resultado: { type: [string, 'null'], enum: [bloqueio_correto, falso_positivo, null] }
+        resultado: { type: [string, 'null'], enum: [bloqueio_correto, falso_positivo, liberado, null] }
         revisao_por:
           oneOf:
             - $ref: '#/components/schemas/Revisao'
@@ -1046,7 +1059,7 @@ components:
       type: object
       required: [resultado]
       properties:
-        resultado: { type: string, enum: [bloqueio_correto, falso_positivo] }
+        resultado: { type: string, enum: [bloqueio_correto, falso_positivo, liberado] }
         observacao: { $ref: '#/components/schemas/Observacao' }
 
     # ------------------------------------------------------------ ofertas manuais
@@ -1099,7 +1112,7 @@ components:
         embalagem: { $ref: './openapi.yaml#/components/schemas/Embalagem' }
     PedidoOfertaManual:
       type: object
-      required: [loja_id, preco_centavos, condicao, frete, valida_de, valida_ate, link, link_afiliado]
+      required: [loja_id, preco_centavos, condicao, frete, valida_de, link, link_afiliado]
       oneOf:
         - required: [produto_id]
         - required: [produto_novo]
@@ -1114,12 +1127,15 @@ components:
             - type: 'null'
         frete: { $ref: './openapi.yaml#/components/schemas/Frete' }
         valida_de: { type: [string, 'null'], format: date-time }
-        valida_ate: { type: [string, 'null'], format: date-time, description: Obrigatoriedade em aberto (decisão D21). }
+        valida_ate:
+          type: [string, 'null']
+          format: date-time
+          description: 'Opcional (decisão D21). Ausente ou null = o servidor aplica o prazo padrão do tenant (config) e devolve `validade_padrao_aplicada` = true.'
         link: { type: string, format: uri, maxLength: 2048 }
         link_afiliado: { type: boolean }
     OfertaManual:
       type: object
-      required: [id, produto, loja, preco_centavos, condicao, rotulo_condicao, frete, valida_de, valida_ate, link, link_afiliado, disponivel, alerta_id, criada_por, criada_em]
+      required: [id, produto, loja, preco_centavos, condicao, rotulo_condicao, frete, valida_de, valida_ate, validade_padrao_aplicada, link, link_afiliado, disponivel, alerta_id, criada_por, criada_em]
       properties:
         id: { type: string, format: uuid }
         produto: { $ref: './openapi.yaml#/components/schemas/ProdutoResumo' }
@@ -1132,7 +1148,8 @@ components:
         rotulo_condicao: { type: [string, 'null'], description: Rótulo gerado pelo motor a partir da condição. }
         frete: { $ref: './openapi.yaml#/components/schemas/Frete' }
         valida_de: { type: [string, 'null'], format: date-time }
-        valida_ate: { type: [string, 'null'], format: date-time }
+        valida_ate: { type: [string, 'null'], format: date-time, description: Sempre preenchida na resposta (prazo padrão quando o pedido veio sem data). }
+        validade_padrao_aplicada: { type: boolean, description: "true quando o pedido veio sem `valida_ate`; o painel avisa que não há data de fim informada (decisão D21)." }
         link: { type: string, format: uri }
         link_afiliado: { type: boolean }
         disponivel: { type: boolean }
@@ -1169,6 +1186,7 @@ components:
         - fonte_credencial_gravada
         - denuncia_resolvida
         - triagem_revisada
+        - triagem_liberada
         - oferta_manual_criada
         - oferta_manual_encerrada
     RegistroAuditoria:
@@ -1228,6 +1246,8 @@ components:
       value: { codigo: codigo_invalido, mensagem: Código incorreto. }
     ErroCodigoExpirado:
       value: { codigo: codigo_expirado, mensagem: Este código venceu. Peça outro. }
+    ErroLiberacaoNaoPermitida:
+      value: { codigo: liberacao_nao_permitida, mensagem: Este bloqueio não pode ser liberado; só o ajuste das listas muda o resultado. }
     ErroBloqueadoPelaTriagem:
       value: { codigo: bloqueado_pela_triagem, mensagem: Produto barrado pela triagem (medicamento ou NBCAL); ver fila de triagem. }
     ErroMuitasRequisicoes:
@@ -1393,6 +1413,7 @@ components:
         codigo: TERMO_DE_PRESCRICAO
         detalhe: Título contém termo que indica venda sob prescrição.
         revisao_humana: true
+        liberavel: true
         primeira_vez_em: '2026-10-26T10:00:00Z'
         ultima_vez_em: '2026-10-27T12:00:00Z'
         resultado: bloqueio_correto
@@ -1430,6 +1451,7 @@ components:
         frete: { status: nao_se_aplica, centavos: null }
         valida_de: '2026-10-28T03:00:00Z'
         valida_ate: '2026-11-02T03:00:00Z'
+        validade_padrao_aplicada: false
         link: 'https://example.com/encarte'
         link_afiliado: false
         disponivel: true
