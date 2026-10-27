@@ -1,0 +1,1461 @@
+openapi: 3.1.0
+info:
+  title: economae API (operadores)
+  version: 1.0.0-rascunho.1
+  license:
+    name: Proprietária
+    identifier: LicenseRef-Proprietaria
+  description: |
+    **RASCUNHO PARA APROVAÇÃO. Não congelado.** Área do operador (PRODUTO.md, item 11): aprovar
+    alertas, aprovar e bloquear lojas e fontes, revisar denúncias, revisar itens barrados pela triagem de
+    medicamento, cadastrar oferta manual (nunca dispara push) e gravar credenciais de fonte (só escrita).
+
+    ## Convenções
+    As de `openapi.yaml` valem aqui (nomes, centavos, datas, tenant, cursor, erro único, limite de taxa,
+    idempotência, evolução). Diferenças:
+    - Prefixo `/v1/admin`. Esquema de segurança `operador`: token opaco de audiência `operador`. Token do
+      app é recusado aqui (401) e token de operador é recusado no app.
+    - Operadores têm conta individual e todos têm as mesmas permissões. Só e-mail cadastrado como
+      operador do tenant consegue entrar (cadastro de operador: decisão D2).
+    - Toda ação que muda estado grava em `/v1/admin/auditoria` quem fez, quando e o quê. Valor de
+      credencial nunca entra na auditoria, em log ou em resposta.
+    - O operador vê os campos estruturados do alerta; `alerts.motivo` e o score continuam fora da API
+      (decisão D16).
+servers:
+  - url: http://127.0.0.1:3000
+    description: desenvolvimento
+tags:
+  - name: auth
+    description: Login do operador por código no e-mail.
+  - name: operador
+    description: Conta do operador.
+  - name: alertas
+    description: Fila de aprovação e revisão de alertas.
+  - name: lojas
+    description: Aprovação e bloqueio de lojas.
+  - name: fontes
+    description: Aprovação e bloqueio de fontes e gravação de credencial.
+  - name: denuncias
+    description: Ofertas escondidas por denúncia.
+  - name: triagem
+    description: Itens barrados pela triagem de medicamento.
+  - name: ofertas_manuais
+    description: Oferta cadastrada à mão (TIPO E). Nunca dispara push.
+  - name: produtos
+    description: Busca de produto para a oferta manual.
+  - name: auditoria
+    description: Registro de toda ação administrativa.
+
+security:
+  - operador: []
+
+paths:
+  # ---------------------------------------------------------------- auth
+  /v1/admin/auth/email/codigo:
+    post:
+      tags: [auth]
+      operationId: adminSolicitarCodigo
+      summary: Envia código de 6 dígitos ao e-mail do operador
+      description: |
+        202 sempre, inclusive para e-mail que não é operador (nada é enviado nesse caso). Mesmos limites
+        do login do app: 1 por e-mail a cada 60 s, 5/h por e-mail, 20/h por IP.
+      security: []
+      parameters:
+        - $ref: './openapi.yaml#/components/parameters/XTenant'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/PedidoCodigoEmail' }
+            example: { email: operador@example.com }
+      responses:
+        '202':
+          description: Pedido aceito.
+          content:
+            application/json:
+              schema: { $ref: './openapi.yaml#/components/schemas/CodigoEnviado' }
+              example: { expira_em_segundos: 600, reenviar_em_segundos: 60 }
+        '400': { $ref: '#/components/responses/R400Tenant' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
+        '503': { $ref: '#/components/responses/R503' }
+
+  /v1/admin/auth/email/verificar:
+    post:
+      tags: [auth]
+      operationId: adminVerificarCodigo
+      summary: Troca e-mail e código por uma sessão de operador
+      description: Nunca cria conta. E-mail que não é operador sempre recebe `codigo_invalido`. Até 5 tentativas por código.
+      security: []
+      parameters:
+        - $ref: './openapi.yaml#/components/parameters/XTenant'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/VerificacaoCodigoEmail' }
+            example: { email: operador@example.com, codigo: '193847' }
+      responses:
+        '200':
+          description: Sessão criada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessaoOperador' }
+              examples:
+                sessao: { $ref: '#/components/examples/SessaoOperador' }
+        '400': { $ref: '#/components/responses/R400Tenant' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+        '422':
+          description: Código errado, vencido ou corpo inválido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErroAdmin' }
+              examples:
+                codigo_invalido: { $ref: '#/components/examples/ErroCodigoInvalido' }
+                codigo_expirado: { $ref: '#/components/examples/ErroCodigoExpirado' }
+                validacao: { $ref: '#/components/examples/ErroValidacao' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/admin/auth/renovar:
+    post:
+      tags: [auth]
+      operationId: adminRenovarSessao
+      summary: Troca o refresh token de operador por um par novo (rotação, uso único)
+      description: Mesma regra de reuso do app. Validade do refresh de operador em config (decisão D3).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: './openapi.yaml#/components/schemas/PedidoRenovacao' }
+            example: { refresh_token: '<refresh token>' }
+      responses:
+        '200':
+          description: Sessão renovada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessaoOperador' }
+              examples:
+                sessao: { $ref: '#/components/examples/SessaoOperador' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/admin/auth/sair:
+    post:
+      tags: [auth]
+      operationId: adminSair
+      summary: Revoga a sessão de operador atual
+      responses:
+        '204': { description: Sessão encerrada. }
+        '401': { $ref: '#/components/responses/R401' }
+
+  /v1/admin/me:
+    get:
+      tags: [operador]
+      operationId: adminObterMe
+      summary: Dados do operador logado
+      responses:
+        '200':
+          description: Operador.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Operador' }
+              examples:
+                operador: { $ref: '#/components/examples/Operador' }
+        '401': { $ref: '#/components/responses/R401' }
+
+  # ---------------------------------------------------------------- alertas
+  /v1/admin/alertas:
+    get:
+      tags: [alertas]
+      operationId: adminListarAlertas
+      summary: Alertas para revisão (padrão = aguardando aprovação)
+      parameters:
+        - name: revisao
+          in: query
+          schema: { $ref: '#/components/schemas/SituacaoRevisaoAlerta' }
+        - name: decisao
+          in: query
+          schema: { $ref: '#/components/schemas/DecisaoAlerta' }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de alertas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaAlertasAdmin' }
+              examples:
+                pendentes: { $ref: '#/components/examples/PaginaAlertasAdmin' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/alertas/{id}:
+    get:
+      tags: [alertas]
+      operationId: adminObterAlerta
+      summary: Detalhe do alerta para o operador
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Alerta.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AlertaAdmin' }
+              examples:
+                pendente: { $ref: '#/components/examples/AlertaAdmin' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+
+  /v1/admin/alertas/{id}/revisao:
+    put:
+      tags: [alertas]
+      operationId: adminRevisarAlerta
+      summary: Aprova ou rejeita o alerta (idempotente)
+      description: |
+        `aprovado` só vale para `aguardar_aprovacao` (senão 409 `estado_conflitante`); depois de aprovado o
+        alerta entra no feed e no despacho de push, se a oferta ainda estiver ativa (senão 409
+        `oferta_encerrada`). `rejeitado` vale para qualquer decisão, inclusive depois de `aprovado`, e
+        tira o alerta do feed (push já enviado não volta). Repetir o mesmo resultado devolve 200 sem mudar
+        nada; `aprovado` depois de `rejeitado` dá 409 `ja_revisado` (decisão D17).
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoRevisaoAlerta' }
+            example: { resultado: aprovado, observacao: Preço conferido no site da loja. }
+      responses:
+        '200':
+          description: Alerta revisado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AlertaAdmin' }
+              examples:
+                aprovado: { $ref: '#/components/examples/AlertaAdminAprovado' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '409':
+          description: Já revisado com outro resultado, oferta encerrada ou decisão que não aceita aprovação.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErroAdmin' }
+              examples:
+                ja_revisado: { $ref: '#/components/examples/ErroJaRevisado' }
+                oferta_encerrada: { $ref: '#/components/examples/ErroOfertaEncerrada' }
+                estado_conflitante: { $ref: '#/components/examples/ErroEstadoConflitante' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- lojas
+  /v1/admin/lojas:
+    get:
+      tags: [lojas]
+      operationId: adminListarLojas
+      summary: Lojas do tenant
+      parameters:
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/StatusConfianca' }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de lojas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaLojasAdmin' }
+              examples:
+                uma: { $ref: '#/components/examples/PaginaLojasAdmin' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/lojas/{id}/status:
+    put:
+      tags: [lojas]
+      operationId: adminDefinirStatusLoja
+      summary: Aprova, põe em observação ou bloqueia a loja (idempotente)
+      description: |
+        Loja bloqueada: novas ofertas são descartadas pelo motor e os alertas ativos saem do feed. Efeito
+        sobre alertas já existentes de loja que passa a aprovada: decisão D18.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoStatusLoja' }
+            example: { status: aprovada, observacao: Autorização sanitária conferida. }
+      responses:
+        '200':
+          description: Loja atualizada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LojaAdmin' }
+              examples:
+                aprovada: { $ref: '#/components/examples/LojaAdmin' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- fontes
+  /v1/admin/fontes:
+    get:
+      tags: [fontes]
+      operationId: adminListarFontes
+      summary: Fontes do tenant (lista curta, sem paginação)
+      responses:
+        '200':
+          description: Fontes.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaFontesAdmin' }
+              examples:
+                lomadee: { $ref: '#/components/examples/ListaFontesAdmin' }
+        '401': { $ref: '#/components/responses/R401' }
+
+  /v1/admin/fontes/{id}/status:
+    put:
+      tags: [fontes]
+      operationId: adminDefinirStatusFonte
+      summary: Define confiança e ativação da fonte (idempotente)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoStatusFonte' }
+            example: { status_confianca: aprovada, ativa: true, observacao: Termos lidos e registrados em SOURCES.md. }
+      responses:
+        '200':
+          description: Fonte atualizada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FonteAdmin' }
+              examples:
+                lomadee: { $ref: '#/components/examples/FonteAdmin' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/fontes/{id}/credencial:
+    put:
+      tags: [fontes]
+      operationId: adminGravarCredencialFonte
+      summary: Grava ou substitui a credencial da fonte (só escrita)
+      description: |
+        Cifrada no Postgres (DECISIONS 22, AES-256-GCM). Nunca é devolvida: a leitura da fonte só diz se
+        existe credencial, quando e por quem foi gravada. Quais chaves cada fonte exige: a verificar na
+        vinculação de cada fonte. Idempotente (substitui por inteiro).
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoCredencialFonte' }
+            example: { valores: { app_token: '<valor>', source_id: '<valor>' } }
+      responses:
+        '204': { description: Gravada. }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- denúncias
+  /v1/admin/denuncias:
+    get:
+      tags: [denuncias]
+      operationId: adminListarDenuncias
+      summary: Ofertas escondidas por denúncia (padrão = aguardando o operador)
+      parameters:
+        - name: situacao
+          in: query
+          schema: { $ref: '#/components/schemas/SituacaoCasoDenuncia' }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de casos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaCasosDenuncia' }
+              examples:
+                um: { $ref: '#/components/examples/PaginaCasosDenuncia' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/denuncias/{id}/resolucao:
+    put:
+      tags: [denuncias]
+      operationId: adminResolverDenuncia
+      summary: Restaura a oferta ou mantém escondida (idempotente)
+      description: |
+        Mesmo resultado repetido devolve 200; resultado diferente do já gravado dá 409 `ja_revisado`.
+        O que acontece com denúncias novas depois de restaurar: decisão D19.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoResolucaoDenuncia' }
+            example: { resultado: restaurar, observacao: Preço confirmado no site. }
+      responses:
+        '200':
+          description: Caso resolvido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CasoDenuncia' }
+              examples:
+                restaurado: { $ref: '#/components/examples/CasoDenunciaRestaurado' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '409': { $ref: '#/components/responses/R409JaRevisado' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- triagem
+  /v1/admin/triagem:
+    get:
+      tags: [triagem]
+      operationId: adminListarTriagem
+      summary: Itens barrados pela triagem de medicamento
+      parameters:
+        - name: revisado
+          in: query
+          description: false (padrão) = só os ainda não revisados.
+          schema: { type: boolean, default: false }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de bloqueios.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaBloqueiosTriagem' }
+              examples:
+                um: { $ref: '#/components/examples/PaginaBloqueiosTriagem' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/triagem/{id}/revisao:
+    put:
+      tags: [triagem]
+      operationId: adminRevisarTriagem
+      summary: Registra a revisão humana do bloqueio (idempotente)
+      description: |
+        A triagem continua em falha fechada: `falso_positivo` não libera o item sozinho, só registra
+        para ajustar as listas (efeito: decisão D20). Mesmo resultado repetido devolve 200; diferente dá
+        409 `ja_revisado`.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoRevisaoTriagem' }
+            example: { resultado: bloqueio_correto, observacao: Medicamento tarjado. }
+      responses:
+        '200':
+          description: Revisão registrada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BloqueioTriagem' }
+              examples:
+                revisado: { $ref: '#/components/examples/BloqueioTriagemRevisado' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '409': { $ref: '#/components/responses/R409JaRevisado' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- ofertas manuais
+  /v1/admin/ofertas-manuais:
+    get:
+      tags: [ofertas_manuais]
+      operationId: adminListarOfertasManuais
+      summary: Ofertas manuais (TIPO E)
+      parameters:
+        - name: ativas
+          in: query
+          description: true (padrão) = só disponíveis e na validade.
+          schema: { type: boolean, default: true }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de ofertas manuais.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaOfertasManuais' }
+              examples:
+                uma: { $ref: '#/components/examples/PaginaOfertasManuais' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+    post:
+      tags: [ofertas_manuais]
+      operationId: adminCriarOfertaManual
+      summary: Cadastra oferta manual (entra no feed como "sem histórico verificado"; nunca dispara push)
+      description: |
+        Idempotente por `Idempotency-Key`: mesma chave com o mesmo corpo devolve a oferta já criada (201
+        de novo); mesma chave com corpo diferente dá 409 `idempotencia_conflito`. Passa pela triagem de
+        medicamento como qualquer produto (DECISIONS 24); item barrado dá 422 `medicamento_bloqueado` e vai
+        para `/v1/admin/triagem`. Produto existente por `produto_id` ou novo por `produto_novo` (um dos
+        dois). Implementação na fase 5.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoOfertaManual' }
+            examples:
+              produto_existente: { $ref: '#/components/examples/PedidoOfertaManual' }
+      responses:
+        '201':
+          description: Oferta criada (ou já criada com esta chave).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OfertaManual' }
+              examples:
+                criada: { $ref: '#/components/examples/OfertaManual' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '409': { $ref: '#/components/responses/R409Idempotencia' }
+        '422':
+          description: Corpo inválido ou produto barrado pela triagem de medicamento.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErroAdmin' }
+              examples:
+                validacao: { $ref: '#/components/examples/ErroValidacao' }
+                medicamento_bloqueado: { $ref: '#/components/examples/ErroMedicamentoBloqueado' }
+
+  /v1/admin/ofertas-manuais/{id}:
+    delete:
+      tags: [ofertas_manuais]
+      operationId: adminEncerrarOfertaManual
+      summary: Encerra a oferta manual (marca indisponível; idempotente)
+      description: A linha fica para auditoria e histórico; o alerta sai do feed.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204': { description: Encerrada (ou já encerrada). }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+
+  # ---------------------------------------------------------------- produtos
+  /v1/admin/produtos:
+    get:
+      tags: [produtos]
+      operationId: adminPesquisarProdutos
+      summary: Busca produto do tenant por nome, marca ou GTIN (para a oferta manual)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 100 }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Resultados.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaProdutosAdmin' }
+              examples:
+                shampoo: { $ref: '#/components/examples/PaginaProdutosAdmin' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- auditoria
+  /v1/admin/auditoria:
+    get:
+      tags: [auditoria]
+      operationId: adminListarAuditoria
+      summary: Registro de ações administrativas (mais recentes primeiro)
+      parameters:
+        - name: operador_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: acao
+          in: query
+          schema: { $ref: '#/components/schemas/AcaoAuditoria' }
+        - name: desde
+          in: query
+          schema: { type: string, format: date-time }
+        - name: ate
+          in: query
+          schema: { type: string, format: date-time }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de registros.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaAuditoria' }
+              examples:
+                um: { $ref: '#/components/examples/PaginaAuditoria' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+components:
+  securitySchemes:
+    operador:
+      type: http
+      scheme: bearer
+      description: Access token opaco de audiência `operador` (campo `access_token` da `SessaoOperador`).
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID gerado pelo cliente para este cadastro.
+      schema: { type: string, format: uuid }
+
+  responses:
+    R400:
+      description: Corpo ilegível.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            requisicao_malformada: { $ref: '#/components/examples/ErroRequisicaoMalformada' }
+    R400Tenant:
+      description: Corpo ilegível ou `X-Tenant` ausente.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            requisicao_malformada: { $ref: '#/components/examples/ErroRequisicaoMalformada' }
+            tenant_ausente: { $ref: '#/components/examples/ErroTenantAusente' }
+    R401:
+      description: Sem token, token vencido, sessão revogada ou token de outra audiência.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            nao_autenticado: { $ref: '#/components/examples/ErroNaoAutenticado' }
+            sessao_expirada: { $ref: '#/components/examples/ErroSessaoExpirada' }
+            sessao_revogada: { $ref: '#/components/examples/ErroSessaoRevogada' }
+    R404:
+      description: Inexistente ou de outro tenant.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            nao_encontrado: { $ref: '#/components/examples/ErroNaoEncontrado' }
+    R404Tenant:
+      description: Tenant desconhecido.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            tenant_desconhecido: { $ref: '#/components/examples/ErroTenantDesconhecido' }
+    R409JaRevisado:
+      description: Já revisado com outro resultado.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            ja_revisado: { $ref: '#/components/examples/ErroJaRevisado' }
+    R409Idempotencia:
+      description: Mesma chave de idempotência com corpo diferente.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            idempotencia_conflito: { $ref: '#/components/examples/ErroIdempotenciaConflito' }
+    R422:
+      description: Campo inválido.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            validacao: { $ref: '#/components/examples/ErroValidacao' }
+    R429:
+      description: Limite de taxa.
+      headers:
+        Retry-After: { $ref: './openapi.yaml#/components/headers/RetryAfter' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            muitas_requisicoes: { $ref: '#/components/examples/ErroMuitasRequisicoes' }
+    R503:
+      description: Provedor de e-mail indisponível.
+      headers:
+        Retry-After: { $ref: './openapi.yaml#/components/headers/RetryAfter' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErroAdmin' }
+          examples:
+            servico_indisponivel: { $ref: '#/components/examples/ErroServicoIndisponivel' }
+
+  schemas:
+    CodigoErroAdmin:
+      type: string
+      description: |
+        Enum estável. Rotas em que cada código ocorre:
+        - `requisicao_malformada` (400): todas com corpo.
+        - `tenant_ausente` (400), `tenant_desconhecido` (404): `/v1/admin/auth/email/*`.
+        - `nao_autenticado`, `sessao_expirada`, `sessao_revogada` (401): toda rota autenticada e `/v1/admin/auth/renovar`.
+        - `nao_encontrado` (404): rotas com id no caminho; `POST /v1/admin/ofertas-manuais` (produto ou loja inexistente).
+        - `ja_revisado` (409): `PUT .../alertas/{id}/revisao`, `.../denuncias/{id}/resolucao`, `.../triagem/{id}/revisao`.
+        - `oferta_encerrada`, `estado_conflitante` (409): `PUT /v1/admin/alertas/{id}/revisao`.
+        - `idempotencia_conflito` (409): `POST /v1/admin/ofertas-manuais`.
+        - `validacao` (422): todas com corpo ou parâmetro.
+        - `codigo_invalido`, `codigo_expirado` (422): `/v1/admin/auth/email/verificar`.
+        - `medicamento_bloqueado` (422): `POST /v1/admin/ofertas-manuais`.
+        - `muitas_requisicoes` (429): `/v1/admin/auth/*`.
+        - `servico_indisponivel` (503): `/v1/admin/auth/email/codigo`.
+        - `erro_interno` (500): qualquer rota.
+      enum:
+        - requisicao_malformada
+        - tenant_ausente
+        - tenant_desconhecido
+        - nao_autenticado
+        - sessao_expirada
+        - sessao_revogada
+        - nao_encontrado
+        - ja_revisado
+        - oferta_encerrada
+        - estado_conflitante
+        - idempotencia_conflito
+        - validacao
+        - codigo_invalido
+        - codigo_expirado
+        - medicamento_bloqueado
+        - muitas_requisicoes
+        - servico_indisponivel
+        - erro_interno
+    ErroAdmin:
+      type: object
+      required: [codigo, mensagem]
+      properties:
+        codigo: { $ref: '#/components/schemas/CodigoErroAdmin' }
+        mensagem: { type: string }
+        campos:
+          type: array
+          items: { $ref: './openapi.yaml#/components/schemas/CampoInvalido' }
+
+    # ------------------------------------------------------------ operador
+    Operador:
+      type: object
+      required: [id, email, nome, criado_em]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        nome: { type: string }
+        criado_em: { type: string, format: date-time }
+    OperadorResumo:
+      type: object
+      required: [id, nome]
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+    SessaoOperador:
+      type: object
+      required: [access_token, access_expira_em, refresh_token, refresh_expira_em, operador]
+      properties:
+        access_token: { type: string }
+        access_expira_em: { type: string, format: date-time }
+        refresh_token: { type: string }
+        refresh_expira_em: { type: string, format: date-time }
+        operador: { $ref: '#/components/schemas/Operador' }
+    Revisao:
+      type: object
+      description: Quem revisou, quando e com que observação.
+      required: [operador, em, observacao]
+      properties:
+        operador: { $ref: '#/components/schemas/OperadorResumo' }
+        em: { type: string, format: date-time }
+        observacao: { type: [string, 'null'] }
+
+    # ------------------------------------------------------------ tipos comuns
+    StatusConfianca:
+      type: string
+      description: Igual a `stores.status` e `sources.status_confianca`.
+      enum: [aprovada, em_observacao, bloqueada]
+    Observacao:
+      type: [string, 'null']
+      maxLength: 1000
+      description: Texto livre do operador; vai para a auditoria.
+    FonteResumo:
+      type: object
+      required: [id, nome, tipo, confiabilidade, status_confianca]
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        tipo: { type: string, enum: [A, B, C, D, E] }
+        confiabilidade: { type: string, enum: [alta, media, baixa] }
+        status_confianca: { $ref: '#/components/schemas/StatusConfianca' }
+    PaginaBase:
+      $ref: './openapi.yaml#/components/schemas/PaginaBase'
+
+    # ------------------------------------------------------------ alertas
+    DecisaoAlerta:
+      type: string
+      description: Igual a `alerts.decisao`.
+      enum: [notificar, aguardar_aprovacao, somente_feed]
+    SituacaoRevisaoAlerta:
+      type: string
+      description: '`nao_exigida` = decisão que não passa por aprovação e nunca foi rejeitada.'
+      enum: [pendente, aprovado, rejeitado, nao_exigida]
+    AlertaAdmin:
+      type: object
+      required:
+        - id
+        - criado_em
+        - decisao
+        - revisao
+        - revisao_por
+        - situacao_oferta
+        - produto
+        - loja
+        - fonte
+        - preco_centavos
+        - preco_referencia_centavos
+        - preco_por_unidade_centavos
+        - preco_referencia_por_unidade_centavos
+        - queda
+        - rotulo_condicao
+        - entrega_a_confirmar
+        - valida_ate
+        - coletada_em
+        - link
+        - link_afiliado
+      properties:
+        id: { type: string, format: uuid }
+        criado_em: { type: string, format: date-time }
+        decisao: { $ref: '#/components/schemas/DecisaoAlerta' }
+        revisao: { $ref: '#/components/schemas/SituacaoRevisaoAlerta' }
+        revisao_por:
+          oneOf:
+            - $ref: '#/components/schemas/Revisao'
+            - type: 'null'
+        situacao_oferta:
+          type: string
+          enum: [ativa, encerrada, escondida_por_denuncia]
+        produto: { $ref: './openapi.yaml#/components/schemas/ProdutoResumo' }
+        loja: { $ref: '#/components/schemas/LojaAdmin' }
+        fonte: { $ref: '#/components/schemas/FonteResumo' }
+        preco_centavos: { type: integer, minimum: 1 }
+        preco_referencia_centavos: { type: integer, minimum: 1 }
+        preco_por_unidade_centavos: { type: number }
+        preco_referencia_por_unidade_centavos: { type: number }
+        queda: { type: number, minimum: 0, maximum: 1 }
+        rotulo_condicao: { type: [string, 'null'] }
+        entrega_a_confirmar: { type: boolean }
+        valida_ate: { type: [string, 'null'], format: date-time }
+        coletada_em: { type: string, format: date-time }
+        link: { type: string, format: uri }
+        link_afiliado: { type: boolean }
+    PaginaAlertasAdmin:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/AlertaAdmin' }
+    PedidoRevisaoAlerta:
+      type: object
+      required: [resultado]
+      properties:
+        resultado: { type: string, enum: [aprovado, rejeitado] }
+        observacao: { $ref: '#/components/schemas/Observacao' }
+
+    # ------------------------------------------------------------ lojas
+    LojaAdmin:
+      type: object
+      required: [id, rede, nome, cnpj, tipo, status, reputacao, autorizacao_sanitaria, criado_em]
+      properties:
+        id: { type: string, format: uuid }
+        rede: { type: string }
+        nome: { type: string }
+        cnpj: { type: [string, 'null'], pattern: '^[0-9]{14}$' }
+        tipo: { type: string, enum: [online, fisica] }
+        status: { $ref: '#/components/schemas/StatusConfianca' }
+        reputacao: { type: number, minimum: 0, maximum: 1 }
+        autorizacao_sanitaria: { type: [string, 'null'] }
+        criado_em: { type: string, format: date-time }
+    PaginaLojasAdmin:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/LojaAdmin' }
+    PedidoStatusLoja:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/StatusConfianca' }
+        observacao: { $ref: '#/components/schemas/Observacao' }
+
+    # ------------------------------------------------------------ fontes
+    EstadoCredencial:
+      type: object
+      required: [definida, atualizada_em, atualizada_por]
+      properties:
+        definida: { type: boolean }
+        atualizada_em: { type: [string, 'null'], format: date-time }
+        atualizada_por:
+          oneOf:
+            - $ref: '#/components/schemas/OperadorResumo'
+            - type: 'null'
+    FonteAdmin:
+      allOf:
+        - $ref: '#/components/schemas/FonteResumo'
+        - type: object
+          required: [frequencia_minutos, regiao, ativa, credencial]
+          properties:
+            frequencia_minutos: { type: integer, minimum: 1 }
+            regiao: { type: string }
+            ativa: { type: boolean }
+            credencial: { $ref: '#/components/schemas/EstadoCredencial' }
+    ListaFontesAdmin:
+      type: object
+      required: [itens]
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/FonteAdmin' }
+    PedidoStatusFonte:
+      type: object
+      required: [status_confianca, ativa]
+      properties:
+        status_confianca: { $ref: '#/components/schemas/StatusConfianca' }
+        ativa: { type: boolean }
+        observacao: { $ref: '#/components/schemas/Observacao' }
+    PedidoCredencialFonte:
+      type: object
+      required: [valores]
+      properties:
+        valores:
+          type: object
+          writeOnly: true
+          minProperties: 1
+          maxProperties: 20
+          description: Pares nome → valor exigidos pela fonte. Nunca devolvidos.
+          additionalProperties: { type: string, maxLength: 4096 }
+
+    # ------------------------------------------------------------ denúncias
+    SituacaoCasoDenuncia:
+      type: string
+      description: '`escondida` = aguardando o operador; `restaurada` e `mantida_escondida` = resolvidos.'
+      enum: [escondida, restaurada, mantida_escondida]
+    CasoDenuncia:
+      type: object
+      required: [id, aberto_em, situacao, oferta, denuncias, pessoas_base, limite, motivos, resolucao, resolucao_por]
+      properties:
+        id: { type: string, format: uuid }
+        aberto_em: { type: string, format: date-time, description: Quando o limite foi passado e a oferta sumiu. }
+        situacao: { $ref: '#/components/schemas/SituacaoCasoDenuncia' }
+        oferta: { $ref: '#/components/schemas/OfertaResumoAdmin' }
+        denuncias: { type: integer, minimum: 0, description: Pessoas distintas que denunciaram no preço atual. }
+        pessoas_base: { type: integer, minimum: 0, description: Pessoas distintas que abriram ou clicaram em 7 dias. }
+        limite: { type: integer, minimum: 1, description: Limite calculado no momento em que a oferta sumiu. }
+        motivos:
+          type: object
+          required: [preco_errado, sem_estoque]
+          properties:
+            preco_errado: { type: integer, minimum: 0 }
+            sem_estoque: { type: integer, minimum: 0 }
+        resolucao: { type: [string, 'null'], enum: [restaurar, manter_escondida, null] }
+        resolucao_por:
+          oneOf:
+            - $ref: '#/components/schemas/Revisao'
+            - type: 'null'
+    OfertaResumoAdmin:
+      type: object
+      required: [id, produto, loja, preco_centavos, link, coletada_em]
+      properties:
+        id: { type: string, format: uuid }
+        produto: { $ref: './openapi.yaml#/components/schemas/ProdutoResumo' }
+        loja: { $ref: './openapi.yaml#/components/schemas/LojaResumo' }
+        preco_centavos: { type: integer, minimum: 1 }
+        link: { type: string, format: uri }
+        coletada_em: { type: string, format: date-time }
+    PaginaCasosDenuncia:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/CasoDenuncia' }
+    PedidoResolucaoDenuncia:
+      type: object
+      required: [resultado]
+      properties:
+        resultado: { type: string, enum: [restaurar, manter_escondida] }
+        observacao: { $ref: '#/components/schemas/Observacao' }
+
+    # ------------------------------------------------------------ triagem
+    BloqueioTriagem:
+      type: object
+      description: Igual a `triagem_bloqueios`, mais a revisão.
+      required: [id, fonte, id_externo, titulo, codigo, detalhe, revisao_humana, primeira_vez_em, ultima_vez_em, resultado, revisao_por]
+      properties:
+        id: { type: string, format: uuid }
+        fonte: { $ref: '#/components/schemas/FonteResumo' }
+        id_externo: { type: string }
+        titulo: { type: string }
+        codigo: { type: string, description: Código da triagem que barrou o item. }
+        detalhe: { type: string }
+        revisao_humana: { type: boolean, description: true quando a triagem pediu revisão humana. }
+        primeira_vez_em: { type: string, format: date-time }
+        ultima_vez_em: { type: string, format: date-time }
+        resultado: { type: [string, 'null'], enum: [bloqueio_correto, falso_positivo, null] }
+        revisao_por:
+          oneOf:
+            - $ref: '#/components/schemas/Revisao'
+            - type: 'null'
+    PaginaBloqueiosTriagem:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/BloqueioTriagem' }
+    PedidoRevisaoTriagem:
+      type: object
+      required: [resultado]
+      properties:
+        resultado: { type: string, enum: [bloqueio_correto, falso_positivo] }
+        observacao: { $ref: '#/components/schemas/Observacao' }
+
+    # ------------------------------------------------------------ ofertas manuais
+    Condicao:
+      description: Igual a `Condicao` do motor (`backend/src/curadoria/tipos.ts`) e a `offers.condicao`.
+      oneOf:
+        - $ref: '#/components/schemas/CondicaoLevePague'
+        - $ref: '#/components/schemas/CondicaoCartaoFidelidade'
+        - $ref: '#/components/schemas/CondicaoAppDaRede'
+        - $ref: '#/components/schemas/CondicaoQuantidadeMinima'
+      discriminator:
+        propertyName: tipo
+        mapping:
+          leve_pague: '#/components/schemas/CondicaoLevePague'
+          cartao_fidelidade: '#/components/schemas/CondicaoCartaoFidelidade'
+          app_da_rede: '#/components/schemas/CondicaoAppDaRede'
+          quantidade_minima: '#/components/schemas/CondicaoQuantidadeMinima'
+    CondicaoLevePague:
+      type: object
+      required: [tipo, leve, pague]
+      properties:
+        tipo: { type: string, const: leve_pague }
+        leve: { type: integer, minimum: 2 }
+        pague: { type: integer, minimum: 1 }
+    CondicaoCartaoFidelidade:
+      type: object
+      required: [tipo, programa]
+      properties:
+        tipo: { type: string, const: cartao_fidelidade }
+        programa: { type: string, maxLength: 100 }
+    CondicaoAppDaRede:
+      type: object
+      required: [tipo]
+      properties:
+        tipo: { type: string, const: app_da_rede }
+    CondicaoQuantidadeMinima:
+      type: object
+      required: [tipo, quantidade]
+      properties:
+        tipo: { type: string, const: quantidade_minima }
+        quantidade: { type: integer, minimum: 2 }
+    ProdutoNovo:
+      type: object
+      required: [nome, categoria, embalagem]
+      properties:
+        nome: { type: string, maxLength: 300 }
+        marca: { type: [string, 'null'], maxLength: 100 }
+        categoria: { $ref: './openapi.yaml#/components/schemas/Slug' }
+        gtin: { type: [string, 'null'], pattern: '^[0-9]{8,14}$' }
+        embalagem: { $ref: './openapi.yaml#/components/schemas/Embalagem' }
+    PedidoOfertaManual:
+      type: object
+      required: [loja_id, preco_centavos, condicao, frete, valida_de, valida_ate, link, link_afiliado]
+      oneOf:
+        - required: [produto_id]
+        - required: [produto_novo]
+      properties:
+        produto_id: { type: string, format: uuid }
+        produto_novo: { $ref: '#/components/schemas/ProdutoNovo' }
+        loja_id: { type: string, format: uuid }
+        preco_centavos: { type: integer, minimum: 1, description: Preço de uma embalagem sob a condição. }
+        condicao:
+          oneOf:
+            - $ref: '#/components/schemas/Condicao'
+            - type: 'null'
+        frete: { $ref: './openapi.yaml#/components/schemas/Frete' }
+        valida_de: { type: [string, 'null'], format: date-time }
+        valida_ate: { type: [string, 'null'], format: date-time, description: Obrigatoriedade em aberto (decisão D21). }
+        link: { type: string, format: uri, maxLength: 2048 }
+        link_afiliado: { type: boolean }
+    OfertaManual:
+      type: object
+      required: [id, produto, loja, preco_centavos, condicao, rotulo_condicao, frete, valida_de, valida_ate, link, link_afiliado, disponivel, alerta_id, criada_por, criada_em]
+      properties:
+        id: { type: string, format: uuid }
+        produto: { $ref: './openapi.yaml#/components/schemas/ProdutoResumo' }
+        loja: { $ref: './openapi.yaml#/components/schemas/LojaResumo' }
+        preco_centavos: { type: integer, minimum: 1 }
+        condicao:
+          oneOf:
+            - $ref: '#/components/schemas/Condicao'
+            - type: 'null'
+        rotulo_condicao: { type: [string, 'null'], description: Rótulo gerado pelo motor a partir da condição. }
+        frete: { $ref: './openapi.yaml#/components/schemas/Frete' }
+        valida_de: { type: [string, 'null'], format: date-time }
+        valida_ate: { type: [string, 'null'], format: date-time }
+        link: { type: string, format: uri }
+        link_afiliado: { type: boolean }
+        disponivel: { type: boolean }
+        alerta_id: { type: [string, 'null'], format: uuid, description: Alerta `somente_feed` criado para a oferta. }
+        criada_por: { $ref: '#/components/schemas/OperadorResumo' }
+        criada_em: { type: string, format: date-time }
+    PaginaOfertasManuais:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/OfertaManual' }
+    PaginaProdutosAdmin:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: './openapi.yaml#/components/schemas/ProdutoResumo' }
+
+    # ------------------------------------------------------------ auditoria
+    AcaoAuditoria:
+      type: string
+      enum:
+        - operador_entrou
+        - alerta_revisado
+        - loja_status_definido
+        - fonte_status_definido
+        - fonte_credencial_gravada
+        - denuncia_resolvida
+        - triagem_revisada
+        - oferta_manual_criada
+        - oferta_manual_encerrada
+    RegistroAuditoria:
+      type: object
+      required: [id, em, operador, acao, alvo_tipo, alvo_id, detalhe]
+      properties:
+        id: { type: string, format: uuid }
+        em: { type: string, format: date-time }
+        operador: { $ref: '#/components/schemas/OperadorResumo' }
+        acao: { $ref: '#/components/schemas/AcaoAuditoria' }
+        alvo_tipo: { type: string, enum: [operador, alerta, loja, fonte, caso_denuncia, triagem, oferta] }
+        alvo_id: { type: string, format: uuid }
+        detalhe:
+          type: object
+          description: Antes e depois dos campos alterados e a observação. Nunca contém valor de credencial.
+    PaginaAuditoria:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/RegistroAuditoria' }
+
+  examples:
+    # ------------------------------------------------------------ erros
+    ErroRequisicaoMalformada:
+      value: { codigo: requisicao_malformada, mensagem: Não foi possível ler o pedido. }
+    ErroTenantAusente:
+      value: { codigo: tenant_ausente, mensagem: Cabeçalho X-Tenant ausente. }
+    ErroTenantDesconhecido:
+      value: { codigo: tenant_desconhecido, mensagem: Tenant desconhecido. }
+    ErroNaoAutenticado:
+      value: { codigo: nao_autenticado, mensagem: Entre como operador. }
+    ErroSessaoExpirada:
+      value: { codigo: sessao_expirada, mensagem: Sessão expirada. }
+    ErroSessaoRevogada:
+      value: { codigo: sessao_revogada, mensagem: Sessão encerrada. Entre de novo. }
+    ErroNaoEncontrado:
+      value: { codigo: nao_encontrado, mensagem: Não encontrado. }
+    ErroJaRevisado:
+      value: { codigo: ja_revisado, mensagem: Já revisado com outro resultado. }
+    ErroOfertaEncerrada:
+      value: { codigo: oferta_encerrada, mensagem: A oferta deste alerta já acabou. }
+    ErroEstadoConflitante:
+      value: { codigo: estado_conflitante, mensagem: Só alerta aguardando aprovação pode ser aprovado. }
+    ErroIdempotenciaConflito:
+      value: { codigo: idempotencia_conflito, mensagem: Chave de idempotência reutilizada com outro conteúdo. }
+    ErroValidacao:
+      value:
+        codigo: validacao
+        mensagem: Confira os campos destacados.
+        campos:
+          - { campo: preco_centavos, mensagem: Deve ser maior que zero. }
+    ErroCodigoInvalido:
+      value: { codigo: codigo_invalido, mensagem: Código incorreto. }
+    ErroCodigoExpirado:
+      value: { codigo: codigo_expirado, mensagem: Este código venceu. Peça outro. }
+    ErroMedicamentoBloqueado:
+      value: { codigo: medicamento_bloqueado, mensagem: Produto barrado pela triagem de medicamento; ver fila de triagem. }
+    ErroMuitasRequisicoes:
+      value: { codigo: muitas_requisicoes, mensagem: Muitas tentativas. Aguarde um pouco. }
+    ErroServicoIndisponivel:
+      value: { codigo: servico_indisponivel, mensagem: Envio de e-mail indisponível. Tente de novo em instantes. }
+
+    # ------------------------------------------------------------ sucesso
+    Operador:
+      value: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, email: operador@example.com, nome: Ana, criado_em: '2026-10-27T10:00:00Z' }
+    SessaoOperador:
+      value:
+        access_token: '<access token>'
+        access_expira_em: '2026-10-27T15:00:00Z'
+        refresh_token: '<refresh token>'
+        refresh_expira_em: '2026-11-03T14:00:00Z'
+        operador: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, email: operador@example.com, nome: Ana, criado_em: '2026-10-27T10:00:00Z' }
+    AlertaAdmin:
+      value: &alertaPendente
+        id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+        criado_em: '2026-10-27T12:00:05Z'
+        decisao: aguardar_aprovacao
+        revisao: pendente
+        revisao_por: null
+        situacao_oferta: ativa
+        produto:
+          id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+          nome: Shampoo Elseve Hidra Hialurônico 400 ml
+          marca: { chave: elseve, nome: Elseve }
+          categoria: cuidados_pessoais
+          gtin: null
+          embalagem: { quantidade: 0.4, unidade: l }
+        loja:
+          id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e
+          rede: Drogasil
+          nome: Drogasil
+          cnpj: null
+          tipo: online
+          status: aprovada
+          reputacao: 0.9
+          autorizacao_sanitaria: null
+          criado_em: '2026-10-01T10:00:00Z'
+        fonte: { id: 8f9e0d1c-2b3a-4c5d-9e6f-7a8b9c0d1e2f, nome: lomadee, tipo: A, confiabilidade: baixa, status_confianca: em_observacao }
+        preco_centavos: 1990
+        preco_referencia_centavos: 2990
+        preco_por_unidade_centavos: 4975
+        preco_referencia_por_unidade_centavos: 7475
+        queda: 0.3344
+        rotulo_condicao: null
+        entrega_a_confirmar: true
+        valida_ate: null
+        coletada_em: '2026-10-27T12:00:00Z'
+        link: 'https://example.com/oferta/123'
+        link_afiliado: true
+    AlertaAdminAprovado:
+      value:
+        id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+        criado_em: '2026-10-27T12:00:05Z'
+        decisao: aguardar_aprovacao
+        revisao: aprovado
+        revisao_por:
+          operador: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, nome: Ana }
+          em: '2026-10-27T14:40:00Z'
+          observacao: Preço conferido no site da loja.
+        situacao_oferta: ativa
+        produto:
+          id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+          nome: Shampoo Elseve Hidra Hialurônico 400 ml
+          marca: { chave: elseve, nome: Elseve }
+          categoria: cuidados_pessoais
+          gtin: null
+          embalagem: { quantidade: 0.4, unidade: l }
+        loja:
+          id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e
+          rede: Drogasil
+          nome: Drogasil
+          cnpj: null
+          tipo: online
+          status: aprovada
+          reputacao: 0.9
+          autorizacao_sanitaria: null
+          criado_em: '2026-10-01T10:00:00Z'
+        fonte: { id: 8f9e0d1c-2b3a-4c5d-9e6f-7a8b9c0d1e2f, nome: lomadee, tipo: A, confiabilidade: baixa, status_confianca: em_observacao }
+        preco_centavos: 1990
+        preco_referencia_centavos: 2990
+        preco_por_unidade_centavos: 4975
+        preco_referencia_por_unidade_centavos: 7475
+        queda: 0.3344
+        rotulo_condicao: null
+        entrega_a_confirmar: true
+        valida_ate: null
+        coletada_em: '2026-10-27T12:00:00Z'
+        link: 'https://example.com/oferta/123'
+        link_afiliado: true
+    PaginaAlertasAdmin:
+      value:
+        itens: [*alertaPendente]
+        proximo_cursor: null
+    LojaAdmin:
+      value: &lojaAprovada
+        id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e
+        rede: Drogasil
+        nome: Drogasil
+        cnpj: null
+        tipo: online
+        status: aprovada
+        reputacao: 0.9
+        autorizacao_sanitaria: null
+        criado_em: '2026-10-01T10:00:00Z'
+    PaginaLojasAdmin:
+      value: { itens: [*lojaAprovada], proximo_cursor: null }
+    FonteAdmin:
+      value: &fonteLomadee
+        id: 8f9e0d1c-2b3a-4c5d-9e6f-7a8b9c0d1e2f
+        nome: lomadee
+        tipo: A
+        confiabilidade: alta
+        status_confianca: aprovada
+        frequencia_minutos: 120
+        regiao: SP
+        ativa: true
+        credencial:
+          definida: true
+          atualizada_em: '2026-10-27T11:00:00Z'
+          atualizada_por: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, nome: Ana }
+    ListaFontesAdmin:
+      value: { itens: [*fonteLomadee] }
+    CasoDenunciaRestaurado:
+      value: &casoRestaurado
+        id: 0c1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f
+        aberto_em: '2026-10-27T13:00:00Z'
+        situacao: restaurada
+        oferta:
+          id: 6a7b8c9d-0e1f-4a2b-8c3d-4e5f6a7b8c9d
+          produto:
+            id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+            nome: Shampoo Elseve Hidra Hialurônico 400 ml
+            marca: { chave: elseve, nome: Elseve }
+            categoria: cuidados_pessoais
+            gtin: null
+            embalagem: { quantidade: 0.4, unidade: l }
+          loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
+          preco_centavos: 1990
+          link: 'https://example.com/oferta/123'
+          coletada_em: '2026-10-27T12:00:00Z'
+        denuncias: 3
+        pessoas_base: 25
+        limite: 3
+        motivos: { preco_errado: 2, sem_estoque: 1 }
+        resolucao: restaurar
+        resolucao_por:
+          operador: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, nome: Ana }
+          em: '2026-10-27T14:50:00Z'
+          observacao: Preço confirmado no site.
+    PaginaCasosDenuncia:
+      value: { itens: [*casoRestaurado], proximo_cursor: null }
+    BloqueioTriagemRevisado:
+      value: &bloqueioRevisado
+        id: 4b5c6d7e-8f9a-4b0c-8d1e-2f3a4b5c6d7e
+        fonte: { id: 8f9e0d1c-2b3a-4c5d-9e6f-7a8b9c0d1e2f, nome: lomadee, tipo: A, confiabilidade: alta, status_confianca: aprovada }
+        id_externo: '998877'
+        titulo: Medicamento X 20 comprimidos
+        codigo: TERMO_DE_PRESCRICAO
+        detalhe: Título contém termo que indica venda sob prescrição.
+        revisao_humana: true
+        primeira_vez_em: '2026-10-26T10:00:00Z'
+        ultima_vez_em: '2026-10-27T12:00:00Z'
+        resultado: bloqueio_correto
+        revisao_por:
+          operador: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, nome: Ana }
+          em: '2026-10-27T15:00:00Z'
+          observacao: Medicamento tarjado.
+    PaginaBloqueiosTriagem:
+      value: { itens: [*bloqueioRevisado], proximo_cursor: null }
+    PedidoOfertaManual:
+      value:
+        produto_id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+        loja_id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e
+        preco_centavos: 2390
+        condicao: { tipo: leve_pague, leve: 3, pague: 2 }
+        frete: { status: nao_se_aplica, centavos: null }
+        valida_de: '2026-10-28T03:00:00Z'
+        valida_ate: '2026-11-02T03:00:00Z'
+        link: 'https://example.com/encarte'
+        link_afiliado: false
+    OfertaManual:
+      value: &ofertaManual
+        id: 6a7b8c9d-0e1f-4a2b-8c3d-4e5f6a7b8c9d
+        produto:
+          id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+          nome: Shampoo Elseve Hidra Hialurônico 400 ml
+          marca: { chave: elseve, nome: Elseve }
+          categoria: cuidados_pessoais
+          gtin: null
+          embalagem: { quantidade: 0.4, unidade: l }
+        loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
+        preco_centavos: 2390
+        condicao: { tipo: leve_pague, leve: 3, pague: 2 }
+        rotulo_condicao: leve 3 pague 2
+        frete: { status: nao_se_aplica, centavos: null }
+        valida_de: '2026-10-28T03:00:00Z'
+        valida_ate: '2026-11-02T03:00:00Z'
+        link: 'https://example.com/encarte'
+        link_afiliado: false
+        disponivel: true
+        alerta_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+        criada_por: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, nome: Ana }
+        criada_em: '2026-10-27T15:10:00Z'
+    PaginaOfertasManuais:
+      value: { itens: [*ofertaManual], proximo_cursor: null }
+    PaginaProdutosAdmin:
+      value:
+        itens:
+          - id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+            nome: Shampoo Elseve Hidra Hialurônico 400 ml
+            marca: { chave: elseve, nome: Elseve }
+            categoria: cuidados_pessoais
+            gtin: null
+            embalagem: { quantidade: 0.4, unidade: l }
+        proximo_cursor: null
+    PaginaAuditoria:
+      value:
+        itens:
+          - id: d1e2f3a4-b5c6-4d7e-8f9a-0b1c2d3e4f5a
+            em: '2026-10-27T14:40:00Z'
+            operador: { id: 2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b, nome: Ana }
+            acao: alerta_revisado
+            alvo_tipo: alerta
+            alvo_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+            detalhe: { antes: { revisao: pendente }, depois: { revisao: aprovado }, observacao: Preço conferido no site da loja. }
+        proximo_cursor: null

@@ -1,39 +1,82 @@
 openapi: 3.1.0
 info:
-  title: economae API
-  version: 1.0.0-rascunho.1
+  title: economae API (app)
+  version: 1.0.0-rascunho.2
+  license:
+    name: Proprietária
+    identifier: LicenseRef-Proprietaria
   description: |
-    **RASCUNHO PARA APROVAÇÃO. Não congelado.** Depois da aprovação, mudança que quebre este contrato
-    exige `/v2`; campo novo opcional e endpoint novo entram em `/v1` sem aprovação nova.
+    **RASCUNHO PARA APROVAÇÃO. Não congelado.** Contrato do núcleo do app (PRODUTO.md, itens 1 a 10).
+    A área do operador (item 11) está em `admin.yaml`. Depois da aprovação, mudança que quebre este
+    contrato exige `/v2`; campo opcional novo, endpoint novo e valor novo de enum em resposta entram em
+    `/v1` sem aprovação nova.
 
-    Convenções
-    - Dinheiro em centavos inteiros. Preço por unidade em centavos com até 4 casas (número decimal).
-    - Datas em ISO 8601 UTC. Horário de silêncio é hora local do tenant (`America/Sao_Paulo`).
-    - CEP sempre com 8 dígitos, sem hífen.
-    - Nomes de campo em português, `snake_case`, iguais aos do banco quando existe coluna.
-    - Rotas sem autenticação precisam do cabeçalho `X-Tenant` (slug). Rotas autenticadas tiram o tenant
-      do token e ignoram `X-Tenant`.
-    - Superfície administrativa (aprovar alerta, aprovar loja, oferta manual TIPO E) NÃO faz parte deste
-      contrato; terá contrato e credencial próprios.
-    - Fora do contrato por enquanto: validação de compra no Google Play (fase 6) e exportação de dados
-      do titular. Ambos entram de forma aditiva.
+    ## Convenções
+    - Nomes em português, `snake_case`, iguais às colunas quando a coluna existe.
+    - Dinheiro em centavos inteiros. O app mostra `preco_centavos` (preço da embalagem). Campos
+      `*_por_unidade_centavos` (por kg, l ou un, até 4 casas) servem só para comparar e não são exibidos
+      como preço principal.
+    - Datas em ISO 8601 UTC. Horário de silêncio em hora local do tenant (`fuso` em `/v1/configuracao`).
+    - CEP com 8 dígitos, sem hífen.
+    - Ids são UUID estáveis; o id de um recurso nunca muda nem é reaproveitado.
+    - Listas paginam por cursor opaco (`cursor` + `limite` → `proximo_cursor`; `null` = fim).
+    - **Tenant.** Rotas sem autenticação recebem `X-Tenant` (slug fixo no build do app). Rotas
+      autenticadas tiram o tenant do token e ignoram `X-Tenant`. Um token só vale no tenant que o emitiu;
+      recurso de outro tenant responde 404, nunca 403.
+    - **Sessão.** Tokens opacos de 256 bits, guardados só como hash. Access de 1 h; refresh de 60 dias,
+      de uso único, com detecção de reuso (reuso revoga a sessão inteira). Audiência `app`: token de
+      operador é recusado aqui (401).
+    - **LGPD.** Enquanto a versão vigente dos termos não for aceita, só `/v1/me*` e `/v1/auth/*`
+      respondem; as demais rotas autenticadas dão 403 `termos_pendentes`.
+    - **Erro único** `Erro {codigo, mensagem, campos?}`. O app testa `codigo` (enum estável);
+      `mensagem` é texto para o usuário. Qualquer rota pode responder 500 `erro_interno`.
+    - **Limite de taxa.** 429 `muitas_requisicoes` com `Retry-After` (segundos). Os limites de cada rota
+      estão na descrição dela; valores marcados "(proposto)" ficam em config por tenant e aguardam
+      aprovação.
+    - **Idempotência.** PUT substitui o recurso inteiro e pode ser repetido. POST que cria efeito
+      (`eventos`, `comprovantes`) declara como é idempotente na própria rota.
+    - **Evolução.** O app ignora campo desconhecido na resposta e trata valor desconhecido de enum de
+      forma genérica (ex.: `codigo` desconhecido = erro genérico).
+    - Respostas com `Cache-Control: no-store` e `Vary: X-Tenant, Authorization`.
+    - Nunca vão para o app: `alerts.motivo` (texto de auditoria), `alerts.score` e componentes do score.
 servers:
   - url: http://127.0.0.1:3000
     description: desenvolvimento
 tags:
-  - name: auth
-  - name: conta
-  - name: preferencias
-  - name: feed
-  - name: dispositivo
   - name: configuracao
+    description: Configuração pública do tenant.
+  - name: auth
+    description: Login (código por e-mail, Google, Apple) e sessão.
+  - name: conta
+    description: Conta, consentimentos (LGPD), exclusão e exportação de dados do titular.
+  - name: preferencias
+    description: Categorias, CEPs, silêncio, limite diário e silenciamento de loja ou marca.
+  - name: feed
+    description: Feed de promoções, detalhe do alerta e retorno do usuário sobre o alerta.
+  - name: produtos
+    description: Pesquisa de produto monitorado, página do produto e histórico de preço.
+  - name: seguidos
+    description: Produtos seguidos (a estrela) e os avisos configurados por produto.
+  - name: avisos
+    description: Central de avisos dentro do app.
+  - name: assinatura
+    description: Premium validado na loja de apps.
+  - name: dispositivo
+    description: Token de push do aparelho.
+  - name: webhooks
+    description: Notificações servidor a servidor das lojas de apps.
+
+security:
+  - usuario: []
 
 paths:
+  # ---------------------------------------------------------------- configuração
   /v1/configuracao:
     get:
       tags: [configuracao]
       operationId: obterConfiguracao
       summary: Configuração pública do tenant, lida na abertura do app
+      description: Sem autenticação. Limite (proposto) 60/min por IP.
       security: []
       parameters:
         - $ref: '#/components/parameters/XTenant'
@@ -43,17 +86,24 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Configuracao' }
-        '404': { $ref: '#/components/responses/Erro' }
+              examples:
+                padrao: { $ref: '#/components/examples/Configuracao' }
+        '400': { $ref: '#/components/responses/R400Tenant' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+        '429': { $ref: '#/components/responses/R429' }
 
+  # ---------------------------------------------------------------- auth
   /v1/auth/email/codigo:
     post:
       tags: [auth]
       operationId: solicitarCodigoEmail
       summary: Envia um código de 6 dígitos para o e-mail
       description: |
-        Responde 202 mesmo quando o e-mail não existe ou o envio foi limitado, para não revelar quem tem
-        conta. Limites (Redis): 1 pedido por e-mail a cada 60 s, 5 por hora por e-mail, 20 por hora por IP.
-        Acima disso, 429 com `Retry-After`.
+        Responde 202 também quando o e-mail não tem conta e quando o envio foi limitado em silêncio, para
+        não revelar quem tem conta. Código guardado só como HMAC, expira em 10 min; só o mais recente vale.
+        Limites: 1 pedido por e-mail a cada 60 s, 5/h por e-mail, 20/h por IP; acima disso 429 com
+        `Retry-After`. 503 quando o provedor de e-mail falha ou a cota diária própria acabou (provedor e
+        cota a verificar).
       security: []
       parameters:
         - $ref: '#/components/parameters/XTenant'
@@ -61,31 +111,29 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [email]
-              properties:
-                email: { type: string, format: email, maxLength: 254 }
+            schema: { $ref: '#/components/schemas/PedidoCodigoEmail' }
+            example: { email: maria@example.com }
       responses:
         '202':
-          description: Pedido aceito. O código expira em 10 minutos.
+          description: Pedido aceito.
           content:
             application/json:
-              schema:
-                type: object
-                required: [expira_em_segundos]
-                properties:
-                  expira_em_segundos: { type: integer, example: 600 }
-        '422': { $ref: '#/components/responses/Erro' }
-        '429': { $ref: '#/components/responses/Erro' }
+              schema: { $ref: '#/components/schemas/CodigoEnviado' }
+              example: { expira_em_segundos: 600, reenviar_em_segundos: 60 }
+        '400': { $ref: '#/components/responses/R400Tenant' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
+        '503': { $ref: '#/components/responses/R503' }
 
   /v1/auth/email/verificar:
     post:
       tags: [auth]
       operationId: verificarCodigoEmail
-      summary: Troca e-mail + código por uma sessão (cria a conta no primeiro acesso)
+      summary: Troca e-mail e código por uma sessão (a conta nasce no primeiro código válido)
       description: |
-        Máximo de 5 tentativas por código; na quinta falha o código é invalidado e é preciso pedir outro.
+        Até 5 tentativas por código; na quinta falha o código é invalidado (`codigo_expirado` a partir
+        daí). Limite: 20 tentativas/h por IP.
       security: []
       parameters:
         - $ref: '#/components/parameters/XTenant'
@@ -93,20 +141,108 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [email, codigo]
-              properties:
-                email: { type: string, format: email, maxLength: 254 }
-                codigo: { type: string, pattern: '^[0-9]{6}$' }
+            schema: { $ref: '#/components/schemas/VerificacaoCodigoEmail' }
+            example: { email: maria@example.com, codigo: '482913' }
       responses:
         '200':
           description: Sessão criada.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Sessao' }
-        '422': { $ref: '#/components/responses/Erro' }
-        '429': { $ref: '#/components/responses/Erro' }
+              examples:
+                nova: { $ref: '#/components/examples/Sessao' }
+        '400': { $ref: '#/components/responses/R400Tenant' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+        '422':
+          description: Código errado, vencido ou corpo inválido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                codigo_invalido: { $ref: '#/components/examples/ErroCodigoInvalido' }
+                codigo_expirado: { $ref: '#/components/examples/ErroCodigoExpirado' }
+                validacao: { $ref: '#/components/examples/ErroValidacao' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/auth/google:
+    post:
+      tags: [auth]
+      operationId: entrarComGoogle
+      summary: Troca o ID token do Google por uma sessão
+      description: |
+        O servidor verifica assinatura, emissor, audiência (cliente OAuth do tenant), validade e, quando
+        enviado, `nonce` (detalhes da verificação a verificar na documentação vigente do Google). Conta
+        localizada por `users.google_sub`. Regra de vínculo com conta já existente de mesmo e-mail:
+        decisão em aberto D4. Limite: 20/h por IP.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/XTenant'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginGoogle' }
+            example: { id_token: '<id token do Google>' }
+      responses:
+        '200':
+          description: Sessão criada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Sessao' }
+              examples:
+                nova: { $ref: '#/components/examples/Sessao' }
+        '400': { $ref: '#/components/responses/R400Tenant' }
+        '401':
+          description: Token do Google inválido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                credencial_invalida: { $ref: '#/components/examples/ErroCredencialInvalida' }
+        '403': { $ref: '#/components/responses/R403MetodoLogin' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/auth/apple:
+    post:
+      tags: [auth]
+      operationId: entrarComApple
+      summary: Troca o identity token da Apple por uma sessão
+      description: |
+        Só ligado quando existir o app de iPhone (`metodos_login` em `/v1/configuracao`); antes disso 403
+        `metodo_login_indisponivel`. `codigo_autorizacao` é guardado (cifrado) para revogar o acesso na
+        Apple quando a conta for excluída; se e como a Apple exige isso, a verificar. Conta localizada por
+        `sub` da Apple (exige coluna nova). Limite: 20/h por IP.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/XTenant'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginApple' }
+            example: { id_token: '<identity token da Apple>', codigo_autorizacao: '<authorization code>', nonce: 'b1f4c7e2' }
+      responses:
+        '200':
+          description: Sessão criada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Sessao' }
+              examples:
+                nova: { $ref: '#/components/examples/Sessao' }
+        '400': { $ref: '#/components/responses/R400Tenant' }
+        '401':
+          description: Token da Apple inválido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                credencial_invalida: { $ref: '#/components/examples/ErroCredencialInvalida' }
+        '403': { $ref: '#/components/responses/R403MetodoLogin' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
 
   /v1/auth/renovar:
     post:
@@ -114,97 +250,135 @@ paths:
       operationId: renovarSessao
       summary: Troca o refresh token por um par novo (rotação)
       description: |
-        O refresh token é de uso único. Se um refresh já usado for apresentado de novo, a sessão inteira é
-        revogada (indício de roubo) e a resposta é 401 `sessao_revogada`.
+        Refresh de uso único; a renovação devolve par novo e reinicia os 60 dias. Refresh já usado
+        apresentado de novo revoga a sessão inteira (indício de roubo) e responde 401 `sessao_revogada`.
+        O tenant vem do próprio refresh token. Limite: 60/h por sessão.
       security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [refresh_token]
-              properties:
-                refresh_token: { type: string }
+            schema: { $ref: '#/components/schemas/PedidoRenovacao' }
+            example: { refresh_token: '<refresh token>' }
       responses:
         '200':
           description: Sessão renovada.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Sessao' }
-        '401': { $ref: '#/components/responses/Erro' }
+              examples:
+                renovada: { $ref: '#/components/examples/Sessao' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '429': { $ref: '#/components/responses/R429' }
 
   /v1/auth/sair:
     post:
       tags: [auth]
       operationId: sair
-      summary: Revoga a sessão atual e desvincula o token de push deste aparelho
+      summary: Revoga a sessão atual e o token de push preso a ela
+      description: Idempotente do ponto de vista do app (sessão já revogada responde 401).
       responses:
         '204': { description: Sessão encerrada. }
-        '401': { $ref: '#/components/responses/Erro' }
+        '401': { $ref: '#/components/responses/R401' }
 
+  # ---------------------------------------------------------------- conta
   /v1/me:
     get:
       tags: [conta]
       operationId: obterMe
-      summary: Dados da conta
-      description: Permitido mesmo com termos pendentes.
+      summary: Dados da conta, plano e consentimentos
+      description: Permitido com termos pendentes.
       responses:
         '200':
           description: Conta.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Usuario' }
-        '401': { $ref: '#/components/responses/Erro' }
+              examples:
+                gratuito: { $ref: '#/components/examples/Usuario' }
+        '401': { $ref: '#/components/responses/R401' }
     delete:
       tags: [conta]
       operationId: excluirConta
-      summary: Exclui a conta e, em cascata, preferências, entregas e assinaturas
+      summary: Exclui a conta e apaga tudo em cascata
       description: |
-        Exige `confirmacao` igual ao e-mail da conta, para evitar chamada acidental. Revoga todas as
-        sessões. Permitido mesmo com termos pendentes.
+        Apaga preferências, silenciamentos, seguidos, avisos, avaliações, denúncias, eventos,
+        dispositivos, sessões e registros de assinatura. Exige `confirmacao: excluir` para evitar chamada
+        acidental (o e-mail não serve: com a Apple ele pode ser um endereço de retransmissão que a pessoa
+        não conhece). A assinatura na loja de apps não é cancelada pela API; o app orienta a pessoa a
+        cancelar na loja (regra de cada loja a verificar). Permitido com termos pendentes.
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [confirmacao]
-              properties:
-                confirmacao: { type: string, format: email }
+            schema: { $ref: '#/components/schemas/ExclusaoConta' }
+            example: { confirmacao: excluir }
       responses:
         '204': { description: Conta excluída. }
-        '401': { $ref: '#/components/responses/Erro' }
-        '422': { $ref: '#/components/responses/Erro' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
 
   /v1/me/consentimentos:
     put:
       tags: [conta]
       operationId: registrarConsentimentos
-      summary: Registra aceite de termos e consentimento de notificação (separados, LGPD)
+      summary: Registra aceite de termos e consentimento de notificação (separados)
       description: |
-        Informe ao menos um campo. `termos_versao` precisa ser a versão vigente em `/v1/configuracao`.
-        `notificacoes: false` revoga o consentimento. Até haver aceite dos termos, todas as rotas
-        autenticadas fora de `/v1/me*` e `/v1/auth/*` respondem 403 `termos_pendentes`.
+        Informe ao menos um campo. `termos_versao` precisa ser a vigente (`/v1/configuracao`); outra
+        versão dá 409 `termos_desatualizados`. `notificacoes: false` revoga o consentimento de push.
+        Idempotente: repetir o mesmo valor não muda as datas já gravadas. Permitido com termos pendentes.
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              minProperties: 1
-              properties:
-                termos_versao: { type: string }
-                notificacoes: { type: boolean }
+            schema: { $ref: '#/components/schemas/Consentimentos' }
+            example: { termos_versao: '2026-10-27', notificacoes: true }
       responses:
         '200':
           description: Conta atualizada.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Usuario' }
-        '401': { $ref: '#/components/responses/Erro' }
-        '422': { $ref: '#/components/responses/Erro' }
+              examples:
+                gratuito: { $ref: '#/components/examples/Usuario' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '409':
+          description: Versão dos termos não é a vigente.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                termos_desatualizados: { $ref: '#/components/examples/ErroTermosDesatualizados' }
+        '422': { $ref: '#/components/responses/R422' }
 
+  /v1/me/exportacao:
+    get:
+      tags: [conta]
+      operationId: exportarDados
+      summary: Exporta os dados do titular (LGPD) em JSON
+      description: |
+        Síncrono: devolve tudo que a conta tem guardado. Não inclui dados de oferta, produto ou loja além
+        do necessário para identificar cada registro. Permitido com termos pendentes. Limite (proposto):
+        1 por hora por conta.
+      responses:
+        '200':
+          description: Dados do titular.
+          headers:
+            Content-Disposition:
+              description: '`attachment; filename="economae-dados.json"`'
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportacaoDados' }
+              examples:
+                exportacao: { $ref: '#/components/examples/ExportacaoDados' }
+        '401': { $ref: '#/components/responses/R401' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  # ---------------------------------------------------------------- preferências
   /v1/preferencias:
     get:
       tags: [preferencias]
@@ -216,66 +390,161 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Preferencias' }
-        '401': { $ref: '#/components/responses/Erro' }
-        '403': { $ref: '#/components/responses/Erro' }
+              examples:
+                preenchidas: { $ref: '#/components/examples/Preferencias' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
     put:
       tags: [preferencias]
       operationId: salvarPreferencias
       summary: Substitui as preferências por inteiro (idempotente)
       description: |
-        Validações: categorias precisam existir em `/v1/configuracao`; CEPs precisam estar na região do
-        tenant (`422 cep_fora_da_regiao`); mais de 1 CEP exige premium (`403 plano_insuficiente`); máximo
-        absoluto de 3 CEPs.
+        Categorias precisam existir em `/v1/configuracao`. CEP fora da região do tenant dá 422
+        `cep_fora_da_regiao`. Mais CEPs do que o plano permite (`limites.ceps_gratuito`) dá 403
+        `plano_insuficiente`; teto absoluto `limites.ceps_premium`. `ceps_ignorados_pelo_plano` é só de
+        leitura (ver decisão em aberto D9). Silenciamento de loja e marca fica em `/v1/silenciamentos`.
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/Preferencias' }
+            examples:
+              preenchidas: { $ref: '#/components/examples/Preferencias' }
       responses:
         '200':
           description: Preferências salvas.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Preferencias' }
-        '401': { $ref: '#/components/responses/Erro' }
-        '403': { $ref: '#/components/responses/Erro' }
-        '422': { $ref: '#/components/responses/Erro' }
+              examples:
+                preenchidas: { $ref: '#/components/examples/Preferencias' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403':
+          description: Termos pendentes ou plano não permite tantos CEPs.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                termos_pendentes: { $ref: '#/components/examples/ErroTermosPendentes' }
+                plano_insuficiente: { $ref: '#/components/examples/ErroPlanoInsuficiente' }
+        '422':
+          description: Categoria inexistente, CEP malformado ou fora da região.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                validacao: { $ref: '#/components/examples/ErroValidacao' }
+                cep_fora_da_regiao: { $ref: '#/components/examples/ErroCepForaDaRegiao' }
 
+  /v1/silenciamentos:
+    get:
+      tags: [preferencias]
+      operationId: listarSilenciamentos
+      summary: Lojas e marcas silenciadas
+      description: Lista curta (sem paginação); teto em `limites.max_silenciamentos`.
+      responses:
+        '200':
+          description: Silenciamentos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaSilenciamentos' }
+              examples:
+                dois: { $ref: '#/components/examples/ListaSilenciamentos' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+
+  /v1/silenciamentos/{tipo}/{alvo}:
+    parameters:
+      - $ref: '#/components/parameters/TipoSilenciamento'
+      - $ref: '#/components/parameters/AlvoSilenciamento'
+    put:
+      tags: [preferencias]
+      operationId: silenciar
+      summary: Silencia uma loja ou marca (cria ou troca o alcance; idempotente)
+      description: |
+        `alcance: push` só deixa de mandar push; `alcance: tudo` também esconde do feed, da pesquisa, da
+        página do produto e dos avisos de produtos seguidos. `alvo` é o `id` da loja ou a `chave` da
+        marca. 201 quando cria, 200 quando já existia. Teto `limites.max_silenciamentos` → 409.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoSilenciamento' }
+            example: { alcance: tudo }
+      responses:
+        '200':
+          description: Silenciamento atualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Silenciamento' }
+              examples:
+                loja: { $ref: '#/components/examples/SilenciamentoLoja' }
+        '201':
+          description: Silenciamento criado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Silenciamento' }
+              examples:
+                loja: { $ref: '#/components/examples/SilenciamentoLoja' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
+        '409': { $ref: '#/components/responses/R409Limite' }
+        '422': { $ref: '#/components/responses/R422' }
+    delete:
+      tags: [preferencias]
+      operationId: removerSilenciamento
+      summary: Remove o silenciamento (idempotente)
+      responses:
+        '204': { description: Removido (ou já inexistente). }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- feed
   /v1/alertas:
     get:
       tags: [feed]
       operationId: listarAlertas
       summary: Feed de promoções do usuário
       description: |
-        Só aparecem alertas cuja oferta continua disponível e dentro da validade, de categoria escolhida,
-        e que o motor de cobertura aceita para pelo menos um dos CEPs do usuário. Decisão `descartar` nunca
-        aparece. Ordem: `criado_em` decrescente. Paginação por cursor opaco.
+        Entra o alerta com decisão `notificar` ou `somente_feed`, ou `aguardar_aprovacao` já aprovado por
+        operador; com oferta disponível e dentro da validade; de categoria escolhida; coberto para ao
+        menos um CEP que o plano permite; de loja e marca não silenciadas com `alcance: tudo`; e não
+        escondido por denúncia. Alerta rejeitado por operador e decisão `descartar` nunca aparecem.
+        Medicamento aparece com `advertencias` preenchido. Ordem: `criado_em` decrescente.
       parameters:
         - name: categoria
           in: query
-          description: Restringe a uma das categorias já escolhidas.
-          schema: { type: string }
-        - name: limite
-          in: query
-          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
-        - name: cursor
-          in: query
-          schema: { type: string }
+          description: Restringe a uma das categorias escolhidas.
+          schema: { type: string, pattern: '^[a-z0-9_]+$' }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limite'
       responses:
         '200':
           description: Página do feed.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/PaginaAlertas' }
-        '401': { $ref: '#/components/responses/Erro' }
-        '403': { $ref: '#/components/responses/Erro' }
-        '422': { $ref: '#/components/responses/Erro' }
+              examples:
+                com_itens: { $ref: '#/components/examples/PaginaAlertas' }
+                sem_ceps: { $ref: '#/components/examples/PaginaAlertasVazia' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
 
   /v1/alertas/{id}:
     get:
       tags: [feed]
       operationId: obterAlerta
-      summary: Detalhe do alerta, com histórico de preço
+      summary: Detalhe do alerta
+      description: |
+        Responde para qualquer alerta do tenant que já pôde ser mostrado (não `descartar`, não rejeitado,
+        não pendente de aprovação), mesmo que a promoção tenha acabado: `situacao` diz se está ativa,
+        encerrada ou em revisão por denúncia. Assim um push aberto tarde mostra "promoção encerrada" em
+        vez de erro. O histórico de preço fica em `/v1/produtos/{id}/historico`.
       parameters:
         - $ref: '#/components/parameters/AlertaId'
       responses:
@@ -284,326 +553,1630 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AlertaDetalhe' }
-        '401': { $ref: '#/components/responses/Erro' }
-        '403': { $ref: '#/components/responses/Erro' }
-        '404': { $ref: '#/components/responses/Erro' }
+              examples:
+                ativo: { $ref: '#/components/examples/AlertaDetalhe' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
 
   /v1/alertas/{id}/eventos:
     post:
       tags: [feed]
       operationId: registrarEventoAlerta
-      summary: Registra que o usuário abriu o alerta ou clicou no link da loja
-      description: 'Alimenta `deliveries.aberto_em` e `clicado_em`. Idempotente: repetir não altera o primeiro registro.'
+      summary: Registra abertura, clique no link da loja ou compartilhamento
+      description: |
+        Base do cálculo de denúncia (pessoas distintas que abriram ou clicaram em 7 dias) e das métricas.
+        Idempotente por `Idempotency-Key`: repetir a mesma chave com o mesmo corpo não grava de novo;
+        mesma chave com corpo diferente dá 409 `idempotencia_conflito`. Chaves valem 24 h (proposto).
+        Limite (proposto): 300/h por conta.
+      parameters:
+        - $ref: '#/components/parameters/AlertaId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EventoAlerta' }
+            example: { tipo: clicado, origem: feed, ocorrido_em: '2026-10-27T14:03:11Z' }
+      responses:
+        '204': { description: Registrado (ou já registrado com esta chave). }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
+        '409': { $ref: '#/components/responses/R409Idempotencia' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/alertas/{id}/avaliacao:
+    put:
+      tags: [feed]
+      operationId: avaliarAlerta
+      summary: Avalia o aviso como útil ou não útil (uma por pessoa; repetir substitui)
       parameters:
         - $ref: '#/components/parameters/AlertaId'
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [tipo, origem]
-              properties:
-                tipo: { type: string, enum: [aberto, clicado] }
-                origem: { type: string, enum: [push, feed] }
+            schema: { $ref: '#/components/schemas/PedidoAvaliacao' }
+            example: { valor: util }
       responses:
-        '204': { description: Registrado. }
-        '401': { $ref: '#/components/responses/Erro' }
-        '403': { $ref: '#/components/responses/Erro' }
-        '404': { $ref: '#/components/responses/Erro' }
+        '200':
+          description: Avaliação gravada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Avaliacao' }
+              example: { alerta_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d, valor: util, avaliado_em: '2026-10-27T14:05:00Z' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
 
-  /v1/dispositivo:
+  /v1/alertas/{id}/denuncia:
     put:
-      tags: [dispositivo]
-      operationId: registrarDispositivo
-      summary: Registra ou atualiza o token de push (FCM) deste aparelho
-      description: Implementado na fase 4. O token fica vinculado à sessão atual.
+      tags: [feed]
+      operationId: denunciarAlerta
+      summary: Denuncia preço errado ou estoque acabado (uma por pessoa por oferta; idempotente)
+      description: |
+        A denúncia vale para a oferta do alerta no preço atual; quando o preço muda, a contagem zera e a
+        pessoa pode denunciar de novo. Repetir troca só o `motivo`, sem contar duas vezes. Quando as
+        denúncias de pessoas distintas passam do limite (PRODUTO.md, regra de denúncia; números em config
+        por tenant), a oferta some para todos e entra na fila do operador. 201 quando cria, 200 quando
+        já existia. Limite (proposto): 20 denúncias/dia por conta.
+      parameters:
+        - $ref: '#/components/parameters/AlertaId'
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [token_fcm, plataforma, versao_app]
-              properties:
-                token_fcm: { type: string, maxLength: 4096 }
-                plataforma: { type: string, enum: [android] }
-                versao_app: { type: string, maxLength: 32 }
+            schema: { $ref: '#/components/schemas/PedidoDenuncia' }
+            example: { motivo: preco_errado }
+      responses:
+        '200':
+          description: Denúncia já existia; motivo atualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Denuncia' }
+              examples:
+                denuncia: { $ref: '#/components/examples/Denuncia' }
+        '201':
+          description: Denúncia registrada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Denuncia' }
+              examples:
+                denuncia: { $ref: '#/components/examples/Denuncia' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  # ---------------------------------------------------------------- produtos
+  /v1/produtos:
+    get:
+      tags: [produtos]
+      operationId: pesquisarProdutos
+      summary: Pesquisa entre os produtos que o app já monitora
+      description: |
+        Só produto com oferta coletada no tenant; nada é buscado fora. Exclui marca e loja silenciadas
+        com `alcance: tudo` e, até decisão D7, medicamento. Ordem por relevância; cursor opaco.
+        Limite (proposto): 30/min por conta.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Texto livre (nome, marca ou GTIN).
+          schema: { type: string, minLength: 2, maxLength: 100 }
+        - name: categoria
+          in: query
+          schema: { type: string, pattern: '^[a-z0-9_]+$' }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Resultados.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaProdutos' }
+              examples:
+                shampoo: { $ref: '#/components/examples/PaginaProdutos' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/produtos/{id}:
+    get:
+      tags: [produtos]
+      operationId: obterProduto
+      summary: Página do produto, com as ofertas atuais por loja
+      parameters:
+        - $ref: '#/components/parameters/ProdutoId'
+      responses:
+        '200':
+          description: Produto.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Produto' }
+              examples:
+                shampoo: { $ref: '#/components/examples/Produto' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
+
+  /v1/produtos/{id}/historico:
+    get:
+      tags: [produtos]
+      operationId: obterHistoricoProduto
+      summary: Histórico diário de preço do produto, por loja
+      description: |
+        Um ponto por dia fechado (fuso do tenant): o menor preço por unidade da família do produto naquela
+        loja (mesma base do motor), convertido também para a embalagem deste produto. Só existe a partir
+        do dia em que o app passou a coletar (`desde`); dias sem coleta não têm ponto. Máximo de 180 dias
+        nos dois planos.
+      parameters:
+        - $ref: '#/components/parameters/ProdutoId'
+        - name: loja_id
+          in: query
+          description: Restringe a uma loja.
+          schema: { type: string, format: uuid }
+        - name: dias
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 180, default: 180 }
+      responses:
+        '200':
+          description: Séries por loja.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HistoricoProduto' }
+              examples:
+                uma_loja: { $ref: '#/components/examples/HistoricoProduto' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- seguidos
+  /v1/seguidos:
+    get:
+      tags: [seguidos]
+      operationId: listarSeguidos
+      summary: Produtos seguidos (a estrela)
+      description: Ordem por `criado_em` decrescente.
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de seguidos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaSeguidos' }
+              examples:
+                um: { $ref: '#/components/examples/PaginaSeguidos' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/seguidos/{produto_id}:
+    parameters:
+      - name: produto_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    put:
+      tags: [seguidos]
+      operationId: seguirProduto
+      summary: Segue o produto e define os avisos dele (cria ou substitui; idempotente)
+      description: |
+        Favoritar, seguir e acompanhar são esta mesma ação. Todos os avisos respeitam silêncio, limite
+        diário e anti-repetição. `queda_percentual` entre `limites.queda_percentual_min` e
+        `limites.queda_percentual_max`. Teto de seguidos `limites.max_produtos_seguidos` (igual para os
+        dois planos) → 409 `limite_atingido`. 201 quando cria, 200 quando substitui.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoSeguir' }
+            examples:
+              padrao: { $ref: '#/components/examples/PedidoSeguirPadrao' }
+      responses:
+        '200':
+          description: Avisos atualizados.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Seguimento' }
+              examples:
+                seguido: { $ref: '#/components/examples/Seguimento' }
+        '201':
+          description: Produto seguido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Seguimento' }
+              examples:
+                seguido: { $ref: '#/components/examples/Seguimento' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '404': { $ref: '#/components/responses/R404' }
+        '409': { $ref: '#/components/responses/R409Limite' }
+        '422': { $ref: '#/components/responses/R422' }
+    delete:
+      tags: [seguidos]
+      operationId: deixarDeSeguir
+      summary: Deixa de seguir (idempotente)
+      responses:
+        '204': { description: Removido (ou já não seguido). }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- central de avisos
+  /v1/avisos:
+    get:
+      tags: [avisos]
+      operationId: listarAvisos
+      summary: Central de avisos
+      description: |
+        Todo aviso gerado para a pessoa, tenha virado push ou não (silêncio, limite diário, sem
+        consentimento). O app redige o texto a partir dos campos estruturados. Ordem: `criado_em`
+        decrescente. Retenção: decisão D12.
+      parameters:
+        - name: nao_lidos
+          in: query
+          description: true = só os não lidos.
+          schema: { type: boolean, default: false }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de avisos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaAvisos' }
+              examples:
+                um: { $ref: '#/components/examples/PaginaAvisos' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/avisos/leitura:
+    post:
+      tags: [avisos]
+      operationId: marcarAvisosLidos
+      summary: Marca avisos como lidos (por ids ou até um instante; idempotente)
+      description: Aviso já lido mantém o `lido_em` original. Id inexistente é ignorado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoLeitura' }
+            examples:
+              ate: { value: { ate: '2026-10-27T15:00:00Z' } }
+              ids: { value: { ids: [5d4c3b2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a] } }
+      responses:
+        '204': { description: Marcados. }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  # ---------------------------------------------------------------- assinatura
+  /v1/assinatura/comprovantes:
+    post:
+      tags: [assinatura]
+      operationId: validarComprovanteAssinatura
+      summary: Envia o comprovante de compra da loja de apps e recebe o plano atualizado
+      description: |
+        Serve para compra nova e para "restaurar compras". O servidor valida o comprovante na loja
+        indicada (APIs e formato do comprovante a verificar na documentação vigente de Google Play e App
+        Store). Idempotente: o mesmo comprovante devolve o mesmo resultado. Comprovante já ligado a outra
+        conta do tenant dá 409 `comprovante_de_outra_conta`. 503 quando a loja não responde.
+        Limite (proposto): 10/h por conta. Renovação, cancelamento e reembolso chegam pelos webhooks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ComprovanteAssinatura' }
+            example: { loja: google_play, produto_loja_id: economae_premium_mensal, comprovante: '<purchase token>' }
+      responses:
+        '200':
+          description: Plano após a validação.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanoUsuario' }
+              examples:
+                premium: { $ref: '#/components/examples/PlanoPremium' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '409':
+          description: Comprovante pertence a outra conta.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                outra_conta: { $ref: '#/components/examples/ErroComprovanteOutraConta' }
+        '422':
+          description: Comprovante recusado pela loja ou corpo inválido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+              examples:
+                comprovante_invalido: { $ref: '#/components/examples/ErroComprovanteInvalido' }
+                validacao: { $ref: '#/components/examples/ErroValidacao' }
+        '429': { $ref: '#/components/responses/R429' }
+        '503': { $ref: '#/components/responses/R503' }
+
+  # ---------------------------------------------------------------- dispositivo
+  /v1/dispositivo:
+    put:
+      tags: [dispositivo]
+      operationId: registrarDispositivo
+      summary: Registra ou atualiza o token de push deste aparelho (idempotente)
+      description: |
+        O token fica preso à sessão atual: sair, sessão revogada ou conta excluída param o push neste
+        aparelho. Limite (proposto): 30/h por sessão.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoDispositivo' }
+            example: { token: '<token de push>', plataforma: android, versao_app: 1.0.0 }
       responses:
         '204': { description: Registrado. }
-        '401': { $ref: '#/components/responses/Erro' }
-        '403': { $ref: '#/components/responses/Erro' }
-        '422': { $ref: '#/components/responses/Erro' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
     delete:
       tags: [dispositivo]
       operationId: removerDispositivo
-      summary: Remove o token de push deste aparelho
-      description: Implementado na fase 4.
+      summary: Remove o token de push deste aparelho (idempotente)
       responses:
         '204': { description: Removido (ou já inexistente). }
-        '401': { $ref: '#/components/responses/Erro' }
+        '401': { $ref: '#/components/responses/R401' }
+
+  # ---------------------------------------------------------------- webhooks
+  /v1/webhooks/{tenant}/google-play:
+    post:
+      tags: [webhooks]
+      operationId: receberNotificacaoGooglePlay
+      summary: Notificação de assinatura do Google Play (servidor a servidor)
+      description: |
+        Sem token de usuário. Autenticidade verificada como o Google exige (mecanismo e formato do corpo
+        a verificar na documentação vigente). Idempotente pelo id da mensagem do provedor. O servidor
+        reconsulta a loja antes de mudar o plano; o corpo nunca é confiado sozinho.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/TenantPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotificacaoLoja' }
+            example: { message: { data: '<base64>', messageId: '<id>' } }
+      responses:
+        '204': { description: Recebida (ou já processada). }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401Webhook' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
+
+  /v1/webhooks/{tenant}/app-store:
+    post:
+      tags: [webhooks]
+      operationId: receberNotificacaoAppStore
+      summary: Notificação de assinatura da App Store (servidor a servidor)
+      description: |
+        Sem token de usuário. Payload assinado pela Apple, verificado antes de qualquer efeito (formato e
+        cadeia de certificados a verificar na documentação vigente). Idempotente pelo id da notificação.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/TenantPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotificacaoLoja' }
+            example: { signedPayload: '<JWS>' }
+      responses:
+        '204': { description: Recebida (ou já processada). }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401Webhook' }
+        '404': { $ref: '#/components/responses/R404Tenant' }
 
 components:
   securitySchemes:
-    bearer:
+    usuario:
       type: http
       scheme: bearer
-      description: Access token opaco (`access_token` da sessão).
+      description: Access token opaco de audiência `app` (campo `access_token` da `Sessao`).
+
   parameters:
     XTenant:
       name: X-Tenant
       in: header
       required: true
-      schema: { type: string, pattern: '^[a-z0-9-]+$', example: padrao }
+      description: Slug do tenant, fixo no build do app.
+      schema: { type: string, pattern: '^[a-z0-9-]+$', maxLength: 64, example: padrao }
+    TenantPath:
+      name: tenant
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-z0-9-]+$', maxLength: 64, example: padrao }
     AlertaId:
       name: id
       in: path
       required: true
       schema: { type: string, format: uuid }
+    ProdutoId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    TipoSilenciamento:
+      name: tipo
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/TipoSilenciamento' }
+    AlvoSilenciamento:
+      name: alvo
+      in: path
+      required: true
+      description: '`id` (UUID) da loja ou `chave` da marca.'
+      schema: { type: string, maxLength: 64, pattern: '^[a-z0-9-]+$' }
+    Cursor:
+      name: cursor
+      in: query
+      description: Valor de `proximo_cursor` da página anterior. Opaco; não montar à mão.
+      schema: { type: string, maxLength: 512 }
+    Limite:
+      name: limite
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID gerado pelo app para este evento.
+      schema: { type: string, format: uuid }
+
+  headers:
+    RetryAfter:
+      description: Segundos até poder tentar de novo.
+      schema: { type: integer, minimum: 1 }
+
   responses:
-    Erro:
-      description: Erro. O `codigo` é estável e é o que o app deve testar; `mensagem` é para o usuário.
+    R400:
+      description: Corpo ilegível ou fora do esquema básico (JSON inválido, tipo errado).
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            requisicao_malformada: { $ref: '#/components/examples/ErroRequisicaoMalformada' }
+    R400Tenant:
+      description: Corpo ilegível ou `X-Tenant` ausente.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            requisicao_malformada: { $ref: '#/components/examples/ErroRequisicaoMalformada' }
+            tenant_ausente: { $ref: '#/components/examples/ErroTenantAusente' }
+    R401:
+      description: Sem token, token vencido ou sessão revogada.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            nao_autenticado: { $ref: '#/components/examples/ErroNaoAutenticado' }
+            sessao_expirada: { $ref: '#/components/examples/ErroSessaoExpirada' }
+            sessao_revogada: { $ref: '#/components/examples/ErroSessaoRevogada' }
+    R401Webhook:
+      description: Assinatura ou credencial do provedor inválida.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            credencial_invalida: { $ref: '#/components/examples/ErroCredencialInvalida' }
+    R403Termos:
+      description: Termos vigentes ainda não aceitos.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            termos_pendentes: { $ref: '#/components/examples/ErroTermosPendentes' }
+    R403MetodoLogin:
+      description: Método de login desligado neste tenant.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            metodo_login_indisponivel: { $ref: '#/components/examples/ErroMetodoLoginIndisponivel' }
+    R404:
+      description: Recurso inexistente, de outro tenant ou não visível para esta conta.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            nao_encontrado: { $ref: '#/components/examples/ErroNaoEncontrado' }
+    R404Tenant:
+      description: Tenant desconhecido.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            tenant_desconhecido: { $ref: '#/components/examples/ErroTenantDesconhecido' }
+    R409Limite:
+      description: Teto de config atingido.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            limite_atingido: { $ref: '#/components/examples/ErroLimiteAtingido' }
+    R409Idempotencia:
+      description: Mesma chave de idempotência com corpo diferente.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            idempotencia_conflito: { $ref: '#/components/examples/ErroIdempotenciaConflito' }
+    R422:
+      description: Campo inválido; `campos` diz qual.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            validacao: { $ref: '#/components/examples/ErroValidacao' }
+    R429:
+      description: Limite de taxa.
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            muitas_requisicoes: { $ref: '#/components/examples/ErroMuitasRequisicoes' }
+    R503:
+      description: Serviço externo indisponível (provedor de e-mail, loja de apps).
+      headers:
+        Retry-After: { $ref: '#/components/headers/RetryAfter' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+          examples:
+            servico_indisponivel: { $ref: '#/components/examples/ErroServicoIndisponivel' }
 
   schemas:
+    # ------------------------------------------------------------ erro
+    CodigoErro:
+      type: string
+      description: |
+        Enum estável. Rotas em que cada código ocorre:
+        - `requisicao_malformada` (400): todas com corpo.
+        - `tenant_ausente` (400), `tenant_desconhecido` (404): rotas com `X-Tenant` e webhooks.
+        - `nao_autenticado`, `sessao_expirada`, `sessao_revogada` (401): toda rota autenticada e `/v1/auth/renovar`.
+        - `credencial_invalida` (401): `/v1/auth/google`, `/v1/auth/apple`, webhooks.
+        - `termos_pendentes` (403): toda rota autenticada fora de `/v1/me*` e `/v1/auth/*`.
+        - `plano_insuficiente` (403): `PUT /v1/preferencias`.
+        - `metodo_login_indisponivel` (403): `/v1/auth/google`, `/v1/auth/apple`.
+        - `nao_encontrado` (404): rotas com id no caminho.
+        - `termos_desatualizados` (409): `PUT /v1/me/consentimentos`.
+        - `limite_atingido` (409): `PUT /v1/seguidos/{produto_id}`, `PUT /v1/silenciamentos/{tipo}/{alvo}`.
+        - `idempotencia_conflito` (409): `POST /v1/alertas/{id}/eventos`.
+        - `comprovante_de_outra_conta` (409), `comprovante_invalido` (422): `POST /v1/assinatura/comprovantes`.
+        - `validacao` (422): todas com corpo ou parâmetro.
+        - `codigo_invalido`, `codigo_expirado` (422): `/v1/auth/email/verificar`.
+        - `cep_fora_da_regiao` (422): `PUT /v1/preferencias`.
+        - `muitas_requisicoes` (429): rotas com limite de taxa.
+        - `servico_indisponivel` (503): `/v1/auth/email/codigo`, `/v1/assinatura/comprovantes`.
+        - `erro_interno` (500): qualquer rota.
+      enum:
+        - requisicao_malformada
+        - tenant_ausente
+        - tenant_desconhecido
+        - nao_autenticado
+        - sessao_expirada
+        - sessao_revogada
+        - credencial_invalida
+        - termos_pendentes
+        - plano_insuficiente
+        - metodo_login_indisponivel
+        - nao_encontrado
+        - termos_desatualizados
+        - limite_atingido
+        - idempotencia_conflito
+        - comprovante_de_outra_conta
+        - comprovante_invalido
+        - validacao
+        - codigo_invalido
+        - codigo_expirado
+        - cep_fora_da_regiao
+        - muitas_requisicoes
+        - servico_indisponivel
+        - erro_interno
     Erro:
       type: object
       required: [codigo, mensagem]
       properties:
-        codigo:
-          type: string
-          enum:
-            - nao_autenticado
-            - sessao_expirada
-            - sessao_revogada
-            - termos_pendentes
-            - plano_insuficiente
-            - nao_encontrado
-            - validacao
-            - codigo_invalido
-            - codigo_expirado
-            - cep_fora_da_regiao
-            - muitas_requisicoes
-            - erro_interno
-        mensagem: { type: string }
+        codigo: { $ref: '#/components/schemas/CodigoErro' }
+        mensagem: { type: string, description: Texto para o usuário. }
         campos:
           type: array
           description: Presente em `validacao` e `cep_fora_da_regiao`.
-          items:
-            type: object
-            required: [campo, mensagem]
-            properties:
-              campo: { type: string, example: ceps }
-              mensagem: { type: string }
+          items: { $ref: '#/components/schemas/CampoInvalido' }
+    CampoInvalido:
+      type: object
+      required: [campo, mensagem]
+      properties:
+        campo: { type: string, description: 'Caminho do campo (ex.: `ceps[1]`).', example: 'ceps[1]' }
+        mensagem: { type: string }
 
+    # ------------------------------------------------------------ tipos básicos
+    Cep:
+      type: string
+      pattern: '^[0-9]{8}$'
+      example: '14020260'
+    Slug:
+      type: string
+      pattern: '^[a-z0-9_]+$'
+    MetodoLogin:
+      type: string
+      enum: [email, google, apple]
+    LojaApps:
+      type: string
+      enum: [google_play, app_store]
+    Plataforma:
+      type: string
+      enum: [android, ios]
+    PlanoAssinatura:
+      type: string
+      description: Igual a `subscriptions.plano`.
+      enum: [premium_mensal, premium_anual]
+    PaginaBase:
+      type: object
+      required: [proximo_cursor]
+      properties:
+        proximo_cursor: { type: [string, 'null'], description: 'null = última página.' }
+
+    # ------------------------------------------------------------ configuração
     Configuracao:
       type: object
-      required: [tenant, termos, categorias, regiao, limites]
+      required: [tenant, nome_app, fuso, termos, metodos_login, categorias, regiao, limites, planos]
       properties:
         tenant: { type: string, example: padrao }
-        termos:
-          type: object
-          required: [versao, url]
-          properties:
-            versao: { type: string, example: '2026-10-01' }
-            url: { type: string, format: uri }
+        nome_app: { type: string, example: economae }
+        fuso: { type: string, description: Fuso IANA do tenant., example: America/Sao_Paulo }
+        termos: { $ref: '#/components/schemas/DocumentoLegal' }
+        metodos_login:
+          type: array
+          description: Métodos ligados neste tenant. `apple` só quando existir o app de iPhone.
+          items: { $ref: '#/components/schemas/MetodoLogin' }
         categorias:
           type: array
-          items:
-            type: object
-            required: [slug, rotulo]
-            properties:
-              slug: { type: string, example: higiene_bebe }
-              rotulo: { type: string, example: Higiene do bebê }
-        regiao:
-          type: object
-          required: [cep_inicio, cep_fim]
-          properties:
-            cep_inicio: { type: string, pattern: '^[0-9]{8}$', example: '01000000' }
-            cep_fim: { type: string, pattern: '^[0-9]{8}$', example: '19999999' }
-        limites:
-          type: object
-          required: [ceps_gratuito, ceps_premium]
-          properties:
-            ceps_gratuito: { type: integer, example: 1 }
-            ceps_premium: { type: integer, example: 3 }
+          items: { $ref: '#/components/schemas/Categoria' }
+        regiao: { $ref: '#/components/schemas/Regiao' }
+        limites: { $ref: '#/components/schemas/Limites' }
+        planos:
+          type: array
+          description: Produtos de assinatura à venda em cada loja de apps. Vazio enquanto não houver premium publicado.
+          items: { $ref: '#/components/schemas/PlanoNaLoja' }
+    DocumentoLegal:
+      type: object
+      required: [versao, url]
+      properties:
+        versao: { type: string, example: '2026-10-27' }
+        url: { type: string, format: uri }
+    Categoria:
+      type: object
+      required: [slug, rotulo]
+      properties:
+        slug: { $ref: '#/components/schemas/Slug' }
+        rotulo: { type: string, example: Cuidados pessoais }
+    Regiao:
+      type: object
+      required: [cep_inicio, cep_fim]
+      properties:
+        cep_inicio: { $ref: '#/components/schemas/Cep' }
+        cep_fim: { $ref: '#/components/schemas/Cep' }
+    Limites:
+      type: object
+      description: Tetos em config por tenant. Diferença de plano é só `ceps_gratuito` × `ceps_premium`.
+      required: [ceps_gratuito, ceps_premium, max_produtos_seguidos, max_silenciamentos, queda_percentual_min, queda_percentual_max]
+      properties:
+        ceps_gratuito: { type: integer, minimum: 1, example: 1 }
+        ceps_premium: { type: integer, minimum: 1, maximum: 3, example: 3 }
+        max_produtos_seguidos: { type: integer, minimum: 1 }
+        max_silenciamentos: { type: integer, minimum: 1 }
+        queda_percentual_min: { type: integer, minimum: 1, maximum: 99 }
+        queda_percentual_max: { type: integer, minimum: 1, maximum: 99 }
+    PlanoNaLoja:
+      type: object
+      required: [plano, loja, produto_loja_id]
+      properties:
+        plano: { $ref: '#/components/schemas/PlanoAssinatura' }
+        loja: { $ref: '#/components/schemas/LojaApps' }
+        produto_loja_id: { type: string, description: Id do produto de assinatura cadastrado na loja de apps. }
 
+    # ------------------------------------------------------------ auth
+    PedidoCodigoEmail:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+    CodigoEnviado:
+      type: object
+      required: [expira_em_segundos, reenviar_em_segundos]
+      properties:
+        expira_em_segundos: { type: integer }
+        reenviar_em_segundos: { type: integer, description: Espera mínima antes de pedir outro código. }
+    VerificacaoCodigoEmail:
+      type: object
+      required: [email, codigo]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        codigo: { type: string, pattern: '^[0-9]{6}$' }
+    LoginGoogle:
+      type: object
+      required: [id_token]
+      properties:
+        id_token: { type: string, maxLength: 4096 }
+        nonce: { type: string, maxLength: 128, description: Quando o app gerou um nonce para o pedido ao Google. }
+    LoginApple:
+      type: object
+      required: [id_token]
+      properties:
+        id_token: { type: string, maxLength: 4096 }
+        codigo_autorizacao: { type: string, maxLength: 1024, writeOnly: true }
+        nonce: { type: string, maxLength: 128 }
+    PedidoRenovacao:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string, maxLength: 128 }
     Sessao:
       type: object
-      required: [access_token, access_expira_em, refresh_token, refresh_expira_em, usuario]
+      required: [access_token, access_expira_em, refresh_token, refresh_expira_em, conta_nova, usuario]
       properties:
         access_token: { type: string }
         access_expira_em: { type: string, format: date-time, description: 1 hora após a emissão. }
         refresh_token: { type: string }
-        refresh_expira_em: { type: string, format: date-time, description: 60 dias após a emissão; a renovação reinicia a contagem. }
+        refresh_expira_em: { type: string, format: date-time, description: 60 dias após a emissão ou a última renovação. }
+        conta_nova: { type: boolean, description: true quando a conta nasceu neste login. }
         usuario: { $ref: '#/components/schemas/Usuario' }
 
+    # ------------------------------------------------------------ conta
     Usuario:
       type: object
-      required: [id, email, termos_pendentes, notificacoes_consentidas, premium]
+      required: [id, email, metodos_login, termos_pendentes, termos_versao, termos_aceitos_em, notificacoes_consentidas, notificacoes_consentidas_em, plano, criado_em]
       properties:
         id: { type: string, format: uuid }
         email: { type: string, format: email }
-        termos_pendentes:
-          type: boolean
-          description: true enquanto a versão vigente dos termos não foi aceita.
-        termos_aceitos_versao: { type: [string, 'null'] }
+        metodos_login:
+          type: array
+          description: Métodos já usados por esta conta.
+          items: { $ref: '#/components/schemas/MetodoLogin' }
+        termos_pendentes: { type: boolean, description: true enquanto a versão vigente não foi aceita. }
+        termos_versao: { type: [string, 'null'], description: Última versão aceita. }
+        termos_aceitos_em: { type: [string, 'null'], format: date-time }
         notificacoes_consentidas: { type: boolean }
-        premium: { type: boolean }
-        premium_expira_em: { type: [string, 'null'], format: date-time }
+        notificacoes_consentidas_em: { type: [string, 'null'], format: date-time }
+        plano: { $ref: '#/components/schemas/PlanoUsuario' }
+        criado_em: { type: string, format: date-time }
+    PlanoUsuario:
+      type: object
+      required: [tipo, anuncios, ceps_permitidos, assinatura]
+      properties:
+        tipo: { type: string, enum: [gratuito, premium] }
+        anuncios: { type: boolean, description: false no premium. O app só exibe anúncio quando true. }
+        ceps_permitidos: { type: integer, minimum: 1 }
+        assinatura:
+          description: Última assinatura conhecida; null se nunca assinou.
+          oneOf:
+            - $ref: '#/components/schemas/Assinatura'
+            - type: 'null'
+    Assinatura:
+      type: object
+      required: [plano, status, loja, iniciada_em, expira_em]
+      properties:
+        plano: { $ref: '#/components/schemas/PlanoAssinatura' }
+        status:
+          type: string
+          description: Igual a `subscriptions.status`. Mapeamento de cada estado das lojas a verificar.
+          enum: [ativa, cancelada, expirada, pendente]
+        loja: { $ref: '#/components/schemas/LojaApps' }
+        iniciada_em: { type: string, format: date-time }
+        expira_em: { type: [string, 'null'], format: date-time }
+    ExclusaoConta:
+      type: object
+      required: [confirmacao]
+      properties:
+        confirmacao: { type: string, const: excluir }
+    Consentimentos:
+      type: object
+      minProperties: 1
+      properties:
+        termos_versao: { type: string, maxLength: 32 }
+        notificacoes: { type: boolean }
+    ExportacaoDados:
+      type: object
+      required: [gerado_em, conta, preferencias, silenciamentos, seguidos, avisos, avaliacoes, denuncias, eventos, dispositivos, assinaturas]
+      properties:
+        gerado_em: { type: string, format: date-time }
+        conta: { $ref: '#/components/schemas/Usuario' }
+        preferencias: { $ref: '#/components/schemas/Preferencias' }
+        silenciamentos: { type: array, items: { $ref: '#/components/schemas/Silenciamento' } }
+        seguidos: { type: array, items: { $ref: '#/components/schemas/Seguimento' } }
+        avisos: { type: array, items: { $ref: '#/components/schemas/Aviso' } }
+        avaliacoes: { type: array, items: { $ref: '#/components/schemas/Avaliacao' } }
+        denuncias: { type: array, items: { $ref: '#/components/schemas/Denuncia' } }
+        eventos: { type: array, items: { $ref: '#/components/schemas/EventoRegistrado' } }
+        dispositivos: { type: array, items: { $ref: '#/components/schemas/DispositivoRegistrado' } }
+        assinaturas: { type: array, items: { $ref: '#/components/schemas/Assinatura' } }
 
+    # ------------------------------------------------------------ preferências
     Preferencias:
       type: object
-      required: [categorias, ceps]
+      required: [categorias, ceps, silencio, limite_diario]
       properties:
         categorias:
           type: array
-          items: { type: string }
           uniqueItems: true
+          items: { $ref: '#/components/schemas/Slug' }
         ceps:
           type: array
           maxItems: 3
           uniqueItems: true
-          items: { type: string, pattern: '^[0-9]{8}$' }
+          items: { $ref: '#/components/schemas/Cep' }
         silencio:
-          description: Janela sem push, hora local do tenant. Pode cruzar a meia-noite. null = sem silêncio.
-          type: [object, 'null']
-          required: [inicio, fim]
-          properties:
-            inicio: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', example: '22:00' }
-            fim: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', example: '07:00' }
+          description: Janela sem push, hora local do tenant; pode cruzar a meia-noite. null = sem silêncio.
+          oneOf:
+            - $ref: '#/components/schemas/Silencio'
+            - type: 'null'
         limite_diario:
-          description: Máximo de pushes por dia. null = sem limite escolhido pelo usuário.
           type: [integer, 'null']
           minimum: 1
+          description: Máximo de pushes por dia. null = padrão do tenant (decisão D10).
+        ceps_ignorados_pelo_plano:
+          type: array
+          readOnly: true
+          description: 'CEPs guardados que o plano atual não usa (ex.: premium vencido). Ignorado no PUT.'
+          items: { $ref: '#/components/schemas/Cep' }
+    Silencio:
+      type: object
+      required: [inicio, fim]
+      properties:
+        inicio: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', example: '22:00' }
+        fim: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$', example: '07:00' }
+    TipoSilenciamento:
+      type: string
+      enum: [loja, marca]
+    AlcanceSilenciamento:
+      type: string
+      description: '`push` = só deixa de receber push; `tudo` = some do feed, da pesquisa, da página do produto e dos avisos.'
+      enum: [push, tudo]
+    PedidoSilenciamento:
+      type: object
+      required: [alcance]
+      properties:
+        alcance: { $ref: '#/components/schemas/AlcanceSilenciamento' }
+    Silenciamento:
+      type: object
+      required: [tipo, alvo, nome, alcance, criado_em]
+      properties:
+        tipo: { $ref: '#/components/schemas/TipoSilenciamento' }
+        alvo: { type: string, description: '`id` da loja ou `chave` da marca.' }
+        nome: { type: string, description: 'Nome da loja ou da marca, para exibir.' }
+        alcance: { $ref: '#/components/schemas/AlcanceSilenciamento' }
+        criado_em: { type: string, format: date-time }
+    ListaSilenciamentos:
+      type: object
+      required: [itens]
+      properties:
+        itens:
+          type: array
+          items: { $ref: '#/components/schemas/Silenciamento' }
 
+    # ------------------------------------------------------------ produto, loja, oferta
     Embalagem:
       type: object
       required: [quantidade, unidade]
       properties:
-        quantidade: { type: number, example: 0.4 }
+        quantidade: { type: number, exclusiveMinimum: 0, example: 0.4 }
         unidade: { type: string, enum: [kg, l, un] }
-
+    Marca:
+      type: object
+      required: [chave, nome]
+      properties:
+        chave: { type: string, pattern: '^[a-z0-9-]+$', description: Identificador estável da marca no tenant., example: elseve }
+        nome: { type: string, example: Elseve }
+    LojaResumo:
+      type: object
+      required: [id, nome, rede, tipo]
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        rede: { type: string }
+        tipo: { type: string, enum: [online, fisica] }
+    ProdutoResumo:
+      type: object
+      required: [id, nome, marca, categoria, embalagem]
+      properties:
+        id: { type: string, format: uuid }
+        nome: { type: string }
+        marca:
+          description: null quando a fonte não informa marca estruturada.
+          oneOf:
+            - $ref: '#/components/schemas/Marca'
+            - type: 'null'
+        categoria: { $ref: '#/components/schemas/Slug' }
+        gtin: { type: [string, 'null'], pattern: '^[0-9]{8,14}$' }
+        embalagem: { $ref: '#/components/schemas/Embalagem' }
+    Frete:
+      type: object
+      required: [status, centavos]
+      properties:
+        status: { type: string, enum: [conhecido, a_confirmar, nao_se_aplica] }
+        centavos: { type: [integer, 'null'], minimum: 0, description: Só quando `status = conhecido`. }
     Cobertura:
       type: object
       required: [modo, cep]
-      description: A melhor cobertura entre os CEPs do usuário.
+      description: A melhor cobertura entre os CEPs que o plano permite.
       properties:
         modo: { type: string, enum: [entrega_por_cep, entrega_por_raio, retirada_na_loja] }
-        cep: { type: string, pattern: '^[0-9]{8}$' }
+        cep: { $ref: '#/components/schemas/Cep' }
         prazo_dias: { type: [integer, 'null'], description: Só em entrega_por_cep. }
         distancia_km: { type: [number, 'null'], description: Só em entrega_por_raio e retirada_na_loja. }
-        custo_deslocamento_centavos: { type: [integer, 'null'], description: Só em retirada_na_loja. }
+        custo_deslocamento_centavos: { type: [integer, 'null'], description: Só em retirada_na_loja (ida e volta). }
+    Advertencia:
+      type: object
+      required: [codigo, texto]
+      description: 'Advertência legal obrigatória (ex.: medicamento isento, RDC 96/2008). Texto a validar com assessoria jurídica.'
+      properties:
+        codigo: { type: string, example: medicamento_isento }
+        texto: { type: string }
 
+    # ------------------------------------------------------------ alerta
     Alerta:
       type: object
       required:
         - id
         - criado_em
         - destaque
+        - situacao
         - produto
         - loja
         - preco_centavos
+        - preco_referencia_centavos
         - preco_por_unidade_centavos
         - preco_referencia_por_unidade_centavos
         - queda
+        - rotulo_condicao
         - entrega_a_confirmar
+        - valida_ate
         - coletada_em
+        - sem_historico_verificado
         - cobertura
-        - avisos
+        - advertencias
+        - seguido
       properties:
         id: { type: string, format: uuid }
         criado_em: { type: string, format: date-time }
         destaque:
           type: boolean
-          description: true quando a promoção é do nível que dispara push; false quando está só no feed.
-        produto:
-          type: object
-          required: [nome, categoria, embalagem]
-          properties:
-            nome: { type: string }
-            marca: { type: [string, 'null'] }
-            categoria: { type: string }
-            embalagem: { $ref: '#/components/schemas/Embalagem' }
-        loja:
-          type: object
-          required: [id, nome, rede, tipo]
-          properties:
-            id: { type: string, format: uuid }
-            nome: { type: string }
-            rede: { type: string }
-            tipo: { type: string, enum: [online, fisica] }
-        preco_centavos:
+          description: true quando a promoção é do nível que dispara push (`notificar`); false quando é só de feed.
+        situacao:
+          type: string
+          description: '`ativa`; `encerrada` (validade passou ou oferta indisponível); `em_revisao` (escondida por denúncia). O feed só lista `ativa`.'
+          enum: [ativa, encerrada, em_revisao]
+        produto: { $ref: '#/components/schemas/ProdutoResumo' }
+        loja: { $ref: '#/components/schemas/LojaResumo' }
+        preco_centavos: { type: integer, minimum: 1, description: Preço da embalagem sob a condição. É o que se exibe. }
+        preco_referencia_centavos:
           type: integer
-          description: Preço da embalagem. É o que se mostra ao usuário.
-        preco_por_unidade_centavos:
-          type: number
-          description: Preço efetivo por kg, l ou un. Só para comparação, não para exibir.
-        preco_referencia_por_unidade_centavos:
-          type: number
-          description: Mediana de referência dos últimos 30 dias, na mesma unidade.
-        queda:
-          type: number
-          minimum: 0
-          maximum: 1
-          description: Queda real contra a referência (0,32 = 32%).
+          minimum: 1
+          description: Referência (mediana de 30 dias por unidade) convertida para esta embalagem.
+        preco_por_unidade_centavos: { type: number, description: 'Preço efetivo por kg, l ou un. Só para comparação.' }
+        preco_referencia_por_unidade_centavos: { type: number, description: 'Mediana de referência dos últimos 30 dias, por unidade.' }
+        queda: { type: number, minimum: 0, maximum: 1, description: 'Queda real contra a referência (0,33 = 33%).' }
         rotulo_condicao:
           type: [string, 'null']
-          description: 'Obrigatório exibir quando não for null (ex.: "leve 3 pague 2", "com cartão fidelidade").'
-        entrega_a_confirmar:
-          type: boolean
-          description: true quando o frete só é conhecido no checkout; exibir "frete a confirmar".
+          description: 'Exibir sempre que não for null (ex.: "leve 3 pague 2").'
+        entrega_a_confirmar: { type: boolean, description: true quando o frete só aparece no checkout. }
         valida_ate: { type: [string, 'null'], format: date-time }
-        coletada_em:
-          type: string
-          format: date-time
-          description: Quando o preço foi lido na fonte. O app deve mostrar a idade do preço.
+        coletada_em: { type: string, format: date-time, description: Quando o preço foi lido na fonte; o app mostra a idade do preço. }
+        sem_historico_verificado:
+          type: boolean
+          description: true para oferta manual (TIPO E), que nunca dispara push.
         cobertura: { $ref: '#/components/schemas/Cobertura' }
-        avisos:
+        advertencias:
           type: array
-          description: 'Advertências legais obrigatórias (ex.: medicamento isento, RDC 96/2008). Vazio na maioria.'
-          items: { type: string }
-
+          description: Vazio na maioria. Obrigatório exibir quando houver.
+          items: { $ref: '#/components/schemas/Advertencia' }
+        seguido: { type: boolean, description: true quando a pessoa segue o produto. }
     AlertaDetalhe:
       allOf:
         - $ref: '#/components/schemas/Alerta'
         - type: object
-          required: [link, link_afiliado, frete, historico_preco]
+          required: [valida_de, frete, link, link_afiliado, historico_desde, avaliacao, denuncia]
           properties:
-            link: { type: string, format: uri }
-            link_afiliado:
-              type: boolean
-              description: true quando o link rende comissão; o app deve avisar o usuário.
-            frete:
-              type: object
-              required: [status]
-              properties:
-                status: { type: string, enum: [conhecido, a_confirmar, nao_se_aplica] }
-                centavos: { type: [integer, 'null'] }
-            historico_preco:
-              type: array
-              description: Até 30 dias fechados, menor preço por unidade de cada dia (mesma base do motor). Pode ter menos pontos.
-              items:
-                type: object
-                required: [dia, preco_por_unidade_centavos]
-                properties:
-                  dia: { type: string, format: date }
-                  preco_por_unidade_centavos: { type: number }
-
+            valida_de: { type: [string, 'null'], format: date-time }
+            frete: { $ref: '#/components/schemas/Frete' }
+            link: { type: string, format: uri, description: Link da loja. Também é o link do compartilhamento (decisão D14). }
+            link_afiliado: { type: boolean, description: true quando o link rende comissão; o app avisa a pessoa. }
+            historico_desde:
+              type: [string, 'null']
+              format: date
+              description: Primeiro dia com preço coletado deste produto nesta loja.
+            avaliacao:
+              description: Avaliação desta pessoa, se houver.
+              oneOf:
+                - $ref: '#/components/schemas/Avaliacao'
+                - type: 'null'
+            denuncia:
+              description: Denúncia desta pessoa no preço atual, se houver.
+              oneOf:
+                - $ref: '#/components/schemas/Denuncia'
+                - type: 'null'
     PaginaAlertas:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens, vazio_por]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/Alerta' }
+            vazio_por:
+              type: [string, 'null']
+              enum: [sem_ceps, sem_categorias, null]
+              description: Preenchido quando a lista está vazia por falta de preferência.
+    EventoAlerta:
       type: object
-      required: [itens, proximo_cursor]
+      required: [tipo, origem]
       properties:
-        itens:
-          type: array
-          items: { $ref: '#/components/schemas/Alerta' }
-        proximo_cursor: { type: [string, 'null'] }
-        vazio_por:
-          type: [string, 'null']
-          enum: [sem_ceps, sem_categorias, null]
-          description: Preenchido quando a lista está vazia por falta de preferência, para o app orientar o usuário.
+        tipo: { type: string, enum: [aberto, clicado, compartilhado] }
+        origem: { type: string, enum: [push, feed, central, produto] }
+        ocorrido_em: { type: string, format: date-time, description: Hora no aparelho; o servidor usa a própria hora se faltar ou se for futura. }
+    EventoRegistrado:
+      type: object
+      required: [alerta_id, tipo, origem, ocorrido_em]
+      properties:
+        alerta_id: { type: string, format: uuid }
+        tipo: { type: string, enum: [aberto, clicado, compartilhado] }
+        origem: { type: string, enum: [push, feed, central, produto] }
+        ocorrido_em: { type: string, format: date-time }
+    PedidoAvaliacao:
+      type: object
+      required: [valor]
+      properties:
+        valor: { type: string, enum: [util, nao_util] }
+    Avaliacao:
+      type: object
+      required: [alerta_id, valor, avaliado_em]
+      properties:
+        alerta_id: { type: string, format: uuid }
+        valor: { type: string, enum: [util, nao_util] }
+        avaliado_em: { type: string, format: date-time }
+    PedidoDenuncia:
+      type: object
+      required: [motivo]
+      properties:
+        motivo: { type: string, enum: [preco_errado, sem_estoque] }
+    Denuncia:
+      type: object
+      required: [alerta_id, motivo, denunciado_em]
+      properties:
+        alerta_id: { type: string, format: uuid }
+        motivo: { type: string, enum: [preco_errado, sem_estoque] }
+        denunciado_em: { type: string, format: date-time }
 
-security:
-  - bearer: []
+    # ------------------------------------------------------------ produto
+    OfertaAtual:
+      type: object
+      required: [loja, preco_centavos, preco_por_unidade_centavos, rotulo_condicao, frete, coletada_em, valida_ate, link, link_afiliado, cobertura, alerta_id]
+      properties:
+        loja: { $ref: '#/components/schemas/LojaResumo' }
+        preco_centavos: { type: integer, minimum: 1 }
+        preco_por_unidade_centavos: { type: number }
+        rotulo_condicao: { type: [string, 'null'] }
+        frete: { $ref: '#/components/schemas/Frete' }
+        coletada_em: { type: string, format: date-time }
+        valida_ate: { type: [string, 'null'], format: date-time }
+        link: { type: string, format: uri }
+        link_afiliado: { type: boolean }
+        cobertura: { $ref: '#/components/schemas/Cobertura' }
+        alerta_id:
+          type: [string, 'null']
+          format: uuid
+          description: Alerta ativo desta oferta, quando houver (abre o detalhe, a avaliação e a denúncia).
+    ProdutoBusca:
+      allOf:
+        - $ref: '#/components/schemas/ProdutoResumo'
+        - type: object
+          required: [menor_preco_centavos, seguido]
+          properties:
+            menor_preco_centavos:
+              type: [integer, 'null']
+              description: Menor preço atual entre as ofertas cobertas; null se nenhuma.
+            seguido: { type: boolean }
+    Produto:
+      allOf:
+        - $ref: '#/components/schemas/ProdutoResumo'
+        - type: object
+          required: [ofertas, historico_desde, seguimento]
+          properties:
+            ofertas:
+              type: array
+              description: Ofertas disponíveis, na validade, cobertas para um CEP do plano (decisão D8), menor preço primeiro.
+              items: { $ref: '#/components/schemas/OfertaAtual' }
+            historico_desde: { type: [string, 'null'], format: date }
+            seguimento:
+              description: null quando a pessoa não segue o produto.
+              oneOf:
+                - $ref: '#/components/schemas/ConfigAvisosProduto'
+                - type: 'null'
+    PaginaProdutos:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/ProdutoBusca' }
+    PontoHistorico:
+      type: object
+      required: [dia, preco_por_unidade_centavos, preco_embalagem_centavos]
+      properties:
+        dia: { type: string, format: date }
+        preco_por_unidade_centavos: { type: number }
+        preco_embalagem_centavos: { type: integer, description: Preço por unidade convertido para a embalagem deste produto. }
+    SerieHistorico:
+      type: object
+      required: [loja, desde, pontos]
+      properties:
+        loja: { $ref: '#/components/schemas/LojaResumo' }
+        desde: { type: [string, 'null'], format: date }
+        pontos:
+          type: array
+          items: { $ref: '#/components/schemas/PontoHistorico' }
+    HistoricoProduto:
+      type: object
+      required: [produto_id, dias, series]
+      properties:
+        produto_id: { type: string, format: uuid }
+        dias: { type: integer }
+        series:
+          type: array
+          items: { $ref: '#/components/schemas/SerieHistorico' }
+
+    # ------------------------------------------------------------ seguidos
+    ConfigAvisosProduto:
+      type: object
+      required: [promocao_excepcional, queda_percentual, voltou_estoque, menor_preco_180d, promocao_acabando]
+      properties:
+        promocao_excepcional: { type: boolean, description: Padrão true. Aviso do motor de curadoria. }
+        queda_percentual:
+          type: [integer, 'null']
+          minimum: 1
+          maximum: 99
+          description: Avisa quando o preço cai mais que X% (X da pessoa). null = desligado.
+        voltou_estoque: { type: boolean }
+        menor_preco_180d: { type: boolean }
+        promocao_acabando: { type: boolean, description: Promoção com validade a menos de 24 h. }
+    PedidoSeguir:
+      type: object
+      required: [avisos]
+      properties:
+        avisos: { $ref: '#/components/schemas/ConfigAvisosProduto' }
+    Seguimento:
+      type: object
+      required: [produto, avisos, criado_em, atualizado_em]
+      properties:
+        produto: { $ref: '#/components/schemas/ProdutoResumo' }
+        avisos: { $ref: '#/components/schemas/ConfigAvisosProduto' }
+        criado_em: { type: string, format: date-time }
+        atualizado_em: { type: string, format: date-time }
+    PaginaSeguidos:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/Seguimento' }
+
+    # ------------------------------------------------------------ central de avisos
+    TipoAviso:
+      type: string
+      enum: [promocao_excepcional, queda_percentual, voltou_estoque, menor_preco_180d, promocao_acabando]
+    Aviso:
+      type: object
+      required: [id, tipo, origem, criado_em, lido_em, produto, loja, alerta_id, preco_centavos, queda]
+      properties:
+        id: { type: string, format: uuid }
+        tipo: { $ref: '#/components/schemas/TipoAviso' }
+        origem:
+          type: string
+          description: '`categoria` = alerta de categoria escolhida; `seguido` = produto seguido.'
+          enum: [categoria, seguido]
+        criado_em: { type: string, format: date-time }
+        lido_em: { type: [string, 'null'], format: date-time }
+        produto: { $ref: '#/components/schemas/ProdutoResumo' }
+        loja:
+          oneOf:
+            - $ref: '#/components/schemas/LojaResumo'
+            - type: 'null'
+        alerta_id: { type: [string, 'null'], format: uuid, description: 'Alerta a abrir, quando houver.' }
+        preco_centavos: { type: [integer, 'null'] }
+        queda: { type: [number, 'null'], minimum: 0, maximum: 1 }
+        valida_ate: { type: [string, 'null'], format: date-time, description: Preenchido em promocao_acabando. }
+    PaginaAvisos:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens, nao_lidos]
+          properties:
+            itens:
+              type: array
+              items: { $ref: '#/components/schemas/Aviso' }
+            nao_lidos: { type: integer, minimum: 0, description: Total de não lidos (não só desta página). }
+    PedidoLeitura:
+      oneOf:
+        - type: object
+          required: [ids]
+          additionalProperties: false
+          properties:
+            ids:
+              type: array
+              minItems: 1
+              maxItems: 100
+              items: { type: string, format: uuid }
+        - type: object
+          required: [ate]
+          additionalProperties: false
+          properties:
+            ate: { type: string, format: date-time, description: Marca todos criados até este instante. }
+
+    # ------------------------------------------------------------ assinatura, dispositivo, webhook
+    ComprovanteAssinatura:
+      type: object
+      required: [loja, produto_loja_id, comprovante]
+      properties:
+        loja: { $ref: '#/components/schemas/LojaApps' }
+        produto_loja_id: { type: string, maxLength: 128 }
+        comprovante:
+          type: string
+          maxLength: 16384
+          writeOnly: true
+          description: Token de compra (Google Play) ou transação assinada (App Store). Formato a verificar.
+    PedidoDispositivo:
+      type: object
+      required: [token, plataforma, versao_app]
+      properties:
+        token: { type: string, maxLength: 4096, writeOnly: true }
+        plataforma: { $ref: '#/components/schemas/Plataforma' }
+        versao_app: { type: string, maxLength: 32 }
+    DispositivoRegistrado:
+      type: object
+      required: [plataforma, versao_app, registrado_em]
+      description: Na exportação o token não aparece.
+      properties:
+        plataforma: { $ref: '#/components/schemas/Plataforma' }
+        versao_app: { type: string }
+        registrado_em: { type: string, format: date-time }
+    NotificacaoLoja:
+      type: object
+      description: Corpo definido pela loja de apps; aceito como objeto e validado no servidor.
+
+  examples:
+    # ------------------------------------------------------------ erros
+    ErroRequisicaoMalformada:
+      value: { codigo: requisicao_malformada, mensagem: Não foi possível ler o pedido. }
+    ErroTenantAusente:
+      value: { codigo: tenant_ausente, mensagem: Cabeçalho X-Tenant ausente. }
+    ErroTenantDesconhecido:
+      value: { codigo: tenant_desconhecido, mensagem: Aplicativo não reconhecido. }
+    ErroNaoAutenticado:
+      value: { codigo: nao_autenticado, mensagem: Entre na sua conta para continuar. }
+    ErroSessaoExpirada:
+      value: { codigo: sessao_expirada, mensagem: Sua sessão expirou. }
+    ErroSessaoRevogada:
+      value: { codigo: sessao_revogada, mensagem: Sua sessão foi encerrada. Entre de novo. }
+    ErroCredencialInvalida:
+      value: { codigo: credencial_invalida, mensagem: Não foi possível confirmar seu login. }
+    ErroTermosPendentes:
+      value: { codigo: termos_pendentes, mensagem: Aceite os termos de uso para continuar. }
+    ErroTermosDesatualizados:
+      value: { codigo: termos_desatualizados, mensagem: Os termos mudaram. Leia a versão nova. }
+    ErroPlanoInsuficiente:
+      value: { codigo: plano_insuficiente, mensagem: Seu plano permite 1 CEP. }
+    ErroMetodoLoginIndisponivel:
+      value: { codigo: metodo_login_indisponivel, mensagem: Este tipo de login não está disponível. }
+    ErroNaoEncontrado:
+      value: { codigo: nao_encontrado, mensagem: Não encontrado. }
+    ErroLimiteAtingido:
+      value: { codigo: limite_atingido, mensagem: Você chegou ao limite de produtos seguidos. }
+    ErroIdempotenciaConflito:
+      value: { codigo: idempotencia_conflito, mensagem: Chave de idempotência reutilizada com outro conteúdo. }
+    ErroComprovanteOutraConta:
+      value: { codigo: comprovante_de_outra_conta, mensagem: Esta assinatura pertence a outra conta. }
+    ErroComprovanteInvalido:
+      value: { codigo: comprovante_invalido, mensagem: A loja não confirmou esta compra. }
+    ErroValidacao:
+      value:
+        codigo: validacao
+        mensagem: Confira os campos destacados.
+        campos:
+          - { campo: 'categorias[0]', mensagem: Categoria inexistente. }
+    ErroCodigoInvalido:
+      value: { codigo: codigo_invalido, mensagem: Código incorreto. }
+    ErroCodigoExpirado:
+      value: { codigo: codigo_expirado, mensagem: Este código venceu. Peça outro. }
+    ErroCepForaDaRegiao:
+      value:
+        codigo: cep_fora_da_regiao
+        mensagem: Ainda não atendemos este CEP.
+        campos:
+          - { campo: 'ceps[0]', mensagem: CEP fora da região atendida. }
+    ErroMuitasRequisicoes:
+      value: { codigo: muitas_requisicoes, mensagem: Muitas tentativas. Aguarde um pouco. }
+    ErroServicoIndisponivel:
+      value: { codigo: servico_indisponivel, mensagem: Serviço temporariamente indisponível. Tente de novo em instantes. }
+
+    # ------------------------------------------------------------ sucesso
+    Configuracao:
+      value:
+        tenant: padrao
+        nome_app: economae
+        fuso: America/Sao_Paulo
+        termos: { versao: '2026-10-27', url: 'https://example.com/termos' }
+        metodos_login: [email, google]
+        categorias:
+          - { slug: cuidados_pessoais, rotulo: Cuidados pessoais }
+          - { slug: higiene_bebe, rotulo: Higiene do bebê }
+        regiao: { cep_inicio: '01000000', cep_fim: '19999999' }
+        limites: { ceps_gratuito: 1, ceps_premium: 3, max_produtos_seguidos: 100, max_silenciamentos: 50, queda_percentual_min: 5, queda_percentual_max: 90 }
+        planos: []
+    Usuario:
+      value:
+        id: 3f6c2a1e-8b4d-4c2e-9a71-0d5e6f7a8b90
+        email: maria@example.com
+        metodos_login: [email]
+        termos_pendentes: false
+        termos_versao: '2026-10-27'
+        termos_aceitos_em: '2026-10-27T13:58:02Z'
+        notificacoes_consentidas: true
+        notificacoes_consentidas_em: '2026-10-27T13:58:10Z'
+        plano: { tipo: gratuito, anuncios: true, ceps_permitidos: 1, assinatura: null }
+        criado_em: '2026-10-27T13:57:40Z'
+    Sessao:
+      value:
+        access_token: '<access token>'
+        access_expira_em: '2026-10-27T14:57:40Z'
+        refresh_token: '<refresh token>'
+        refresh_expira_em: '2026-12-26T13:57:40Z'
+        conta_nova: true
+        usuario:
+          id: 3f6c2a1e-8b4d-4c2e-9a71-0d5e6f7a8b90
+          email: maria@example.com
+          metodos_login: [email]
+          termos_pendentes: true
+          termos_versao: null
+          termos_aceitos_em: null
+          notificacoes_consentidas: false
+          notificacoes_consentidas_em: null
+          plano: { tipo: gratuito, anuncios: true, ceps_permitidos: 1, assinatura: null }
+          criado_em: '2026-10-27T13:57:40Z'
+    PlanoPremium:
+      value:
+        tipo: premium
+        anuncios: false
+        ceps_permitidos: 3
+        assinatura: { plano: premium_mensal, status: ativa, loja: google_play, iniciada_em: '2026-10-27T15:10:00Z', expira_em: '2026-11-27T15:10:00Z' }
+    Preferencias:
+      value:
+        categorias: [cuidados_pessoais, higiene_bebe]
+        ceps: ['14020260']
+        silencio: { inicio: '22:00', fim: '07:00' }
+        limite_diario: 3
+        ceps_ignorados_pelo_plano: []
+    SilenciamentoLoja:
+      value: { tipo: loja, alvo: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, alcance: tudo, criado_em: '2026-10-27T14:10:00Z' }
+    ListaSilenciamentos:
+      value:
+        itens:
+          - { tipo: loja, alvo: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, alcance: push, criado_em: '2026-10-27T14:10:00Z' }
+          - { tipo: marca, alvo: elseve, nome: Elseve, alcance: tudo, criado_em: '2026-10-27T14:11:00Z' }
+    PaginaAlertas:
+      value:
+        itens:
+          - id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+            criado_em: '2026-10-27T12:00:05Z'
+            destaque: true
+            situacao: ativa
+            produto:
+              id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+              nome: Shampoo Elseve Hidra Hialurônico 400 ml
+              marca: { chave: elseve, nome: Elseve }
+              categoria: cuidados_pessoais
+              gtin: null
+              embalagem: { quantidade: 0.4, unidade: l }
+            loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
+            preco_centavos: 1990
+            preco_referencia_centavos: 2990
+            preco_por_unidade_centavos: 4975
+            preco_referencia_por_unidade_centavos: 7475
+            queda: 0.3344
+            rotulo_condicao: null
+            entrega_a_confirmar: true
+            valida_ate: null
+            coletada_em: '2026-10-27T12:00:00Z'
+            sem_historico_verificado: false
+            cobertura: { modo: entrega_por_cep, cep: '14020260', prazo_dias: 3, distancia_km: null, custo_deslocamento_centavos: null }
+            advertencias: []
+            seguido: false
+        proximo_cursor: eyJjIjoiMjAyNi0xMC0yN1QxMjowMDowNVoifQ
+        vazio_por: null
+    PaginaAlertasVazia:
+      value: { itens: [], proximo_cursor: null, vazio_por: sem_ceps }
+    AlertaDetalhe:
+      value:
+        id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+        criado_em: '2026-10-27T12:00:05Z'
+        destaque: true
+        situacao: ativa
+        produto:
+          id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+          nome: Shampoo Elseve Hidra Hialurônico 400 ml
+          marca: { chave: elseve, nome: Elseve }
+          categoria: cuidados_pessoais
+          gtin: null
+          embalagem: { quantidade: 0.4, unidade: l }
+        loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
+        preco_centavos: 1990
+        preco_referencia_centavos: 2990
+        preco_por_unidade_centavos: 4975
+        preco_referencia_por_unidade_centavos: 7475
+        queda: 0.3344
+        rotulo_condicao: null
+        entrega_a_confirmar: true
+        valida_ate: null
+        coletada_em: '2026-10-27T12:00:00Z'
+        sem_historico_verificado: false
+        cobertura: { modo: entrega_por_cep, cep: '14020260', prazo_dias: 3, distancia_km: null, custo_deslocamento_centavos: null }
+        advertencias: []
+        seguido: false
+        valida_de: null
+        frete: { status: a_confirmar, centavos: null }
+        link: 'https://example.com/oferta/123'
+        link_afiliado: true
+        historico_desde: '2026-10-07'
+        avaliacao: null
+        denuncia: null
+    Denuncia:
+      value: { alerta_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d, motivo: preco_errado, denunciado_em: '2026-10-27T14:20:00Z' }
+    PaginaProdutos:
+      value:
+        itens:
+          - id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+            nome: Shampoo Elseve Hidra Hialurônico 400 ml
+            marca: { chave: elseve, nome: Elseve }
+            categoria: cuidados_pessoais
+            gtin: null
+            embalagem: { quantidade: 0.4, unidade: l }
+            menor_preco_centavos: 1990
+            seguido: false
+        proximo_cursor: null
+    Produto:
+      value:
+        id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+        nome: Shampoo Elseve Hidra Hialurônico 400 ml
+        marca: { chave: elseve, nome: Elseve }
+        categoria: cuidados_pessoais
+        gtin: null
+        embalagem: { quantidade: 0.4, unidade: l }
+        ofertas:
+          - loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
+            preco_centavos: 1990
+            preco_por_unidade_centavos: 4975
+            rotulo_condicao: null
+            frete: { status: a_confirmar, centavos: null }
+            coletada_em: '2026-10-27T12:00:00Z'
+            valida_ate: null
+            link: 'https://example.com/oferta/123'
+            link_afiliado: true
+            cobertura: { modo: entrega_por_cep, cep: '14020260', prazo_dias: 3, distancia_km: null, custo_deslocamento_centavos: null }
+            alerta_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+        historico_desde: '2026-10-07'
+        seguimento: null
+    HistoricoProduto:
+      value:
+        produto_id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+        dias: 180
+        series:
+          - loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
+            desde: '2026-10-07'
+            pontos:
+              - { dia: '2026-10-25', preco_por_unidade_centavos: 7475, preco_embalagem_centavos: 2990 }
+              - { dia: '2026-10-26', preco_por_unidade_centavos: 7475, preco_embalagem_centavos: 2990 }
+    PedidoSeguirPadrao:
+      value:
+        avisos: { promocao_excepcional: true, queda_percentual: null, voltou_estoque: false, menor_preco_180d: false, promocao_acabando: false }
+    Seguimento:
+      value:
+        produto:
+          id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+          nome: Shampoo Elseve Hidra Hialurônico 400 ml
+          marca: { chave: elseve, nome: Elseve }
+          categoria: cuidados_pessoais
+          gtin: null
+          embalagem: { quantidade: 0.4, unidade: l }
+        avisos: { promocao_excepcional: true, queda_percentual: 20, voltou_estoque: true, menor_preco_180d: false, promocao_acabando: false }
+        criado_em: '2026-10-27T14:30:00Z'
+        atualizado_em: '2026-10-27T14:30:00Z'
+    PaginaSeguidos:
+      value:
+        itens:
+          - produto:
+              id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+              nome: Shampoo Elseve Hidra Hialurônico 400 ml
+              marca: { chave: elseve, nome: Elseve }
+              categoria: cuidados_pessoais
+              gtin: null
+              embalagem: { quantidade: 0.4, unidade: l }
+            avisos: { promocao_excepcional: true, queda_percentual: 20, voltou_estoque: true, menor_preco_180d: false, promocao_acabando: false }
+            criado_em: '2026-10-27T14:30:00Z'
+            atualizado_em: '2026-10-27T14:30:00Z'
+        proximo_cursor: null
+    PaginaAvisos:
+      value:
+        itens:
+          - id: 5d4c3b2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a
+            tipo: promocao_excepcional
+            origem: categoria
+            criado_em: '2026-10-27T12:01:00Z'
+            lido_em: null
+            produto:
+              id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
+              nome: Shampoo Elseve Hidra Hialurônico 400 ml
+              marca: { chave: elseve, nome: Elseve }
+              categoria: cuidados_pessoais
+              gtin: null
+              embalagem: { quantidade: 0.4, unidade: l }
+            loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
+            alerta_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d
+            preco_centavos: 1990
+            queda: 0.3344
+            valida_ate: null
+        proximo_cursor: null
+        nao_lidos: 1
+    ExportacaoDados:
+      value:
+        gerado_em: '2026-10-27T16:00:00Z'
+        conta:
+          id: 3f6c2a1e-8b4d-4c2e-9a71-0d5e6f7a8b90
+          email: maria@example.com
+          metodos_login: [email]
+          termos_pendentes: false
+          termos_versao: '2026-10-27'
+          termos_aceitos_em: '2026-10-27T13:58:02Z'
+          notificacoes_consentidas: true
+          notificacoes_consentidas_em: '2026-10-27T13:58:10Z'
+          plano: { tipo: gratuito, anuncios: true, ceps_permitidos: 1, assinatura: null }
+          criado_em: '2026-10-27T13:57:40Z'
+        preferencias: { categorias: [cuidados_pessoais], ceps: ['14020260'], silencio: null, limite_diario: null }
+        silenciamentos: []
+        seguidos: []
+        avisos: []
+        avaliacoes: [{ alerta_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d, valor: util, avaliado_em: '2026-10-27T14:05:00Z' }]
+        denuncias: []
+        eventos: [{ alerta_id: 7b1e4c2d-3a5f-4e6b-8c9d-0e1f2a3b4c5d, tipo: clicado, origem: feed, ocorrido_em: '2026-10-27T14:03:11Z' }]
+        dispositivos: [{ plataforma: android, versao_app: 1.0.0, registrado_em: '2026-10-27T13:59:00Z' }]
+        assinaturas: []
