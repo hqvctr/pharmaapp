@@ -3,6 +3,7 @@
 App Android + backend próprio que notifica só promoção comprovadamente excepcional, nas categorias
 escolhidas, de loja confiável e que chega (ou está perto) do CEP do usuário.
 
+O que o app é e faz (visão de produto): [PRODUTO.md](PRODUTO.md).
 Estado atual e próximo passo: veja [CHECKPOINT.md](CHECKPOINT.md).
 Decisões já tomadas: [DECISIONS.md](DECISIONS.md). Pendências fora de fase: [BACKLOG.md](BACKLOG.md).
 Fontes e base legal: [SOURCES.md](SOURCES.md).

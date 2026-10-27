@@ -2,6 +2,12 @@
 
 ## Fase 3 — API do app (EM PROPOSTA, aguardando aprovação)
 
+**Atualização (2026-10-27):** a conversa de produto com o responsável ampliou o escopo (superapp:
+seguir produto, pesquisa, listas de presente, iPhone, premium, anúncios). O que o app faz agora está em
+[PRODUTO.md](PRODUTO.md). O rascunho abaixo foi escrito ANTES disso e fica superado nos pontos em que
+divergir; o prompt para refazer o contrato é [PROMPT_CONTRATO.md](PROMPT_CONTRATO.md). Login passa a
+ser e-mail + Google + Apple (Apple só com o app de iPhone); feed esconde alerta aguardando aprovação.
+
 Nada implementado ainda. Entregue só o rascunho do contrato: `backend/openapi/openapi.yaml`
 (OpenAPI 3.1, validado com Redocly; 15 operações em `/v1`). Regra da fase: o contrato congelado precisa
 de aprovação antes de qualquer rota ou tela.
