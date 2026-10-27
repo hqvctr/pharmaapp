@@ -514,7 +514,8 @@ paths:
         operador; com oferta disponível e dentro da validade; de categoria escolhida; coberto para ao
         menos um CEP que o plano permite; de loja e marca não silenciadas com `alcance: tudo`; e não
         escondido por denúncia. Alerta rejeitado por operador e decisão `descartar` nunca aparecem.
-        Medicamento aparece com `advertencias` preenchido. Ordem: `criado_em` decrescente.
+        Medicamento e produto sujeito à NBCAL com advertência aparecem com `advertencias` preenchido; produto
+        de promoção vedada pela NBCAL nunca aparece. Ordem: `criado_em` decrescente.
       parameters:
         - name: categoria
           in: query
@@ -1535,10 +1536,19 @@ components:
     Advertencia:
       type: object
       required: [codigo, texto]
-      description: 'Advertência legal obrigatória (ex.: medicamento isento, RDC 96/2008). Texto a validar com assessoria jurídica.'
+      description: |
+        Advertência legal obrigatória. O app mostra `texto` inteiro, sem cortar nem reescrever.
+        Códigos conhecidos (lista aberta):
+        - `medicamento_isento`: RDC 96/2008; texto a validar com assessoria jurídica.
+        - `nbcal_aleitamento_2_anos`: Decreto 9.579/2018, art. 6º, I (leites, bebidas vegetais, fórmula de
+          seguimento para crianças na primeira infância).
+        - `nbcal_apos_6_meses`: Decreto 9.579/2018, art. 6º, II (alimentos de transição e à base de cereais).
+        Para `nbcal_*` o app segue o art. 6º, §§ 1º e 2º: em moldura, junto do produto, caixa alta, negrito,
+        com no mínimo 20% da altura do maior caractere da oferta (o preço) e nunca menos de 2 mm
+        (docs/juridico/nbcal.md).
       properties:
-        codigo: { type: string, example: medicamento_isento }
-        texto: { type: string }
+        codigo: { type: string, example: nbcal_apos_6_meses }
+        texto: { type: string, example: 'O Ministério da Saúde informa: após os 6 (seis) meses de idade, continue amamentando seu filho e ofereça novos alimentos' }
 
     # ------------------------------------------------------------ alerta
     Alerta:

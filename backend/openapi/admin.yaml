@@ -8,7 +8,7 @@ info:
   description: |
     **RASCUNHO PARA APROVAÇÃO. Não congelado.** Área do operador (PRODUTO.md, item 11): aprovar
     alertas, aprovar e bloquear lojas e fontes, revisar denúncias, revisar itens barrados pela triagem de
-    medicamento, cadastrar oferta manual (nunca dispara push) e gravar credenciais de fonte (só escrita).
+    medicamento e da NBCAL, cadastrar oferta manual (nunca dispara push) e gravar credenciais de fonte (só escrita).
 
     ## Convenções
     As de `openapi.yaml` valem aqui (nomes, centavos, datas, tenant, cursor, erro único, limite de taxa,
@@ -38,7 +38,7 @@ tags:
   - name: denuncias
     description: Ofertas escondidas por denúncia.
   - name: triagem
-    description: Itens barrados pela triagem de medicamento.
+    description: Itens barrados pela triagem de medicamento e da NBCAL.
   - name: ofertas_manuais
     description: Oferta cadastrada à mão (TIPO E). Nunca dispara push.
   - name: produtos
@@ -427,7 +427,7 @@ paths:
     get:
       tags: [triagem]
       operationId: adminListarTriagem
-      summary: Itens barrados pela triagem de medicamento
+      summary: Itens barrados pela triagem de medicamento e da NBCAL
       parameters:
         - name: revisado
           in: query
@@ -507,8 +507,8 @@ paths:
       description: |
         Idempotente por `Idempotency-Key`: mesma chave com o mesmo corpo devolve a oferta já criada (201
         de novo); mesma chave com corpo diferente dá 409 `idempotencia_conflito`. Passa pela triagem de
-        medicamento como qualquer produto (DECISIONS 24); item barrado dá 422 `medicamento_bloqueado` e vai
-        para `/v1/admin/triagem`. Produto existente por `produto_id` ou novo por `produto_novo` (um dos
+        medicamento (DECISIONS 24) e pela da NBCAL (D30) como qualquer produto; item barrado dá 422
+        `bloqueado_pela_triagem` e vai para `/v1/admin/triagem`. Produto existente por `produto_id` ou novo por `produto_novo` (um dos
         dois). Implementação na fase 5.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -532,13 +532,13 @@ paths:
         '404': { $ref: '#/components/responses/R404' }
         '409': { $ref: '#/components/responses/R409Idempotencia' }
         '422':
-          description: Corpo inválido ou produto barrado pela triagem de medicamento.
+          description: Corpo inválido ou produto barrado pela triagem (medicamento ou NBCAL).
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErroAdmin' }
               examples:
                 validacao: { $ref: '#/components/examples/ErroValidacao' }
-                medicamento_bloqueado: { $ref: '#/components/examples/ErroMedicamentoBloqueado' }
+                bloqueado_pela_triagem: { $ref: '#/components/examples/ErroBloqueadoPelaTriagem' }
 
   /v1/admin/ofertas-manuais/{id}:
     delete:
@@ -722,7 +722,7 @@ components:
         - `idempotencia_conflito` (409): `POST /v1/admin/ofertas-manuais`.
         - `validacao` (422): todas com corpo ou parâmetro.
         - `codigo_invalido`, `codigo_expirado` (422): `/v1/admin/auth/email/verificar`.
-        - `medicamento_bloqueado` (422): `POST /v1/admin/ofertas-manuais`.
+        - `bloqueado_pela_triagem` (422): `POST /v1/admin/ofertas-manuais`.
         - `muitas_requisicoes` (429): `/v1/admin/auth/*`.
         - `servico_indisponivel` (503): `/v1/admin/auth/email/codigo`.
         - `erro_interno` (500): qualquer rota.
@@ -741,7 +741,7 @@ components:
         - validacao
         - codigo_invalido
         - codigo_expirado
-        - medicamento_bloqueado
+        - bloqueado_pela_triagem
         - muitas_requisicoes
         - servico_indisponivel
         - erro_interno
@@ -1228,8 +1228,8 @@ components:
       value: { codigo: codigo_invalido, mensagem: Código incorreto. }
     ErroCodigoExpirado:
       value: { codigo: codigo_expirado, mensagem: Este código venceu. Peça outro. }
-    ErroMedicamentoBloqueado:
-      value: { codigo: medicamento_bloqueado, mensagem: Produto barrado pela triagem de medicamento; ver fila de triagem. }
+    ErroBloqueadoPelaTriagem:
+      value: { codigo: bloqueado_pela_triagem, mensagem: Produto barrado pela triagem (medicamento ou NBCAL); ver fila de triagem. }
     ErroMuitasRequisicoes:
       value: { codigo: muitas_requisicoes, mensagem: Muitas tentativas. Aguarde um pouco. }
     ErroServicoIndisponivel:

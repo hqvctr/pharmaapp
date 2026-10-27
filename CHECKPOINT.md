@@ -8,6 +8,8 @@ onde diverge). Só contrato e documentação: nenhuma rota, migration ou tela.
 - `backend/openapi/openapi.yaml` — app (público + usuário), 34 operações, versão `1.0.0-rascunho.2`.
 - `backend/openapi/admin.yaml` — operadores, prefixo `/v1/admin`, esquema `operador` (audiência própria),
   22 operações. Reaproveita esquemas do `openapi.yaml` por `$ref` entre arquivos.
+- `docs/juridico/nbcal.md` — Lei 11.265/2006 e Decreto 9.579/2018 com os trechos literais que importam,
+  o que significam para o app e o que a linha paralela fez diferente (D30–D33).
 - `npx @redocly/cli@1.34.5 lint backend/openapi/openapi.yaml backend/openapi/admin.yaml`: 0 erros,
   0 avisos. A regra `no-invalid-media-type-examples` confere todo exemplo contra o esquema (testado
   quebrando um exemplo de propósito).
@@ -159,7 +161,10 @@ Cada uma com recomendação (R) e alternativa descartada (A). Os números são c
 - D27. Tetos de config: `queda_percentual` de 5 a 90, 100 seguidos, 50 silenciamentos (exemplos do contrato). R: o responsável confirma os valores. A: sem teto.
 - D28. Rede de anúncios e consentimento de anúncio personalizado. Nada escolhido nem verificado. R: anúncio não personalizado até existir consentimento próprio, separado dos termos e do push. A: personalizado por padrão.
 - D29. Exigências das lojas de apps (login com Apple quando há login social, exclusão de conta, assinatura): conferir as regras vigentes antes da fase 6. R: o contrato já tem as rotas; só falta a verificação. A: nenhuma.
-- D30. NBCAL (Lei 11.265/2006). A linha paralela registrou, com validação da assessoria jurídica, que a lei veda a promoção comercial de fórmula infantil, mamadeira, bico e chupeta. Isso é regra legal, não escolha de produto, e vale aqui se esses itens entrarem pela categoria `higiene_bebe` (a Lomadee mapeia "Higiene do Bebê" para ela). R: trazer o bloqueio para a triagem (falha fechada), com a advertência do Ministério da Saúde em alimentação infantil via `advertencias`, depois de reconfirmar com a assessoria jurídica. A: deixar a curadoria decidir pelo desconto.
+- D30. NBCAL, produtos vedados (Lei 11.265/2006, art. 4º; Decreto 9.579/2018, art. 5º, que cita "descontos de preço" e "meios eletrônicos"; ver [docs/juridico/nbcal.md](docs/juridico/nbcal.md)). R: triagem em falha fechada, em todo produto, sobre título e descrição: fórmula infantil para lactentes e de seguimento para lactentes, fórmula para recém-nascido de alto risco, mamadeira, bico, chupeta e kit que contenha algum deles nunca aparecem (feed, pesquisa, produto, seguidos, avisos, push). A: deixar a curadoria decidir pelo desconto.
+- D31. NBCAL, produtos com advertência obrigatória (Decreto, art. 6º). Dois textos: "aleitamento até os 2 anos" para leites, bebidas vegetais e fórmula de seguimento para crianças na primeira infância; "após os 6 meses" para papinha e cereal infantil. Exibição em moldura, caixa alta, negrito, ≥ 20% do maior caractere, mín. 2 mm (já no esquema `Advertencia`). R: esses produtos aparecem só no feed, sem push, porque o push do sistema não cumpre a forma exigida. A: push com o texto no corpo (era o da linha paralela).
+- D32. Leite comum em `mercearia`. O inciso VI do art. 3º do decreto alcança todo leite fluido ou em pó e bebida vegetal, não só produto de bebê. R: a triagem marca o produto pelo tipo, em qualquer categoria, e aplica a D31. A: advertência só nas categorias de bebê (deixaria leite UHT e bebida de soja sem o texto obrigatório).
+- D33. Pontos que a norma não resolve, para a assessoria: se o app é "promoção comercial"; composto lácteo e leite condensado; protetor de mamilo (bloqueado na linha paralela, mas ausente da lei e do decreto); fórmula para necessidades dietoterápicas; vedação também na pesquisa e na página do produto. R: falha fechada (bloquear) em tudo que estiver em dúvida até a resposta. A: liberar até a resposta.
 
 ### Inconsistências entre contrato e banco
 1. `deliveries.canal` só aceita `push`: eventos de feed, central e produto, e o compartilhamento, não
@@ -183,7 +188,7 @@ Cada uma com recomendação (R) e alternativa descartada (A). Os números são c
 13. Exclusão em cascata (DECISIONS 7) precisa valer para todas as tabelas novas do usuário; a
     contagem de denúncias cai quando quem denunciou exclui a conta.
 
-**Próximo passo:** o responsável aprova ou ajusta o contrato e responde as decisões D2–D30. Só depois: migrations.
+**Próximo passo:** o responsável aprova ou ajusta o contrato e responde as decisões D2–D33. Só depois: migrations.
 
 ## Fase 3 — rascunho 1 (SUPERADO pelo rascunho 2 onde diverge)
 
