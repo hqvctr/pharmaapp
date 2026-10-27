@@ -95,7 +95,7 @@ onde diverge). Só contrato e documentação: nenhuma rota, migration ou tela.
 | `/admin/ofertas-manuais*`, `/admin/produtos` | `offers`, `products`, `sources` tipo E, `alerts`, idempotência (novo) |
 | `/admin/auditoria` | `auditoria` (novo) |
 
-### O que exige migration (não escrita)
+### O que exigia migration (escrita em `0003_api_nucleo.sql`, 2026-10-27)
 1. `sessions`: hash do access e do refresh, audiência (`app | operador`), cadeia de rotação, revogação.
 2. `users.apple_sub` (único por tenant) e credencial Apple cifrada para revogação.
 3. `operadores` (tenant, e-mail, nome) e `auditoria` (operador, ação, alvo, detalhe JSON, data).
@@ -243,11 +243,32 @@ decisão). Recomenda manter medicamento desligado (já é a decisão 58); sem pr
 consulta formal pronta para revisão OAB, mas o projeto ainda não tem CNPJ. A equipe conferiu no texto
 oficial o art. 53 da RDC 44, a Lei 15.357 e a nota de 19/08/2026.
 
-**Próximo passo:** migrations das 16 mudanças listadas acima (sessions, operadores, silenciamentos, seguidos,
-avisos, alert_events, avaliações e denúncias, revisão do alerta, dispositivos etc.), depois as rotas por
-fase (tabela "Rota → fase"). Antes do código, definir o critério de pronto da fase 3 (`scripts/pronto-fase3.sh`),
-como nas fases anteriores. Pendentes de terceiros: consulta jurídica da D7, termos da Lomadee (D14), listas
-CMED/Portaria 344.
+## Fase 3, parte 1: banco e critério de pronto (2026-10-27, PRONTA)
+
+**Critério de pronto:** `./scripts/pronto-fase3.sh` (docker compose, como as fases anteriores; sem Docker,
+`PRONTO_PG_URL=postgres://usuario@host:porta ./scripts/pronto-fase3.sh` aponta para um Postgres 16). Confere:
+1. as migrations 0001 a 0003 pelo runner do projeto;
+2. 35 verificações do esquema (`scripts/fase3/esquema.sql`): exclusão de conta em cascata, isolamento entre
+   tenants, sessão de uma só audiência, aparelho preso à sessão, restrições dos enums do contrato, busca sem
+   acento, unicidades (silenciamento, seguido, caso de denúncia, apple_sub, transação de assinatura);
+3. a migration 0003 sobre dados da fase 2 (`scripts/fase3/legado.sql`): alerta já aprovado vira `aprovado`,
+   aguardando vira `pendente`;
+4. lint do contrato (app e operador); 5. `npm test` (171 testes).
+
+Rodado aqui contra Postgres 16.15 local (sem Docker). Mutação conferida: tirar a cascata de `silenciamentos` e
+tirar o backfill de `pendente` fazem o critério falhar. Detalhes de desenho: DECISIONS 60.
+
+**Falta na fase 3 (próximas partes, nesta ordem):**
+1. servidor da API (Fastify) gerando rotas do contrato, tenant, erros, `Cache-Control`/`Vary`, limites de taxa;
+2. autenticação: código por e-mail (Brevo; Redis para código e limites), Google, sessão e renovação, operador;
+3. `me`, consentimentos, exportação, exclusão; preferências; silenciamentos;
+4. feed, detalhe, eventos, avaliação, denúncia; produtos, histórico, seguidos;
+5. admin: alertas, lojas, fontes, denúncias, triagem, produtos, auditoria;
+6. comandos de linha: operador e provisionamento de loja e faixa de CEP (D26).
+Reaproveitar da linha paralela (`claude/determined-meitner-8zeag7`): código de e-mail, Google, sessões e push, adaptando ao contrato.
+`pronto-fase3.sh` cresce a cada parte.
+
+**Próximo passo:** parte 2 da fase 3, o servidor da API com as rotas públicas (`/v1/configuracao`) e a base de tenant e erro.
 
 ## Fase 3 — rascunho 1 (SUPERADO pelo rascunho 2 onde diverge)
 
