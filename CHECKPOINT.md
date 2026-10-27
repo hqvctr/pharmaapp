@@ -227,6 +227,10 @@ quebrando um exemplo de propósito). Mudanças:
 `1.1.0`); código da linha paralela será reaproveitado e adaptado; medicamento fica no feed com advertência
 (RDC 96 ainda sem parecer). O que veio de lá sem decisão está no BACKLOG.
 
+**RDC 96 (2026-10-27, DECISIONS 57).** Parecer do consultor salvo em `docs/juridico/parecer-rdc96.md`
+(minuta, sem decisão ainda). Achado do código: a Lomadee não envia GTIN, então nenhum isento sobe pelo
+caminho "feed com advertência" e o medicamento mal categorizado passa como produto comum.
+
 **Próximo passo:** migrations das 16 mudanças listadas acima (sessions, operadores, silenciamentos, seguidos,
 avisos, alert_events, avaliações e denúncias, revisão do alerta, dispositivos etc.), depois as rotas por
 fase (tabela "Rota → fase"). Antes do código, definir o critério de pronto da fase 3 (`scripts/pronto-fase3.sh`),
