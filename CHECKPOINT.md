@@ -223,6 +223,10 @@ quebrando um exemplo de propósito). Mudanças:
 
 **Contrato 1.0.0 APROVADO e congelado (2026-10-27, DECISIONS 51–52).** Prazo padrão da oferta manual sem data: 7 dias.
 
+**Varredura das outras branches (2026-10-27, DECISIONS 53–56).** CEPs 1/3 mantidos; `prova` entrou (contrato
+`1.1.0`); código da linha paralela será reaproveitado e adaptado; medicamento fica no feed com advertência
+(RDC 96 ainda sem parecer). O que veio de lá sem decisão está no BACKLOG.
+
 **Próximo passo:** migrations das 16 mudanças listadas acima (sessions, operadores, silenciamentos, seguidos,
 avisos, alert_events, avaliações e denúncias, revisão do alerta, dispositivos etc.), depois as rotas por
 fase (tabela "Rota → fase"). Antes do código, definir o critério de pronto da fase 3 (`scripts/pronto-fase3.sh`),
