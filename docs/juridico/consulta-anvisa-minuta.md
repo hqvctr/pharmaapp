@@ -1,5 +1,7 @@
 # Minuta: consulta à Anvisa sobre comparador de preços de medicamento com link de afiliado
 
+> **SUPERADA** pelo texto da seção "Consulta formal pronta" de [parecer-anvisa.md](parecer-anvisa.md), que tem sete perguntas, anexos e passo a passo. Mantida só como histórico.
+>
 > **Minuta para revisão do responsável e de advogado inscrito na OAB. Não foi enviada a ninguém.** O canal
 > de protocolo e o setor competente da Anvisa **não foram confirmados**; descobrir isso é o primeiro passo
 > de quem for enviar. Os campos entre colchetes faltam preencher.

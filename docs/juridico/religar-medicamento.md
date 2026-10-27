@@ -14,7 +14,7 @@ O que o desligado faz hoje:
 
 | # | Passo | Quem | Estado |
 |---|-------|------|--------|
-| 1 | Consulta formal à Anvisa sobre comparador de preços com afiliado (RDC 44/2009, art. 53, § 2º; Lei 15.357/2026). Minuta: [consulta-anvisa-minuta.md](consulta-anvisa-minuta.md) | responsável ou advogado | minuta pronta, não enviada; prompt para o consultor revisar e refinar: [PROMPT_ANVISA.md](PROMPT_ANVISA.md) |
+| 1 | Consulta formal à Anvisa sobre comparador de preços com afiliado (RDC 44/2009, art. 53, § 2º; Lei 15.357/2026). Texto final proposto, com 7 perguntas, anexos e passo a passo (Fale Conosco, prazo de 20 dias corridos mais 10): [parecer-anvisa.md](parecer-anvisa.md), seção "Consulta formal pronta". Precisa de CNPJ, sede, nome da rede de afiliados, lojas com AFE e capturas de protótipo. A minuta antiga ([consulta-anvisa-minuta.md](consulta-anvisa-minuta.md)) fica superada | responsável ou advogado | texto pronto, **não enviado** |
 | 2 | Advogado inscrito na OAB revisa o parecer: pendências em [resumo-advogado-rdc96.md](resumo-advogado-rdc96.md) | responsável | resumo pronto |
 | 3 | Conferir no DOU a RDC 96 consolidada, o Anexo III e a Lei 15.357/2026 (o consultor leu fontes secundárias) | equipe | aberto |
 | 4 | Fonte de ofertas com GTIN. A Lomadee não enviou GTIN nos nossos dados sintéticos, mas o formato real nunca foi visto: com a conta, chamar a API de ofertas uma vez e colar a resposta crua aqui (a documentação `developer.lomadee.com` não resolve neste ambiente; precisaria ser liberada na rede da sessão). Alternativas a verificar: feed de produtos de rede de afiliados com EAN (campo opcional no padrão Awin; existência de programa de farmácia no Brasil não confirmada) e API do Cosmos/Bluesoft (consulta por GTIN, planos e limites não confirmados; o site responde 403 a este ambiente) | responsável | aberto |
@@ -36,3 +36,19 @@ RF-15 (seguir exige consentimento LGPD específico). Ver DECISIONS 58.
 comuns em alimento e cosmético (`substanciasAmbiguas`, como vitamina C) só bloqueiam se o título não tiver
 uma palavra de `ignorarSeTitulo`. Quando a lista da CMED estiver carregada, o ideal é derivar as substâncias
 dela; a lista manual fica como rede de proteção.
+
+## Plano B enquanto medicamento está desligado (parecer da Anvisa, pergunta 10)
+Pode: pesquisa, feed e avisos dos demais produtos de farmácia (cosmético, higiene, fralda, lenço, protetor
+solar); texto genérico "Medicamentos isentos de prescrição: em avaliação regulatória", sem nome, marca,
+preço, sintoma ou classe; lista de espera sem produto e com consentimento próprio.
+Não pode: exibir qualquer medicamento, nem por engano; prometer desconto em medicamento; perguntar qual
+remédio a pessoa quer acompanhar.
+Quando existir pesquisa: termo de medicamento devolve estado vazio com o texto fixo "Medicamentos ainda não
+estão disponíveis no economae".
+
+## Desenho de menor risco para sair do zero (a decidir, só depois do advogado)
+Busca de preço de isento **sem link de compra**, em lista (nome comercial, DCB, apresentação, registro,
+detentor, preço por loja, "preço consultado em [data e hora] no site da loja"), sem percentual, destaque,
+aviso, compartilhamento nem comissão. Exige GTIN e dados da CMED. Ordem completa dos 7 desenhos e riscos:
+matriz em [parecer-anvisa.md](parecer-anvisa.md).
+
