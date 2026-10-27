@@ -1633,7 +1633,7 @@ components:
           items: { $ref: '#/components/schemas/Advertencia' }
         seguido: { type: boolean, description: true quando a pessoa segue o produto. }
         prova:
-          description: Acréscimo da 1.1.0 (decisão 54). null em alerta sem medição guardada (ex.: oferta manual ou alerta antigo).
+          description: 'Acréscimo da 1.1.0 (decisão 54). null em alerta sem medição guardada, como oferta manual ou alerta antigo.'
           oneOf:
             - $ref: '#/components/schemas/Prova'
             - type: 'null'
