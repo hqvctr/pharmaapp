@@ -206,7 +206,17 @@ Cada uma com recomendação (R) e alternativa descartada (A). Os números são c
 13. Exclusão em cascata (DECISIONS 7) precisa valer para todas as tabelas novas do usuário; a
     contagem de denúncias cai quando quem denunciou exclui a conta.
 
-**Próximo passo:** o responsável aprova ou ajusta o contrato e responde as decisões D2–D29. Só depois: migrations.
+**Decisões D2–D29 respondidas (2026-10-27, DECISIONS 40–50).** Resumo: todas seguiram a recomendação, exceto
+D6 (Brevo por enquanto), D7 (aguarda consulta jurídica; vale a opção restritiva), D15 (lista de marcas dos
+produtos cadastrados), D20 (listas + liberação pelo operador, só para cautela e texto) e D21 (`valida_ate`
+opcional, com aviso).
+
+**A fazer no contrato antes de aprová-lo:** `valida_ate` opcional na oferta manual (D21); `privacidade`,
+`versao_minima` e `imagem_url` em `/v1/configuracao` e no produto; `limite_diario` com padrão 3; rota de
+liberação de bloqueio de triagem restrita a cautela e texto (D20); regra de marca por lista (D15).
+
+**Próximo passo:** o responsável revisa o contrato rascunho 2 já com esses ajustes e o aprova. Só depois:
+migrations. Pendentes de terceiros: consulta jurídica da D7, termos da Lomadee (D14), listas CMED/Portaria 344.
 
 ## Fase 3 — rascunho 1 (SUPERADO pelo rascunho 2 onde diverge)
 
