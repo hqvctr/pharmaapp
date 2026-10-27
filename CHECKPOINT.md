@@ -231,6 +231,13 @@ quebrando um exemplo de propósito). Mudanças:
 (minuta, sem decisão ainda). Achado do código: a Lomadee não envia GTIN, então nenhum isento sobe pelo
 caminho "feed com advertência" e o medicamento mal categorizado passa como produto comum.
 
+**Medicamento desligado e trava por substância (2026-10-27, DECISIONS 58).** `medicamentos.modo = "desligado"`
+no tenant padrão (a carga recusa outro valor); `MEDICAMENTO_DESLIGADO` e trava RF-12 em
+`backend/src/normalizador/medicamentos.ts`; 171 testes passando (`npm test`), `tsc --noEmit` limpo; mutação
+conferida (sem a trava, 7 testes falham; sem o desligado, 2). `scripts/pronto-fase2.sh` não foi executado
+(sem Docker/Postgres neste ambiente); os dados gravados não mudam de resultado. Documentos para terceiros:
+`docs/juridico/religar-medicamento.md`, `consulta-anvisa-minuta.md` (não enviada) e `resumo-advogado-rdc96.md`.
+
 **Próximo passo:** migrations das 16 mudanças listadas acima (sessions, operadores, silenciamentos, seguidos,
 avisos, alert_events, avaliações e denúncias, revisão do alerta, dispositivos etc.), depois as rotas por
 fase (tabela "Rota → fase"). Antes do código, definir o critério de pronto da fase 3 (`scripts/pronto-fase3.sh`),

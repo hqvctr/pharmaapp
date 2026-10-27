@@ -3,13 +3,22 @@ import { createHash } from 'node:crypto';
 import type { Embalagem } from '../curadoria/tipos.js';
 import type { OfertaBruta } from '../fontes/contrato.js';
 import { extrairEmbalagem, removerEmbalagem } from './embalagem.js';
-import { normalizarTexto, triarMedicamento, type ListasMedicamentos, type CodigoBloqueioMedicamento } from './medicamentos.js';
+import {
+  normalizarTexto,
+  triarMedicamento,
+  type CodigoBloqueioMedicamento,
+  type ListasMedicamentos,
+  type ModoMedicamentos,
+  type TriagemPorNome,
+} from './medicamentos.js';
 import { triarNbcal, type CodigoAdvertenciaNbcal, type RegrasNbcal } from './nbcal.js';
 
 export interface ConfigNormalizacao {
   /** Nome da categoria na fonte (normalizado) → categoria do app. Fora do mapa: ignorada. */
   mapaCategorias: Record<string, string>;
   categoriaMedicamentos: string;
+  modoMedicamentos: ModoMedicamentos;
+  triagemPorNome: TriagemPorNome;
   nbcal: RegrasNbcal;
 }
 
@@ -55,6 +64,7 @@ export function normalizarOferta(
     },
     listas,
     config.categoriaMedicamentos,
+    { modo: config.modoMedicamentos, triagemPorNome: config.triagemPorNome },
   );
   if (!triagem.liberado) {
     return { tipo: 'bloqueado', codigo: triagem.codigo, detalhe: triagem.detalhe, revisaoHumana: triagem.revisaoHumana };

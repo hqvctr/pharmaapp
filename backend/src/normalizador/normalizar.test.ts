@@ -12,6 +12,8 @@ const listas = await carregarListasMedicamentos(path.join(RAIZ, 'fixtures/medica
 const config: ConfigNormalizacao = {
   mapaCategorias: tenant.fontes.lomadee!.mapaCategorias,
   categoriaMedicamentos: tenant.medicamentos.categoria,
+  modoMedicamentos: tenant.medicamentos.modo,
+  triagemPorNome: tenant.medicamentos.triagemPorNome,
   nbcal: tenant.nbcal,
 };
 
@@ -61,3 +63,30 @@ describe('normalizador com triagem NBCAL', () => {
     expect(r.tipo === 'ok' && r.produto.advertencias).toEqual([]);
   });
 });
+
+describe('normalizador com medicamento desligado e trava por substância (parecer da RDC 96/2008)', () => {
+  it('o tenant padrão está desligado', () => {
+    expect(tenant.medicamentos.modo).toBe('desligado');
+  });
+
+  it('isento com GTIN conhecido fica bloqueado e registrado como desligado', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Analgésico 500mg 10 comprimidos', gtin: '7891000000011', categoriaFonte: 'Medicamentos' }), listas, config);
+    expect(r).toMatchObject({ tipo: 'bloqueado', codigo: 'MEDICAMENTO_DESLIGADO', revisaoHumana: false });
+  });
+
+  it('remédio mal categorizado e sem GTIN não passa como produto comum', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Dipirona Sódica 500mg Gotas 20ml', categoriaFonte: 'Higiene do Bebê' }), listas, config);
+    expect(r).toMatchObject({ tipo: 'bloqueado', codigo: 'MEDICAMENTO_SEM_REFERENCIA', revisaoHumana: true });
+  });
+
+  it('remédio em categoria fora do mapa também fica registrado', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Paracetamol Infantil 100mg/ml', categoriaFonte: 'Mamãe e Bebê' }), listas, config);
+    expect(r).toMatchObject({ tipo: 'bloqueado', codigo: 'MEDICAMENTO_SEM_REFERENCIA' });
+  });
+
+  it('produto comum segue normalmente', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Fralda Marca Z G 36 Unidades', categoriaFonte: 'Fraldas' }), listas, config);
+    expect(r.tipo).toBe('ok');
+  });
+});
+

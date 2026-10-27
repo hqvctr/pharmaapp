@@ -31,7 +31,31 @@
   },
   "medicamentos": {
     "categoria": "medicamentos_isentos",
-    "notificar": false
+    "notificar": false,
+    "modo": "desligado",
+    "triagemPorNome": {
+      "substancias": [
+        "acido acetilsalicilico", "bisacodil", "canfora", "ambroxol", "fenilefrina", "dipirona", "metamizol",
+        "dropropizina", "hidroxido de aluminio", "hidroxido de magnesio", "ibuprofeno", "mebendazol", "naproxeno",
+        "nicotina", "paracetamol", "acetaminofeno", "picossulfato de sodio", "plantago ovata", "sulfato ferroso",
+        "simeticona", "dimeticona", "loratadina", "desloratadina", "cetirizina", "dimenidrinato", "loperamida",
+        "butilbrometo de escopolamina", "escopolamina", "acetilcisteina", "guaifenesina", "omeprazol", "esomeprazol",
+        "pantoprazol", "diclofenaco", "cetoprofeno", "nimesulida", "clotrimazol", "miconazol", "minoxidil",
+        "finasterida", "sildenafila", "tadalafila", "amoxicilina", "azitromicina", "cefalexina", "ciprofloxacino",
+        "ivermectina", "dexametasona", "prednisona", "prednisolona", "tramadol", "codeina", "clonazepam", "alprazolam",
+        "diazepam", "zolpidem", "fluoxetina", "sertralina", "losartana", "atenolol", "metformina", "sinvastatina",
+        "levotiroxina", "isotretinoina", "cloreto de sodio nasal", "soro fisiologico nasal"
+      ],
+      "substanciasAmbiguas": [
+        "vitamina c", "acido ascorbico", "bicarbonato de sodio", "carvao vegetal", "carvao ativado",
+        "carbonato de calcio", "calcio"
+      ],
+      "ignorarSeTitulo": [
+        "serum", "creme facial", "sabonete", "shampoo", "xampu", "condicionador", "hidratante", "creme dental",
+        "pasta de dente", "clareador", "churrasco", "culinario", "limpeza", "desinfetante", "tempero", "racao",
+        "leite", "suco", "bebida", "cha "
+      ]
+    }
   },
   "nbcal": {
     "versao": "parecer-d33-2026-10-27",

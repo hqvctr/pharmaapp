@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { normalizarTexto, triarMedicamento, type ListasMedicamentos, type ProdutoEmTriagem } from './medicamentos.js';
+import {
+  compilarTriagemPorNome,
+  normalizarTexto,
+  triarMedicamento,
+  type ListasMedicamentos,
+  type ProdutoEmTriagem,
+} from './medicamentos.js';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const bruto = JSON.parse(readFileSync(path.join(RAIZ, 'fixtures/medicamentos/listas_teste.json'), 'utf8'));
@@ -64,3 +70,63 @@ describe('triagem de medicamento', () => {
     expect(r).toMatchObject({ liberado: false, revisaoHumana: true });
   });
 });
+
+describe('trava por nome de substância (RF-12 do parecer da RDC 96/2008)', () => {
+  const triagemPorNome = compilarTriagemPorNome({
+    substancias: ['Dipirona', 'paracetamol', 'nicotina', 'butilbrometo de escopolamina'],
+    substanciasAmbiguas: ['vitamina C', 'Bicarbonato de sódio'],
+    ignorarSeTitulo: ['serum', 'shampoo', 'culinario'],
+  });
+  const triar = (p: Partial<ProdutoEmTriagem>, extra = {}) => triarMedicamento(produto(p), listas, CAT, { triagemPorNome, ...extra });
+
+  it.each([
+    ['substância no título, sem GTIN, categoria comum', { titulo: 'Dipirona Sódica 500mg 10 comprimidos' }],
+    ['maiúsculas e acento', { titulo: 'PARACETAMOL INFANTIL gotas' }],
+    ['substância composta', { titulo: 'Butilbrometo de Escopolamina 10mg' }],
+    ['ambígua sem marcador de outro uso', { titulo: 'Vitamina C 500 mg 30 comprimidos' }],
+  ])('bloqueia: %s', (_c, p) => {
+    expect(triar(p)).toMatchObject({ liberado: false, codigo: 'MEDICAMENTO_SEM_REFERENCIA', revisaoHumana: true });
+  });
+
+  it.each([
+    ['palavra inteira: nicotinamida não é nicotina', { titulo: 'Sérum de Nicotinamida 10%' }],
+    ['ambígua com marcador de cosmético', { titulo: 'Sérum Facial Vitamina C 30 ml' }],
+    ['ambígua com marcador culinário', { titulo: 'Bicarbonato de Sódio 200 g uso culinário' }],
+    ['produto comum', { titulo: 'Shampoo Infantil 400 ml' }],
+  ])('libera: %s', (_c, p) => {
+    expect(triar(p)).toMatchObject({ liberado: true, ehMedicamento: false });
+  });
+
+  it('marcador não salva substância firme', () => {
+    expect(triar({ titulo: 'Shampoo com Dipirona' })).toMatchObject({ liberado: false });
+  });
+
+  it('GTIN conhecido não passa por esta trava', () => {
+    expect(triar({ gtin: '7891000000011', categoria: CAT, titulo: 'Dipirona 500 mg' })).toMatchObject({ liberado: true, ehMedicamento: true });
+  });
+
+  it('sem a opção, o comportamento antigo se mantém', () => {
+    expect(triarMedicamento(produto({ titulo: 'Dipirona 500 mg' }), listas, CAT)).toMatchObject({ liberado: true });
+  });
+
+  it('modo desligado bloqueia o isento que passaria', () => {
+    expect(triar({ gtin: '7891000000011', categoria: CAT }, { modo: 'desligado' })).toMatchObject({
+      liberado: false,
+      codigo: 'MEDICAMENTO_DESLIGADO',
+    });
+  });
+
+  it('modo desligado não esconde bloqueios mais específicos', () => {
+    expect(triar({ gtin: '7891000000035', categoria: CAT }, { modo: 'desligado' })).toMatchObject({ codigo: 'MEDICAMENTO_COM_PRESCRICAO' });
+  });
+
+  it.each([
+    ['sem objeto', null],
+    ['sem substâncias firmes', { substancias: [], substanciasAmbiguas: [], ignorarSeTitulo: [] }],
+    ['termo vazio', { substancias: ['  '], substanciasAmbiguas: [], ignorarSeTitulo: [] }],
+    ['lista que não é lista', { substancias: ['dipirona'], substanciasAmbiguas: 'x', ignorarSeTitulo: [] }],
+  ])('config inválida (%s) falha fechada', (_c, bruto) => {
+    expect(() => compilarTriagemPorNome(bruto)).toThrow(/Config inválida/);
+  });
+});
+

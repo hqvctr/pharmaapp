@@ -64,6 +64,8 @@ export async function executarColeta(ctx: ContextoColeta): Promise<ResumoColeta>
     const norm = normalizarOferta(bruta, ctx.listas, {
       mapaCategorias: ctx.mapaCategorias,
       categoriaMedicamentos: ctx.config.medicamentos.categoria,
+      modoMedicamentos: ctx.config.medicamentos.modo,
+      triagemPorNome: ctx.config.medicamentos.triagemPorNome,
       nbcal: ctx.config.nbcal,
     });
     if (norm.tipo === 'bloqueado') {
