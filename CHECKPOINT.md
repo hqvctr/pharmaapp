@@ -238,6 +238,11 @@ conferida (sem a trava, 7 testes falham; sem o desligado, 2). `scripts/pronto-fa
 (sem Docker/Postgres neste ambiente); os dados gravados não mudam de resultado. Documentos para terceiros:
 `docs/juridico/religar-medicamento.md`, `consulta-anvisa-minuta.md` (não enviada) e `resumo-advogado-rdc96.md`.
 
+**Parecer da Anvisa (2026-10-27, DECISIONS 59).** Salvo em `docs/juridico/parecer-anvisa.md` (minuta, sem
+decisão). Recomenda manter medicamento desligado (já é a decisão 58); sem precedente sobre comparadores;
+consulta formal pronta para revisão OAB, mas o projeto ainda não tem CNPJ. A equipe conferiu no texto
+oficial o art. 53 da RDC 44, a Lei 15.357 e a nota de 19/08/2026.
+
 **Próximo passo:** migrations das 16 mudanças listadas acima (sessions, operadores, silenciamentos, seguidos,
 avisos, alert_events, avaliações e denúncias, revisão do alerta, dispositivos etc.), depois as rotas por
 fase (tabela "Rota → fase"). Antes do código, definir o critério de pronto da fase 3 (`scripts/pronto-fase3.sh`),

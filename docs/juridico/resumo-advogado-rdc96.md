@@ -14,7 +14,11 @@ Não dá orientação de uso. Medicamento está **desligado** hoje.
 Em ordem de importância:
 1. **Enquadramento diante da RDC 44/2009, art. 53, § 2º**, e da Lei 15.357/2026: o comparador "oferta
    medicamento na internet"? Se sim, o produto não pode divulgar medicamento. Há consulta à Anvisa em
-   [consulta-anvisa-minuta.md](consulta-anvisa-minuta.md) para revisar e, se for o caso, protocolar.
+   [parecer-anvisa.md](parecer-anvisa.md) traz a análise e o texto da consulta à Anvisa, para revisar e,
+   se for o caso, protocolar. Não há precedente sobre comparadores; a Anvisa multou o Mercado Livre em 2024
+   pelo "concorreu" do art. 3º da Lei 6.437. Observação da equipe: o art. 54, § 1º, da RDC 44 trata da lista
+   de preços "disponíveis para compra na farmácia ou drogaria", isto é, do site da própria farmácia; o
+   consultor apoiou a lista de um terceiro no art. 18 da RDC 96. Vale conferir se isso basta.
 2. **RDC 96/2008, art. 22, V ("as indicações")** na propaganda de isento: é exigida? Define se o feed de
    isento é viável ou se só cabe lista de preços (art. 18).
 3. **Preço integral (art. 11, § 4º)**: o último preço praticado pela mesma loja, observado pelo app antes da
