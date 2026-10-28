@@ -1,5 +1,12 @@
 # Checkpoint
 
+## Fase 3, parte 2c: conta, consentimentos e preferências (2026-10-28, DECISIONS 73)
+
+`GET`/`DELETE /v1/me`, `PUT /v1/me/consentimentos`, `GET`/`PUT /v1/preferencias` no ar (`api/rotas/conta.ts`, `api/rotas/preferencias.ts`, `api/corpo.ts`). Com o aceite de termos funcionando, as demais rotas autenticadas deixam de dar 403.
+Conferido: 361 testes (27 contra Postgres de verdade, `PG_TESTE_URL`); cinco mutações (leitura sem filtrar a pessoa, sem teto do plano, sem bloqueio por termos, data do consentimento regravada, exclusão que não apaga) quebram os testes;
+a exclusão em cascata foi provada com preferências, assinatura, sessão e aparelho, sem tocar em outra conta. Mensagens de erro alinhadas aos exemplos do contrato.
+**Falta nesta área:** exportação de dados (`GET /v1/me/exportacao`), silenciamentos, seguidos, avisos, dispositivo; feed, detalhe e eventos do alerta (onde entra `linkRastreadoDaOferta`); login Google.
+
 ## Redes de afiliados: leitura no navegador (2026-10-28)
 
 Mercado Livre: sem API de afiliados e com cláusulas que impedem histórico, comparação e mistura de fontes: só vitrine manual. Magalu: sem API, só pessoa física: fora. **Shopee: nenhuma cláusula contra o app, aceita pessoa física, "aplicativos" contam como mídia:

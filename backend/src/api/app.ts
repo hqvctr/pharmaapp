@@ -3,6 +3,8 @@ import { ErroApi } from './erros.js';
 import { LimitadorMemoria, type LimitadorTaxa } from './limiteTaxa.js';
 import { rotasAuth, type DepsAuth } from './rotas/auth.js';
 import { rotaConfiguracao } from './rotas/configuracao.js';
+import { rotasConta } from './rotas/conta.js';
+import { rotasPreferencias } from './rotas/preferencias.js';
 import type { RegistroTenants } from './tenants.js';
 
 // Cada dependência externa entra por interface para que o teste use uma implementação falsa.
@@ -67,7 +69,12 @@ export function buildApp(deps: AppDeps): FastifyInstance {
   if (deps.tenants !== undefined) {
     const limitador = deps.limitador ?? new LimitadorMemoria();
     rotaConfiguracao(app, deps.tenants, limitador);
-    if (deps.auth !== undefined) rotasAuth(app, { ...deps.auth, tenants: deps.tenants, limitador });
+    if (deps.auth !== undefined) {
+      const d = { ...deps.auth, tenants: deps.tenants, limitador };
+      rotasAuth(app, d);
+      rotasConta(app, d);
+      rotasPreferencias(app, d);
+    }
   }
 
   return app;

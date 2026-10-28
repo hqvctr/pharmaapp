@@ -1,5 +1,5 @@
 // /v1/auth/email/codigo, /v1/auth/email/verificar, /v1/auth/renovar e /v1/auth/sair (openapi.yaml, tag auth).
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import type pg from 'pg';
 import { type ArmazenamentoCodigos } from '../../auth/codigos.js';
 import { type EnviadorEmail } from '../../auth/enviador.js';
@@ -7,6 +7,7 @@ import { criarSessao, ErroSessaoRevogadaPorReuso, renovarSessao, revogarSessao, 
 import { chaveEmail, hmacCodigo, iguais, novoCodigo } from '../../auth/tokens.js';
 import { acharOuCriarPorEmail, montarUsuario } from '../../auth/usuarios.js';
 import { comTransacao } from '../../db/transacao.js';
+import { corpoObjeto } from '../corpo.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
 import type { LimitadorTaxa } from '../limiteTaxa.js';
 import { exigirSessao } from '../sessao.js';
@@ -46,12 +47,6 @@ async function redisOu503<T>(p: Promise<T>): Promise<T> {
 async function limitar(d: DepsAuth, t: TenantAtivo, nome: string, chave: string): Promise<number | null> {
   const { maximo, janelaSegundos } = limite(t, nome);
   return redisOu503(d.limitador.usar(`${nome}:${chave}`, maximo, janelaSegundos));
-}
-
-function corpoObjeto(req: FastifyRequest): Record<string, unknown> {
-  const b = req.body;
-  if (b === null || typeof b !== 'object' || Array.isArray(b)) throw new ErroApi('requisicao_malformada');
-  return b as Record<string, unknown>;
 }
 
 function lerEmail(b: Record<string, unknown>, campos: CampoInvalido[]): string {
