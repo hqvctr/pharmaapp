@@ -1,5 +1,10 @@
 # Checkpoint
 
+## Redes de afiliados: leitura no navegador (2026-10-28)
+
+Mercado Livre: sem API de afiliados e com cláusulas que impedem histórico, comparação e mistura de fontes: só vitrine manual. Magalu: sem API, só pessoa física: fora. **Shopee: nenhuma cláusula contra o app, aceita pessoa física, "aplicativos" contam como mídia:
+próxima fonte**, mas a Open API só aparece com login e a comissão de apps de ofertas é "sob consulta". Awin espera o CNPJ. Detalhes e trechos em `docs/operacao/redes-afiliados.md`.
+
 ## Redes de afiliados: leitura do Cowork (2026-10-28)
 
 Confirmado o caminho da Amazon (formulário de Atendimento para Associados; Creators API só para quem já tem vendas qualificadas; cache de 24 h, 1 h para ofertas) e, na Awin BR, as farmácias que existem

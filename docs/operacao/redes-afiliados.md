@@ -17,9 +17,9 @@ Nenhuma conta foi criada em nenhuma rede.
 | Rede | Dá dados (API/feed)? | Permite rastrear preço e alertar? | Veredito agora |
 |---|---|---|---|
 | **Amazon Associates** | Sim (Creators API, que substituiu a PA-API) [oficial/terceiro] | **Não, salvo aprovação da Amazon** (política 6(y)) [oficial] | **Bloqueada para o núcleo do app** até haver aprovação por escrito |
-| **Mercado Livre** | API de desenvolvedores existe; API de afiliados não confirmada | Não lido | **A ler** (Cowork) |
-| **Shopee** | Open API de afiliados (GraphQL) [terceiro] | Não lido | **A ler** (Cowork) |
-| **Magalu (Parceiro Magalu)** | Sem API pública confirmada [terceiro] | Não lido | Baixa prioridade; a ler |
+| **Mercado Livre** | **Não há API de afiliados**; API de itens exige token e a busca documentada é por vendedor [oficial] | Termos não citam alerta, mas várias cláusulas conflitam (ver abaixo) | **Só vitrine manual**; não serve como fonte automática |
+| **Shopee** | Open API de afiliados atrás de login (existência por terceiros) | **Sem cláusula contra** comparador, histórico ou alerta; "aplicativos" contam como mídia [oficial, 09/09/2026] | **Melhor candidata agora**; falta ler a Open API (precisa de login) |
+| **Magalu (Influenciador Magalu)** | **Nenhuma API ou feed** [oficial] | Sem cláusula, mas só pessoa física (CPF e PIS) e loja virtual hospedada pelo Magalu | **Não serve como fonte de dados**; só link manual |
 | **Awin** | Sim: feed de produtos por API para publishers [oficial], mas só a vertical "retail" e a lista de idiomas na documentação **não traz pt_BR** | Não lido | **Candidata forte**; precisa de conta de publisher para ver anunciantes e termos |
 | **Rakuten Advertising** | Sem dado confiável para o Brasil | Não lido | A ler |
 | **Admitad, Afilio** | Sem dado confiável | Não lido | A ler |
@@ -114,3 +114,37 @@ Não encontrados na Awin BR (pode ser limite da busca): Drogasil, Droga Raia, Pa
 
 **Próximos passos propostos:** (1) leitura **em navegador** (não por ferramenta de busca) das páginas de Mercado Livre, Shopee e Magalu; (2) decidir **CNPJ** (muitos anunciantes da Awin exigem; também deixaria o contrato da Lomadee e a conta da Google Play em nome do projeto);
 (3) decidir o cadastro de publisher na Awin (pode ter depósito) só para ver o diretório e os termos por anunciante; (4) Amazon fica por último.
+
+---
+
+## Atualização 2: leitura no navegador (2026-10-28, `docs/juridico/fontes/redes-afiliados-navegador-2026-10-28.md`)
+Desta vez o Cowork leu as páginas no Chrome, com as cláusulas completas. Números de cláusula abaixo vêm desse arquivo.
+
+### Mercado Livre: só vitrine manual
+- **Sem API de afiliados** (a documentação de desenvolvedores não tem seção para isso); a API pública de itens usa Bearer token e a busca documentada é por vendedor. O link de afiliado sai de uma ferramenta do painel, e a cláusula 1.8 proíbe encurtar ou editar o link.
+- **Os termos de afiliados não falam de alerta, histórico ou comparador, mas pesam contra o app:**
+  - 5.3: *"O Afiliado não poderá fazer qualquer publicidade comparando os produtos [...] com qualquer produto, seja de empresa concorrente ou não."* (risco para qualquer comparação entre lojas.)
+  - 5.4: nas divulgações só se pode mencionar *"as informações previstas expressamente nos anúncios"*. Um aviso "caiu de R$ X para R$ Y" usa um preço antigo que não está no anúncio.
+  - 1.3: só contam como mídia as **redes sociais, sites e blogs informados antes de entrar**; divulgação em outra mídia *"não gerará pagamentos"*. Aplicativo e push não estão na lista.
+  - 4.3 (c): proíbe coletar informações do Mercado Livre por scraping; só vale o que ele fornece.
+- **Termos de desenvolvedores (API):** 5.2: o conteúdo do ML *"não poderá ser confundido nem combinado com o conteúdo de terceiros"* (impede lista misturada de lojas); 2.2.1.3 e 14: copias só *"na medida do necessário"* e apagadas de forma irreversível (conflita com guardar histórico);
+  5.3: atualizar a cada 24 h (6 h para listagens); 5.4: estatísticas derivadas do site exigem autorização expressa.
+- **Quem entra:** pessoa física ou jurídica, 18+, CPF, conta Mercado Pago, perfil público em mídia; o programa é desenhado para criadores de conteúdo (1.2 i).
+- **Comissão:** Bebês 12% (venda direta) e 6% (indireta); Beleza e Cuidado Pessoal 16% e 8%; **Alimentos e Bebidas 0%**; **medicamentos e produtos farmacêuticos proibidos** (1.5). Atribuição de 24 h. Mínimo R$ 30 em 3 compradores distintos, pago no Mercado Pago.
+- **Conclusão:** não há como alimentar o app automaticamente com preços do ML dentro dos termos lidos. Uso possível: oferta curada à mão com link do painel, **sem histórico e sem comparar com outras lojas**, e antes disso o advogado lê 5.3, 5.4 e as cláusulas da API.
+
+### Shopee: melhor candidata
+- Termos do Brasil (atualizados em 09/09/2026): **não há cláusula sobre comparador, histórico ou alerta**; "Mídia de Afiliado" inclui *"websites, aplicativos e boletins informativos"* (1.3); e-mail publicitário só com consentimento prévio por escrito (4.3 a); sem regra sobre push ou SMS.
+  Proibido: scraping de propriedade intelectual da Shopee (4.3 d), anúncio pago em busca ou shopping (4.3 i), indexar URLs com ID de afiliado (4.3 k). Atribuição de 7 dias, último clique.
+- **Atenção:** *"Sites e Apps especializados em tecnologia, cupons, ofertas, cashback [...] a taxa de comissão é sob consulta."* Um app de ofertas pode receber taxa diferente dos 3% padrão (mais a comissão extra do vendedor, até 30%); sem tabela por categoria.
+- **Quem entra:** pessoa física ou jurídica, 18+, conta Shopee, perfil ou site público com conteúdo dos últimos 3 meses. PF recebe pela conta Maree (exige PIS/NIS/NIT), mínimo R$ 10 desde 01/09/2026; PJ recebe por transferência com nota fiscal. **Dá para começar sem CNPJ.**
+- **API:** a página da Open API **exige login**, então ainda não li nome, autenticação, limites, campos nem regras de cache; por terceiros, a API devolve só título, imagem, preço atual, desconto e link, **sem código de barras** (os produtos não casariam por EAN com outras lojas).
+- **Conclusão:** nada proíbe o que o app faz, mas falta ver a Open API e a taxa "sob consulta". Próximo passo: com a conta compradora já logada, só **ler** a página da Open API (sem se inscrever).
+
+### Magalu: não serve como fonte
+Só **pessoa física** (CPF e PIS); empresa vai para outro produto. Loja virtual hospedada pelo Magalu; **sem API, feed ou catálogo**; copiar conteúdo e usar bots é proibido (10.5); e-mail só para base opt-in e sem quem não abriu em 180 dias (11.4.2). Comissão: Bebê 8% a 12%, Beleza e Saúde 5% a 8%, Mercado 5% a 8%, Marketplace 2% a 4%.
+Serve, no máximo, como destino de link colocado à mão.
+
+### O que isso significa para a cobertura
+Fraldas e higiene do bebê hoje dependem de: **Shopee** (marketplace, sem EAN), **Awin** (farmácias Pague Menos, Drogal, Araujo, Venancio e Indiana, que vendem fralda e higiene, mas precisam do CNPJ em vários casos) e da Lomadee (Drogasmil e PromoFarma).
+Amazon, Mercado Livre e Magalu ficam de fora da automação. A ordem fica: **Shopee agora (leitura da Open API), Awin quando sair o CNPJ**.
