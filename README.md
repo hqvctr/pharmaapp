@@ -19,6 +19,7 @@ curl http://127.0.0.1:3000/health
 (cd backend && npm ci && npm test)
 ```
 
+Lista de medicamentos (CMED): `./scripts/atualizar-listas-medicamentos.sh` (ver `docs/operacao/lista-de-medicamentos.md`).
 Critério de pronto de cada fase: `scripts/pronto-faseN.sh`. A fase 3 aceita `PRONTO_PG_URL` para rodar contra um Postgres sem Docker.
 
 ## Estrutura

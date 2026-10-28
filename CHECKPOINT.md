@@ -265,6 +265,12 @@ erros, 705 bloqueados pela triagem (611 sem referência da CMED, 57 termos de ve
 em categoria sem mapa, 767 como oferta (todas descartadas: sem 14 dias de histórico). O formato real diferia da documentação
 (preço em reais, sem `count`, categorias no produto) e o adaptador foi corrigido; 214 testes; Fases 2 e 3 passando.
 
+**Lista de medicamentos da CMED convertida (2026-10-28, DECISIONS 65).** Conversor de .xlsx (`fflate`) + `scripts/atualizar-listas-medicamentos.sh`;
+26.635 linhas → 27.731 códigos de barras, 1.917 isentos, 353 substâncias controladas, em 4 s. Com ela, a coleta real da Lomadee
+(1.739 produtos) bloqueia 727 itens: 256 sem referência, 221 de receita, 115 isentos (modo desligado), 57 venda controlada,
+41 substância controlada, 37 NBCAL. 71% dos itens de categoria "medicamento" casam por código; o resto continua bloqueado.
+232 testes; Fases 2 e 3 passando. Funciona para qualquer farmácia (identifica pelo código de barras).
+
 **Falta para a Lomadee ir ao ar** (BACKLOG): cadastrar o segredo de rede, ler os termos,
 primeira chamada real (achar as marcas, guardar uma resposta), ligar o link rastreado, vínculo das lojas. **Outros canais**: dizer quais contas existem; cada um precisa de
 termos lidos e de um adaptador (a mesma chave da Lomadee já dá acesso a outras lojas da rede dela).

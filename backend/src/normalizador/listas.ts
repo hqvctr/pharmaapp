@@ -2,7 +2,7 @@
 // falha fechada. Formato: { versao, referencia: [{gtin, principioAtivo, isentoPrescricao}],
 // substanciasControladas: [...], termosBloqueados: [...] }.
 import { readFile } from 'node:fs/promises';
-import { normalizarTexto, type ListasMedicamentos, type ReferenciaMedicamento } from './medicamentos.js';
+import { gtin14, normalizarTexto, type ListasMedicamentos, type ReferenciaMedicamento } from './medicamentos.js';
 
 export async function carregarListasMedicamentos(arquivo: string): Promise<ListasMedicamentos> {
   const bruto = JSON.parse(await readFile(arquivo, 'utf8'));
@@ -12,7 +12,7 @@ export async function carregarListasMedicamentos(arquivo: string): Promise<Lista
   }
   return {
     versao: bruto.versao,
-    porGtin: new Map((bruto.referencia as ReferenciaMedicamento[]).map((r) => [r.gtin, r])),
+    porGtin: new Map((bruto.referencia as ReferenciaMedicamento[]).map((r) => [gtin14(r.gtin), r])),
     substanciasControladas: new Set((bruto.substanciasControladas as string[]).map(normalizarTexto)),
     termosBloqueados: bruto.termosBloqueados,
   };

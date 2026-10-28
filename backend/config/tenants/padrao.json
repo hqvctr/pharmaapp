@@ -44,7 +44,8 @@
         "finasterida", "sildenafila", "tadalafila", "amoxicilina", "azitromicina", "cefalexina", "ciprofloxacino",
         "ivermectina", "dexametasona", "prednisona", "prednisolona", "tramadol", "codeina", "clonazepam", "alprazolam",
         "diazepam", "zolpidem", "fluoxetina", "sertralina", "losartana", "atenolol", "metformina", "sinvastatina",
-        "levotiroxina", "isotretinoina", "cloreto de sodio nasal", "soro fisiologico nasal"
+        "levotiroxina", "isotretinoina", "cloreto de sodio nasal", "soro fisiologico nasal",
+        "hipoglos", "azelan", "acido azelaico", "cutisanol", "venalot", "fisiogen", "redoxon", "bepantol baby", "dexpantenol"
       ],
       "substanciasAmbiguas": [
         "vitamina c", "acido ascorbico", "bicarbonato de sodio", "carvao vegetal", "carvao ativado",

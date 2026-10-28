@@ -14,6 +14,7 @@ export interface ReferenciaMedicamento {
 export interface ListasMedicamentos {
   /** Data de download das listas oficiais; vai para o motivo de bloqueio, para auditoria. */
   versao: string;
+  /** Chave = GTIN com 14 dígitos (`gtin14`). */
   porGtin: ReadonlyMap<string, ReferenciaMedicamento>;
   /** Substâncias das listas da Portaria SVS/MS 344/98, já normalizadas por normalizarTexto. */
   substanciasControladas: ReadonlySet<string>;
@@ -92,6 +93,11 @@ export type ResultadoTriagem =
   | { liberado: true; ehMedicamento: boolean; categoria: string }
   | { liberado: false; codigo: CodigoBloqueioMedicamento; detalhe: string; revisaoHumana: boolean };
 
+/** GTIN sempre com 14 dígitos (EAN-13 e UPC-12 ganham zeros à esquerda), para comparar códigos de tamanhos diferentes. */
+export function gtin14(gtin: string): string {
+  return gtin.padStart(14, '0');
+}
+
 export function normalizarTexto(texto: string): string {
   return texto
     .normalize('NFD')
@@ -119,7 +125,7 @@ export function triarMedicamento(
     };
   }
 
-  const ref = produto.gtin !== null ? listas.porGtin.get(produto.gtin) : undefined;
+  const ref = produto.gtin !== null ? listas.porGtin.get(gtin14(produto.gtin)) : undefined;
 
   if (ref === undefined) {
     if (produto.categoria === categoriaMedicamentos) {

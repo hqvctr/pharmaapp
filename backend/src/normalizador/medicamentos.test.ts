@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   compilarTriagemPorNome,
+  gtin14,
   normalizarTexto,
   triarMedicamento,
   type ListasMedicamentos,
@@ -14,7 +15,7 @@ const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const bruto = JSON.parse(readFileSync(path.join(RAIZ, 'fixtures/medicamentos/listas_teste.json'), 'utf8'));
 const listas: ListasMedicamentos = {
   versao: bruto.versao,
-  porGtin: new Map(bruto.referencia.map((r: { gtin: string }) => [r.gtin, r])),
+  porGtin: new Map(bruto.referencia.map((r: { gtin: string }) => [gtin14(r.gtin), r])),
   substanciasControladas: new Set(bruto.substanciasControladas.map(normalizarTexto)),
   termosBloqueados: bruto.termosBloqueados,
 };
@@ -127,6 +128,18 @@ describe('trava por nome de substância (RF-12 do parecer da RDC 96/2008)', () =
     ['lista que não é lista', { substancias: ['dipirona'], substanciasAmbiguas: 'x', ignorarSeTitulo: [] }],
   ])('config inválida (%s) falha fechada', (_c, bruto) => {
     expect(() => compilarTriagemPorNome(bruto)).toThrow(/Config inválida/);
+  });
+});
+
+describe('GTIN de tamanhos diferentes', () => {
+  it('gtin14 completa com zeros à esquerda', () => {
+    expect(gtin14('7891000000011')).toBe('07891000000011');
+    expect(gtin14('07891000000011')).toBe('07891000000011');
+    expect(gtin14('123456789012')).toBe('00123456789012');
+  });
+  it('produto com GTIN-14 acha a referência cadastrada em EAN-13 (e vice-versa)', () => {
+    expect(triarMedicamento(produto({ gtin: '07891000000035', categoria: CAT }), listas, CAT)).toMatchObject({ codigo: 'MEDICAMENTO_COM_PRESCRICAO' });
+    expect(triarMedicamento(produto({ gtin: '7891000000035', categoria: CAT }), listas, CAT)).toMatchObject({ codigo: 'MEDICAMENTO_COM_PRESCRICAO' });
   });
 });
 
