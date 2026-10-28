@@ -235,6 +235,7 @@
     "metodosLogin": ["email", "google"],
     "google": { "clientIds": ["984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com"] },
     "operador": { "refreshDias": 7 },
+    "ofertaManual": { "validadePadraoDias": 7 },
     "categorias": [
       { "slug": "higiene_bebe", "rotulo": "Higiene do bebê" },
       { "slug": "cuidados_pessoais", "rotulo": "Cuidados pessoais" },

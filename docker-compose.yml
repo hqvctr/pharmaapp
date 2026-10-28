@@ -58,7 +58,7 @@ services:
       LOMADEE_PELO_PROXY: ${LOMADEE_PELO_PROXY:-}
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${API_PORT:-3000}:3000"
+      - "${API_BIND:-127.0.0.1}:${API_PORT:-3000}:3000"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -69,6 +69,17 @@ services:
       interval: 3s
       timeout: 3s
       retries: 20
+
+  # Túnel de teste para o celular alcançar a API fora de casa (perfil "tunel"; docs/operacao/testar-no-celular.md).
+  # Endereço *.trycloudflare.com novo a cada subida; sem conta nem domínio. Para um endereço fixo é preciso um domínio no Cloudflare.
+  tunel:
+    profiles: ["tunel"]
+    image: cloudflare/cloudflared:2025.9.1
+    command: ["tunnel", "--no-autoupdate", "--url", "http://api:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
   # Coleta de preços (perfil "coleta": COMPOSE_PROFILES=coleta no .env). Veja docs/operacao/instalar-no-seu-computador.md.
   provisionar:
