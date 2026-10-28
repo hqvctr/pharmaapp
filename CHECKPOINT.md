@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Shopee: inscrição enviada (2026-10-28)
+
+O responsável se inscreveu como afiliado (pessoa física); resposta por e-mail em até 3 dias (31/10/2026; depois disso, contato com a Shopee). A documentação da Open API só abre após a aprovação. Nada de código da Shopee ainda.
+
 ## Fase 3, parte 2d: feed, detalhe e eventos do alerta (2026-10-28, DECISIONS 74)
 
 `GET /v1/alertas`, `GET /v1/alertas/{id}`, `POST /v1/alertas/{id}/eventos` no ar, com o link rastreado da Lomadee gerado no detalhe (`api/linkOferta.ts`, `api/encurtadorProducao.ts`). O app já consegue mostrar uma oferta de verdade.
