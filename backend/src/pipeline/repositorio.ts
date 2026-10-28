@@ -111,7 +111,9 @@ export async function gravarOferta(
        preco_por_unidade_centavos = EXCLUDED.preco_por_unidade_centavos, condicao = EXCLUDED.condicao,
        frete_centavos = EXCLUDED.frete_centavos, frete_status = EXCLUDED.frete_status,
        disponivel = EXCLUDED.disponivel, valida_de = EXCLUDED.valida_de, valida_ate = EXCLUDED.valida_ate,
-       link = EXCLUDED.link, link_afiliado = EXCLUDED.link_afiliado, coletada_em = EXCLUDED.coletada_em
+       link = EXCLUDED.link, link_afiliado = EXCLUDED.link_afiliado, coletada_em = EXCLUDED.coletada_em,
+       -- Oferta escondida por denúncia volta quando o preço muda: é outra promoção (a contagem de denúncias é por alerta).
+       escondida_em = CASE WHEN offers.preco_centavos <> EXCLUDED.preco_centavos THEN NULL ELSE offers.escondida_em END
      RETURNING id`,
     [
       ids.tenantId, ids.productId, ids.storeId, ids.sourceId, o.idExterno, o.precoCentavos, precoPorUnidade,

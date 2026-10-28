@@ -1,13 +1,13 @@
 // Feed, detalhe e eventos do alerta contra um Postgres de verdade. Pula sem PG_TESTE_URL.
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { CodigosMemoria } from '../auth/codigos.js';
 import { criarSessao } from '../auth/sessoes.js';
 import { iguais } from '../auth/tokens.js';
 import { migrate } from '../db/migrate.js';
 import { TEXTOS_ADVERTENCIA } from '../normalizador/nbcal.js';
-import { chaveDaMarca, gravarProduto } from '../pipeline/repositorio.js';
+import { chaveDaMarca, gravarOferta, gravarProduto } from '../pipeline/repositorio.js';
 import { buildApp } from './app.js';
 import { ErroApi } from './erros.js';
 import type { ProvedorLinkOferta } from './linkOferta.js';
@@ -61,6 +61,10 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       links,
       auth: { db: pool, codigos: new CodigosMemoria(iguais, relogio), enviador: { enviarCodigo: async () => {} }, chaveHmac: Buffer.alloc(32, 9), agora: () => agora },
     });
+  });
+
+  beforeEach(() => {
+    agora = new Date('2026-11-01T12:00:00Z'); // um teste que falha no meio não deixa o relógio adiantado para o próximo
   });
 
   afterAll(async () => {
@@ -476,6 +480,147 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       expect(await contar(p.userId)).toBe(0);
       const pend = await pessoa({ termos: false });
       expect((await postar(alerta, pend.auth, { tipo: 'aberto', origem: 'push' })).json().codigo).toBe('termos_pendentes');
+    });
+  });
+
+
+  // ---------------------------------------------------------------- avaliação
+  describe('PUT /v1/alertas/{id}/avaliacao', () => {
+    const avaliar = (id: string, auth: Record<string, string>, corpo: unknown) => app.inject({ method: 'PUT', url: `/v1/alertas/${id}/avaliacao`, headers: auth, payload: corpo as never });
+
+    it('grava uma por pessoa; repetir o mesmo valor mantém a data; mudar substitui', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta } = await semear({ loja, produto });
+      const a = await avaliar(alerta, p.auth, { valor: 'util' });
+      expect(a.statusCode).toBe(200);
+      expect(a.json()).toEqual({ alerta_id: alerta, valor: 'util', avaliado_em: '2026-11-01T12:00:00.000Z' });
+      agora = new Date('2026-11-01T15:00:00Z');
+      const auth2 = await reabrir(p.userId);
+      expect((await avaliar(alerta, auth2, { valor: 'util' })).json().avaliado_em).toBe('2026-11-01T12:00:00.000Z');
+      const mudou = await avaliar(alerta, auth2, { valor: 'nao_util' });
+      expect(mudou.json()).toMatchObject({ valor: 'nao_util', avaliado_em: '2026-11-01T15:00:00.000Z' });
+      expect((await pool.query(`SELECT count(*)::int AS n FROM avaliacoes WHERE alert_id = $1`, [alerta])).rows[0].n).toBe(1);
+      const outra = await pessoa();
+      await avaliar(alerta, outra.auth, { valor: 'util' });
+      expect((await pool.query(`SELECT count(*)::int AS n FROM avaliacoes WHERE alert_id = $1`, [alerta])).rows[0].n).toBe(2);
+      agora = new Date('2026-11-01T12:00:00Z');
+    });
+
+    it('valor inválido dá 422; alerta que a pessoa não poderia ver dá 404; termos pendentes dão 403', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta } = await semear({ loja, produto });
+      expect((await avaliar(alerta, p.auth, { valor: 'otimo' })).json().campos[0].campo).toBe('valor');
+      expect((await avaliar(alerta, p.auth, {})).statusCode).toBe(422);
+      const rej = await semear({ loja, produto, revisao: 'rejeitado', decisao: 'somente_feed' });
+      expect((await avaliar(rej.alerta, p.auth, { valor: 'util' })).statusCode).toBe(404);
+      expect((await avaliar(randomUUID(), p.auth, { valor: 'util' })).statusCode).toBe(404);
+      expect((await avaliar(alerta, (await pessoa({ termos: false })).auth, { valor: 'util' })).json().codigo).toBe('termos_pendentes');
+    });
+  });
+
+  // ---------------------------------------------------------------- denúncia
+  describe('PUT /v1/alertas/{id}/denuncia', () => {
+    const denunciar = (id: string, auth: Record<string, string>, motivo: unknown = 'preco_errado') => app.inject({ method: 'PUT', url: `/v1/alertas/${id}/denuncia`, headers: auth, payload: { motivo } });
+    const escondida = async (oferta: string) => (await pool.query(`SELECT escondida_em FROM offers WHERE id = $1`, [oferta])).rows[0].escondida_em !== null;
+    /** Pessoas que abriram o alerta (a "base de interesse"), sem passar pela API. */
+    async function basePessoas(alerta: string, n: number, diasAtras = 1) {
+      for (let i = 0; i < n; i++) {
+        const u = (await pool.query(`INSERT INTO users (tenant_id, email) VALUES ($1,$2) RETURNING id`, [tenantId, `base-${randomUUID()}@x.com`])).rows[0].id;
+        await pool.query(`INSERT INTO alert_events (tenant_id, user_id, alert_id, tipo, origem, ocorrido_em) VALUES ($1,$2,$3,'aberto','push',$4)`, [tenantId, u, alerta, new Date(agora.getTime() - diasAtras * 86_400_000)]);
+      }
+    }
+
+    it('primeira denúncia dá 201; repetir troca só o motivo (200) sem contar duas vezes nem mudar a data', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta } = await semear({ loja, produto });
+      const a = await denunciar(alerta, p.auth, 'preco_errado');
+      expect(a.statusCode).toBe(201);
+      expect(a.json()).toEqual({ alerta_id: alerta, motivo: 'preco_errado', denunciado_em: '2026-11-01T12:00:00.000Z' });
+      agora = new Date('2026-11-01T14:00:00Z');
+      const b = await denunciar(alerta, await reabrir(p.userId), 'sem_estoque');
+      expect(b.statusCode).toBe(200);
+      expect(b.json()).toEqual({ alerta_id: alerta, motivo: 'sem_estoque', denunciado_em: '2026-11-01T12:00:00.000Z' });
+      expect((await pool.query(`SELECT count(*)::int AS n FROM denuncias WHERE alert_id = $1`, [alerta])).rows[0].n).toBe(1);
+      agora = new Date('2026-11-01T12:00:00Z');
+    });
+
+    it('item de pouca saída: duas pessoas diferentes escondem a oferta e abrem o caso com os números', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta, oferta } = await semear({ loja, produto });
+      await denunciar(alerta, p.auth, 'preco_errado');
+      expect(await escondida(oferta)).toBe(false);
+      await denunciar(alerta, p.auth, 'sem_estoque'); // a mesma pessoa de novo não conta
+      expect(await escondida(oferta)).toBe(false);
+      const segunda = await pessoa();
+      await denunciar(alerta, segunda.auth, 'sem_estoque');
+      expect(await escondida(oferta)).toBe(true);
+      const caso = (await pool.query(`SELECT situacao, denuncias, pessoas_base, limite, motivo_preco_errado, motivo_sem_estoque FROM casos_denuncia WHERE alert_id = $1`, [alerta])).rows[0];
+      expect(caso).toEqual({ situacao: 'escondida', denuncias: 2, pessoas_base: 0, limite: 2, motivo_preco_errado: 0, motivo_sem_estoque: 2 });
+      expect(ids(await feed((await pessoa()).auth))).not.toContain(alerta); // some para todos
+      expect((await app.inject({ method: 'GET', url: `/v1/alertas/${alerta}`, headers: p.auth })).json().situacao).toBe('em_revisao');
+    });
+
+    it('item de muita saída: o limite sobe com a base (10% de 30 pessoas = 3) e só conta abertura recente', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta, oferta } = await semear({ loja, produto });
+      await basePessoas(alerta, 30);
+      await basePessoas(alerta, 50, 8); // fora da janela de 7 dias: não entra na base
+      await denunciar(alerta, p.auth);
+      await denunciar(alerta, (await pessoa()).auth);
+      expect(await escondida(oferta)).toBe(false);
+      await denunciar(alerta, (await pessoa()).auth);
+      expect(await escondida(oferta)).toBe(true);
+      expect((await pool.query(`SELECT pessoas_base, limite, denuncias FROM casos_denuncia WHERE alert_id = $1`, [alerta])).rows[0]).toEqual({ pessoas_base: 30, limite: 3, denuncias: 3 });
+    });
+
+    it('caso já resolvido (restaurado) não esconde de novo com denúncia nova do mesmo alerta', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta, oferta } = await semear({ loja, produto });
+      await denunciar(alerta, p.auth);
+      await denunciar(alerta, (await pessoa()).auth);
+      expect(await escondida(oferta)).toBe(true);
+      await pool.query(`UPDATE casos_denuncia SET situacao = 'restaurada', resolucao = 'restaurar', resolucao_em = now() WHERE alert_id = $1`, [alerta]);
+      await pool.query(`UPDATE offers SET escondida_em = NULL WHERE id = $1`, [oferta]);
+      await denunciar(alerta, (await pessoa()).auth);
+      expect(await escondida(oferta)).toBe(false);
+    });
+
+    it('o pipeline solta a oferta escondida quando o preço muda, e não quando só é recoletada', async () => {
+      const { loja, produto } = await cenario();
+      const { oferta } = await semear({ loja, produto, escondida: true });
+      const linha = (await pool.query(`SELECT id_externo, source_id FROM offers WHERE id = $1`, [oferta])).rows[0];
+      const bruta = (preco: number) => ({
+        idExterno: linha.id_externo, titulo: 't', descricao: null, gtin: null, marca: null, precoCentavos: preco, condicao: null, categoriaFonte: 'x',
+        lojaIdExterno: 'l', link: 'https://www.drogasmil.com.br/p/x', linkAfiliado: false, disponivel: true, validaDe: null, validaAte: null,
+        frete: { status: 'a_confirmar' as const, centavos: null },
+      });
+      const ids_ = { tenantId, productId: produto, storeId: loja, sourceId: linha.source_id };
+      await gravarOferta(pool, ids_, bruta(5990) as never, 99.8, agora); // mesmo preço
+      expect(await escondida(oferta)).toBe(true);
+      await gravarOferta(pool, ids_, bruta(4990) as never, 83.1, agora); // preço novo
+      expect(await escondida(oferta)).toBe(false);
+    });
+
+    it('promoção encerrada não se denuncia (404); motivo inválido dá 422; termos pendentes 403', async () => {
+      const { loja, produto, p } = await cenario();
+      const enc = await semear({ loja, produto, disponivel: false });
+      const ativa = await semear({ loja, produto });
+      expect((await denunciar(enc.alerta, p.auth)).statusCode).toBe(404);
+      expect((await denunciar(ativa.alerta, p.auth, 'chato')).json().campos[0].campo).toBe('motivo');
+      expect((await denunciar(ativa.alerta, (await pessoa({ termos: false })).auth)).json().codigo).toBe('termos_pendentes');
+    });
+
+    it('limite de 20 denúncias por dia por conta', async () => {
+      const { loja, produto, p } = await cenario();
+      for (let i = 0; i < 20; i++) {
+        const { alerta } = await semear({ loja, produto });
+        expect((await denunciar(alerta, p.auth)).statusCode).toBe(201);
+      }
+      const { alerta } = await semear({ loja, produto });
+      const r = await denunciar(alerta, p.auth);
+      expect(r.statusCode).toBe(429);
+      expect(r.json().codigo).toBe('muitas_requisicoes');
+      expect(r.headers['retry-after']).toBeDefined();
     });
   });
 

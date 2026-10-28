@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Fase 3, parte 2e: avaliação e denúncia do alerta (2026-10-28, DECISIONS 75)
+
+`PUT /v1/alertas/{id}/avaliacao` e `PUT /v1/alertas/{id}/denuncia` no ar, com a regra de esconder por limite (config `app.denuncia`), caso de denúncia para o operador e limite de 20 por dia. Corrigido no pipeline:
+a oferta escondida volta quando o preço muda. 400 testes (60 contra Postgres de verdade); sete mutações (limite `>`, sem percentual, sem janela, caso resolvido esconde de novo, data da avaliação, pipeline não solta, encerrada aceita) quebram o teste certo.
+**Falta nas rotas:** produtos (pesquisa, página, histórico), seguidos, silenciamentos, avisos, dispositivo (push), assinatura, exportação; admin (fila de denúncias etc.); login Google.
+
 ## Shopee: inscrição enviada (2026-10-28)
 
 O responsável se inscreveu como afiliado (pessoa física); resposta por e-mail em até 3 dias (31/10/2026; depois disso, contato com a Shopee). A documentação da Open API só abre após a aprovação. Nada de código da Shopee ainda.

@@ -254,6 +254,7 @@
     },
     "planos": [],
     "feed": { "coletaMaximaHoras": 6 },
+    "denuncia": { "minimo": 2, "percentual": 0.1, "janelaDias": 7 },
     "limitesTaxa": {
       "configuracao": { "maximo": 60, "janelaSegundos": 60 },
       "codigoEmailPorIp": { "maximo": 20, "janelaSegundos": 3600 },
@@ -262,7 +263,8 @@
       "emailDiario": { "maximo": 250, "janelaSegundos": 86400 },
       "verificarPorIp": { "maximo": 20, "janelaSegundos": 3600 },
       "renovarPorSessao": { "maximo": 60, "janelaSegundos": 3600 },
-      "eventosPorConta": { "maximo": 300, "janelaSegundos": 3600 }
+      "eventosPorConta": { "maximo": 300, "janelaSegundos": 3600 },
+      "denunciasPorConta": { "maximo": 20, "janelaSegundos": 86400 }
     }
   }
 }

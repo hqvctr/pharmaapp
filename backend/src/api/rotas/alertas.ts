@@ -47,6 +47,15 @@ export function rotasAlertas(app: FastifyInstance, d: DepsAlertas): void {
     return { ceps, categorias: (r?.categorias ?? []) as string[] };
   }
 
+  /** O alerta, se a pessoa poderia tê-lo visto (mesmas regras do detalhe); senão 404. */
+  async function alertaVisivel(ctx: { tenantId: string; userId: string; tenant: { config: any } }, id: string, agora: Date) {
+    if (!UUID.test(id)) throw new ErroApi('nao_encontrado');
+    const { ceps } = await preferencias(ctx.tenantId, ctx.userId, ctx, agora);
+    const linha = (await consultarAlertas(d.db, { tenantId: ctx.tenantId, userId: ctx.userId, config: ctx.tenant.config, agora, ceps, alertaId: id }))[0];
+    if (linha === undefined) throw new ErroApi('nao_encontrado');
+    return linha;
+  }
+
   app.get('/v1/alertas', async (req) => {
     const agora = d.agora();
     const ctx = await exigirSessao(req, d.db, d.tenants, agora);
@@ -166,5 +175,81 @@ export function rotasAlertas(app: FastifyInstance, d: DepsAlertas): void {
       );
     });
     return reply.code(204).send();
+  });
+
+  app.put('/v1/alertas/:id/avaliacao', async (req) => {
+    const agora = d.agora();
+    const ctx = await exigirSessao(req, d.db, d.tenants, agora);
+    const id = (req.params as { id: string }).id;
+    const b = corpoObjeto(req);
+    if (b.valor !== 'util' && b.valor !== 'nao_util') throw falhaDeValidacao([{ campo: 'valor', mensagem: 'Use util ou nao_util.' }]);
+    await alertaVisivel(ctx, id, agora);
+    // Uma por pessoa; repetir substitui. Repetir o mesmo valor mantém a data.
+    const r = (
+      await d.db.query(
+        `INSERT INTO avaliacoes (tenant_id, user_id, alert_id, valor, avaliado_em) VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (tenant_id, user_id, alert_id) DO UPDATE SET valor = EXCLUDED.valor,
+           avaliado_em = CASE WHEN avaliacoes.valor = EXCLUDED.valor THEN avaliacoes.avaliado_em ELSE EXCLUDED.avaliado_em END
+         RETURNING valor, avaliado_em`,
+        [ctx.tenantId, ctx.userId, id, b.valor, agora],
+      )
+    ).rows[0];
+    return { alerta_id: id, valor: r.valor, avaliado_em: r.avaliado_em.toISOString() };
+  });
+
+  app.put('/v1/alertas/:id/denuncia', async (req, reply) => {
+    const agora = d.agora();
+    const ctx = await exigirSessao(req, d.db, d.tenants, agora);
+    const id = (req.params as { id: string }).id;
+    const b = corpoObjeto(req);
+    if (b.motivo !== 'preco_errado' && b.motivo !== 'sem_estoque') throw falhaDeValidacao([{ campo: 'motivo', mensagem: 'Use preco_errado ou sem_estoque.' }]);
+    const linha = await alertaVisivel(ctx, id, agora);
+    // Promoção já encerrada não tem o que denunciar. Em revisão (já escondida) ainda aceita repetir a própria denúncia.
+    if (linha.situacao === 'encerrada') throw new ErroApi('nao_encontrado');
+
+    const { maximo, janelaSegundos } = ctx.tenant.config.app.limitesTaxa.denunciasPorConta ?? { maximo: 20, janelaSegundos: 86400 };
+    const espera = await d.limitador.usar(`denunciasPorConta:${ctx.userId}`, maximo, janelaSegundos).catch(() => null);
+    if (espera !== null) throw new ErroApi('muitas_requisicoes', undefined, undefined, espera);
+
+    const regra = ctx.tenant.config.app.denuncia;
+    const { criada, denunciadoEm } = await comTransacao(d.db, async (c) => {
+      // Trava o alerta: duas denúncias simultâneas não abrem dois casos nem erram a contagem.
+      await c.query(`SELECT 1 FROM alerts WHERE tenant_id = $1 AND id = $2 FOR UPDATE`, [ctx.tenantId, id]);
+      const antes = (await c.query(`SELECT motivo, denunciado_em FROM denuncias WHERE tenant_id = $1 AND user_id = $2 AND alert_id = $3`, [ctx.tenantId, ctx.userId, id])).rows[0];
+      if (antes !== undefined) {
+        // Repetir troca só o motivo, sem contar duas vezes.
+        await c.query(`UPDATE denuncias SET motivo = $4 WHERE tenant_id = $1 AND user_id = $2 AND alert_id = $3`, [ctx.tenantId, ctx.userId, id, b.motivo]);
+        return { criada: false, denunciadoEm: antes.denunciado_em as Date };
+      }
+      await c.query(`INSERT INTO denuncias (tenant_id, user_id, alert_id, motivo, denunciado_em) VALUES ($1, $2, $3, $4, $5)`, [ctx.tenantId, ctx.userId, id, b.motivo, agora]);
+
+      // Base de interesse: pessoas distintas que abriram ou clicaram neste alerta na janela. Passou do limite: a oferta some para todos.
+      const desde = new Date(agora.getTime() - regra.janelaDias * 86_400_000);
+      const base = (
+        await c.query(
+          `SELECT count(DISTINCT user_id)::int AS n FROM alert_events WHERE tenant_id = $1 AND alert_id = $2 AND tipo IN ('aberto', 'clicado') AND ocorrido_em >= $3`,
+          [ctx.tenantId, id, desde],
+        )
+      ).rows[0].n as number;
+      const limite = Math.max(regra.minimo, Math.ceil(regra.percentual * base));
+      const conta = (
+        await c.query(
+          `SELECT count(*)::int AS total, count(*) FILTER (WHERE motivo = 'preco_errado')::int AS preco, count(*) FILTER (WHERE motivo = 'sem_estoque')::int AS estoque
+             FROM denuncias WHERE tenant_id = $1 AND alert_id = $2`,
+          [ctx.tenantId, id],
+        )
+      ).rows[0];
+      if (conta.total >= limite) {
+        // Um caso por alerta: depois de restaurado, denúncia nova do mesmo alerta não esconde de novo (até o preço mudar).
+        const caso = await c.query(
+          `INSERT INTO casos_denuncia (tenant_id, alert_id, offer_id, aberto_em, denuncias, pessoas_base, limite, motivo_preco_errado, motivo_sem_estoque)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (tenant_id, alert_id) DO NOTHING`,
+          [ctx.tenantId, id, linha.offer_id, agora, conta.total, base, limite, conta.preco, conta.estoque],
+        );
+        if (caso.rowCount === 1) await c.query(`UPDATE offers SET escondida_em = $3 WHERE tenant_id = $1 AND id = $2 AND escondida_em IS NULL`, [ctx.tenantId, linha.offer_id, agora]);
+      }
+      return { criada: true, denunciadoEm: agora };
+    });
+    return reply.code(criada ? 201 : 200).send({ alerta_id: id, motivo: b.motivo, denunciado_em: denunciadoEm.toISOString() });
   });
 }

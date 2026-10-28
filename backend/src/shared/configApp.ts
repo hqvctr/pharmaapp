@@ -27,6 +27,8 @@ export interface ConfigApp {
   };
   planos: Array<{ plano: string; loja: string; produtoLojaId: string }>;
   feed: { coletaMaximaHoras: number };
+  /** Regra de denúncia (PRODUTO.md): limite = max(minimo, ceil(percentual × pessoas que abriram ou clicaram nos últimos `janelaDias`)). */
+  denuncia: { minimo: number; percentual: number; janelaDias: number };
   limitesTaxa: Record<string, { maximo: number; janelaSegundos: number }>;
 }
 
@@ -108,6 +110,10 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
 
   const feed = { coletaMaximaHoras: inteiro(bruto.feed?.coletaMaximaHoras, 'feed.coletaMaximaHoras', 1, 168) };
 
+  const dn = bruto.denuncia ?? {};
+  if (typeof dn.percentual !== 'number' || !(dn.percentual > 0 && dn.percentual <= 1)) inv('denuncia.percentual');
+  const denuncia = { minimo: inteiro(dn.minimo, 'denuncia.minimo', 1), percentual: dn.percentual as number, janelaDias: inteiro(dn.janelaDias, 'denuncia.janelaDias', 1, 90) };
+
   const limitesTaxa: ConfigApp['limitesTaxa'] = {};
   for (const [rota, v] of Object.entries((bruto.limitesTaxa ?? {}) as Record<string, any>)) {
     limitesTaxa[rota] = {
@@ -131,6 +137,7 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     limites,
     planos,
     feed,
+    denuncia,
     limitesTaxa,
   };
 }
