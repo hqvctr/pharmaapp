@@ -25,5 +25,15 @@ teto diário, **a conferir na conta**). Verificação: 20/h por IP. Renovação:
 Banco só guarda hash dos tokens; token de operador não vale no app; refresh usado duas vezes revoga a sessão inteira (e a
 revogação é gravada mesmo com a resposta 401); sair apaga o aparelho de push; termos pendentes bloqueiam as rotas que não são de conta.
 
+## Estado da Brevo (2026-10-28, Cowork: `brevo-configuracao-2026-10-28.md`)
+- Plano **Free**, 300 e-mails por dia (o `emailDiario` de 250 do tenant fica abaixo, com folga), sem aviso de ativação.
+- Remetente verificado: **economae** `<descubranovasformas@gmail.com>` (`EMAIL_REMETENTE`, `EMAIL_REMETENTE_NOME=economae`). A Brevo avisa em cada remetente:
+  `Freemail domain is not recommended` e, no alto da lista, que remetentes de provedor gratuito não cumprem as exigências do Google, Yahoo e Microsoft:
+  **entrega em risco (spam ou recusa) até haver domínio próprio autenticado.**
+- Restrição por IP desligada (chaves de API e SMTP).
+- Chave `economae-api`: restrita a e-mail transacional, expira em 28/10/2027 e **sozinha após 90 dias sem uso**. No ambiente de nuvem está como segredo de rede
+  (host `api.brevo.com`, cabeçalho `api-key`), valendo em sessão nova. A chave local do computador do responsável (`BREVO_API_KEY` no `.env`) ainda não existe.
+- Como saber se o segredo de rede está ativo: `GET /v3/account` com chave qualquer devolve 403 `permission_denied` (a chave real foi usada e é restrita) em vez de 401.
+
 ## Não conferido
-O envio real pela Brevo (o adaptador segue a documentação da API, mas nenhuma conta foi usada) e o limite diário dela.
+O envio real pela Brevo (o adaptador segue a documentação da API, mas nenhum envio foi feito ainda) e se o Gmail entrega ou barra mensagens com remetente gmail.com enviadas pela Brevo.
