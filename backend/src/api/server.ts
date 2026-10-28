@@ -6,7 +6,7 @@ import { LimitadorRedis } from './limiteTaxa.js';
 import { RegistroTenantsBanco } from './tenants.js';
 import { ProvedorLinkDeProducao } from './linkOferta.js';
 import { fabricaEncurtadorDeProducao, type ModoCredencialApi } from './encurtadorProducao.js';
-import { carregarChaveCredenciais } from '../shared/cifra.js';
+import { carregarChaveCredenciais, type ChaveCredenciais } from '../shared/cifra.js';
 import { CodigosRedis } from '../auth/codigos.js';
 import { VerificadorGoogleJwks } from '../auth/google.js';
 import { EnviadorBrevo, EnviadorConsole, type EnviadorEmail } from '../auth/enviador.js';
@@ -31,10 +31,12 @@ async function main(): Promise<void> {
 
   const tenants = new RegistroTenantsBanco(pool);
   let modoCredencial: ModoCredencialApi = { tipo: 'nenhum' };
+  let chaveCredenciais: ChaveCredenciais | undefined;
   if (env.lomadeePeloProxy) modoCredencial = { tipo: 'proxy' };
   else {
     try {
-      modoCredencial = { tipo: 'banco', chaves: [carregarChaveCredenciais()] };
+      chaveCredenciais = carregarChaveCredenciais();
+      modoCredencial = { tipo: 'banco', chaves: [chaveCredenciais] };
     } catch {
       console.warn('Sem CREDENTIALS_KEY nem LOMADEE_PELO_PROXY: ofertas da Lomadee não terão link rastreado e o detalhe responderá 503.');
     }
@@ -46,6 +48,7 @@ async function main(): Promise<void> {
     trustProxy: env.trustProxy,
     tenants,
     links,
+    ...(chaveCredenciais !== undefined ? { chaveCredenciais } : {}),
     limitador: new LimitadorRedis(redis),
     ...(auth !== undefined ? { auth } : {}),
     healthChecks: [

@@ -11,6 +11,7 @@ import { buildApp } from './app.js';
 import { ErroApi } from './erros.js';
 import type { ProvedorLinkOferta } from './linkOferta.js';
 import { LimitadorMemoria } from './limiteTaxa.js';
+import type { ChaveCredenciais } from '../shared/cifra.js';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
 import { RegistroTenantsBanco } from './tenants.js';
 
@@ -19,7 +20,7 @@ export const VIGENTE = '2026-10-28';
 export const DROGASMIL = 'd855f505-7e26-4961-a182-c2139aeadd2c'; // marca liberada em fontes.lomadee.marcasPermitidasParaLink
 export const INICIO = new Date('2026-11-01T12:00:00Z');
 
-export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorGoogle; clientIdsGoogle?: string[] } = {}) {
+export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorGoogle; clientIdsGoogle?: string[]; chaveCredenciais?: ChaveCredenciais } = {}) {
   const nomeBanco = `${prefixo}_${process.pid}_${Date.now()}`;
   const e = {
     pool: undefined as unknown as pg.Pool,
@@ -59,11 +60,13 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
     e.app = buildApp({
       healthChecks: [],
       tenants: new RegistroTenantsBanco(e.pool, async (slug) => {
-        const c = await carregarConfigTenant(slug);
+        // O tenant de apoio 'outro' (isolamento entre tenants) usa a config do padrão.
+        const c = await carregarConfigTenant(slug === 'outro' ? 'padrao' : slug);
         return opcoes.clientIdsGoogle === undefined ? c : { ...c, app: { ...c.app, google: { clientIds: opcoes.clientIdsGoogle } } };
       }),
       limitador: new LimitadorMemoria(relogio),
       links,
+      ...(opcoes.chaveCredenciais ? { chaveCredenciais: opcoes.chaveCredenciais } : {}),
       auth: { db: e.pool, codigos: new CodigosMemoria(iguais, relogio), enviador: { enviarCodigo: async (para, codigo, nomeApp) => { e.enviados.push({ para, codigo, nomeApp }); } }, ...(opcoes.google ? { google: opcoes.google } : {}), chaveHmac: Buffer.alloc(32, 9), agora: () => e.agora },
     });
   });

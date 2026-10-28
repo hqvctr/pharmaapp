@@ -14,6 +14,7 @@ import { rotasAvisos } from './rotas/avisos.js';
 import { rotasProdutos } from './rotas/produtos.js';
 import { rotasSeguidos } from './rotas/seguidos.js';
 import { rotasSilenciamentos } from './rotas/silenciamentos.js';
+import type { ChaveCredenciais } from '../shared/cifra.js';
 import type { RegistroTenants } from './tenants.js';
 
 // Cada dependência externa entra por interface para que o teste use uma implementação falsa.
@@ -32,6 +33,8 @@ export interface AppDeps {
   auth?: Omit<DepsAuth, 'tenants' | 'limitador'>;
   /** Link do botão da oferta. Sem isto as rotas de alerta não existem. */
   links?: ProvedorLinkOferta;
+  /** Chave das credenciais de fonte (CREDENTIALS_KEY): sem ela o operador não grava credencial pela API (503). */
+  chaveCredenciais?: ChaveCredenciais;
   /** true atrás de proxy confiável (Cloudflare Tunnel): sem isso `req.ip` é o do proxy e o limite por IP some. */
   trustProxy?: boolean;
 }
@@ -90,7 +93,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
       rotasAvisos(app, d);
       rotasDispositivo(app, d);
       rotasExportacao(app, d);
-      rotasAdmin(app, d);
+      rotasAdmin(app, { ...d, ...(deps.chaveCredenciais !== undefined ? { chaveCredenciais: deps.chaveCredenciais } : {}) });
       if (deps.links !== undefined) {
         rotasAlertas(app, { ...d, links: deps.links });
         rotasProdutos(app, { ...d, links: deps.links });

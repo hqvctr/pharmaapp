@@ -1,8 +1,13 @@
 // Área do operador (admin.yaml): prefixo /v1/admin, token de audiência `operador`.
 import type { FastifyInstance } from 'fastify';
-import type { DepsAuth } from '../auth.js';
+import { rotasAdminAlertas } from './alertas.js';
 import { rotasAdminAuth } from './auth.js';
+import { rotasAdminLojasFontes, type DepsAdmin } from './lojasFontes.js';
 
-export function rotasAdmin(app: FastifyInstance, d: DepsAuth): void {
+export type { DepsAdmin } from './lojasFontes.js';
+
+export function rotasAdmin(app: FastifyInstance, d: DepsAdmin): void {
   rotasAdminAuth(app, d);
+  rotasAdminAlertas(app, d);
+  rotasAdminLojasFontes(app, d);
 }
