@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { ErroApi } from './erros.js';
 import { LimitadorMemoria, type LimitadorTaxa } from './limiteTaxa.js';
+import { rotasAuth, type DepsAuth } from './rotas/auth.js';
 import { rotaConfiguracao } from './rotas/configuracao.js';
 import type { RegistroTenants } from './tenants.js';
 
@@ -16,6 +17,8 @@ export interface AppDeps {
   /** Sem registro de tenants, só /health responde (a base da fase 0). */
   tenants?: RegistroTenants;
   limitador?: LimitadorTaxa;
+  /** Sem isto as rotas de login não existem. `tenants` e `limitador` vêm do bloco acima. */
+  auth?: Omit<DepsAuth, 'tenants' | 'limitador'>;
   /** true atrás de proxy confiável (Cloudflare Tunnel): sem isso `req.ip` é o do proxy e o limite por IP some. */
   trustProxy?: boolean;
 }
@@ -64,6 +67,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
   if (deps.tenants !== undefined) {
     const limitador = deps.limitador ?? new LimitadorMemoria();
     rotaConfiguracao(app, deps.tenants, limitador);
+    if (deps.auth !== undefined) rotasAuth(app, { ...deps.auth, tenants: deps.tenants, limitador });
   }
 
   return app;

@@ -13,11 +13,14 @@ export interface TenantAtivo {
 export interface RegistroTenants {
   /** null = o banco não conhece o slug. */
   obter(slug: string): Promise<TenantAtivo | null>;
+  /** Para rotas com login: o tenant vem da sessão, não de cabeçalho. */
+  porId(id: string): Promise<TenantAtivo | null>;
 }
 
 /** Tenant existe no banco (linha em `tenants`) e tem config em `config/tenants/<slug>.json`. */
 export class RegistroTenantsBanco implements RegistroTenants {
   private readonly cache = new Map<string, TenantAtivo>();
+  private readonly cachePorId = new Map<string, TenantAtivo>();
 
   constructor(
     private readonly db: Db,
@@ -28,10 +31,21 @@ export class RegistroTenantsBanco implements RegistroTenants {
     const guardado = this.cache.get(slug);
     if (guardado !== undefined) return guardado;
     const r = await this.db.query<{ id: string }>('SELECT id FROM tenants WHERE slug = $1', [slug]);
-    if (r.rowCount !== 1) return null;
-    // Só slug que existe no banco chega aqui, então o cache não cresce com lixo mandado por quem ataca.
-    const tenant = { id: r.rows[0]!.id, slug, config: await this.carregar(slug) };
+    return r.rowCount === 1 ? this.guardar(r.rows[0]!.id, slug) : null;
+  }
+
+  async porId(id: string): Promise<TenantAtivo | null> {
+    const guardado = this.cachePorId.get(id);
+    if (guardado !== undefined) return guardado;
+    const r = await this.db.query<{ slug: string }>('SELECT slug FROM tenants WHERE id = $1', [id]);
+    return r.rowCount === 1 ? this.guardar(id, r.rows[0]!.slug) : null;
+  }
+
+  // Só tenant que existe no banco chega aqui, então o cache não cresce com lixo mandado por quem ataca.
+  private async guardar(id: string, slug: string): Promise<TenantAtivo> {
+    const tenant = { id, slug, config: await this.carregar(slug) };
     this.cache.set(slug, tenant);
+    this.cachePorId.set(id, tenant);
     return tenant;
   }
 }

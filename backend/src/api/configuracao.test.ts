@@ -9,7 +9,10 @@ beforeAll(async () => {
   padrao = { id: '11111111-1111-4111-8111-111111111111', slug: 'padrao', config: await carregarConfigTenant('padrao') };
 });
 
-const registro = (): RegistroTenants => ({ obter: async (slug) => (slug === 'padrao' ? padrao : null) });
+const registro = (): RegistroTenants => ({
+  obter: async (slug) => (slug === 'padrao' ? padrao : null),
+  porId: async (id) => (id === padrao.id ? padrao : null),
+});
 const nova = (extra = {}) => buildApp({ healthChecks: [], tenants: registro(), ...extra });
 const get = (app: ReturnType<typeof nova>, headers: Record<string, string> = { 'x-tenant': 'padrao' }) =>
   app.inject({ method: 'GET', url: '/v1/configuracao', headers });
@@ -101,7 +104,10 @@ describe('erros do contrato', () => {
   it('falha inesperada: 500 erro_interno sem vazar a causa', async () => {
     const app = buildApp({
       healthChecks: [],
-      tenants: { obter: async () => { throw new Error('senha do banco: segredo'); } },
+      tenants: {
+        obter: async () => { throw new Error('senha do banco: segredo'); },
+        porId: async () => null,
+      },
     });
     const res = await get(app);
     expect(res.statusCode).toBe(500);

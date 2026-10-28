@@ -45,6 +45,13 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       API_PORT: "3000"
+      # Login por e-mail (docs/operacao/login-por-email.md). Sem AUTH_HMAC_KEY e um provedor, as rotas de login ficam desligadas.
+      AUTH_HMAC_KEY: ${AUTH_HMAC_KEY:-}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      EMAIL_REMETENTE: ${EMAIL_REMETENTE:-}
+      EMAIL_REMETENTE_NOME: ${EMAIL_REMETENTE_NOME:-economae}
+      AUTH_EMAIL_CONSOLE: ${AUTH_EMAIL_CONSOLE:-}
+      TRUST_PROXY: ${TRUST_PROXY:-}
     restart: unless-stopped
     ports:
       - "127.0.0.1:${API_PORT:-3000}:3000"

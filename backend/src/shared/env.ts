@@ -6,6 +6,13 @@ export interface EnvConfig {
   apiPort: number;
   /** API atrás de proxy confiável (TRUST_PROXY=1): usa X-Forwarded-For para o IP do limite de taxa. */
   trustProxy: boolean;
+  /** Login por e-mail. Sem `authHmacKey` as rotas de login não sobem. */
+  authHmacKey: string | null;
+  brevoApiKey: string | null;
+  emailRemetente: string | null;
+  emailRemetenteNome: string;
+  /** AUTH_EMAIL_CONSOLE=1: escreve o código no log em vez de enviar. Só desenvolvimento. */
+  emailConsole: boolean;
 }
 
 function required(env: NodeJS.ProcessEnv, name: string): string {
@@ -26,5 +33,10 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
     redisUrl: required(env, 'REDIS_URL'),
     apiPort: port,
     trustProxy: env.TRUST_PROXY === '1',
+    authHmacKey: env.AUTH_HMAC_KEY && env.AUTH_HMAC_KEY.length > 0 ? env.AUTH_HMAC_KEY : null,
+    brevoApiKey: env.BREVO_API_KEY && env.BREVO_API_KEY.length > 0 ? env.BREVO_API_KEY : null,
+    emailRemetente: env.EMAIL_REMETENTE && env.EMAIL_REMETENTE.length > 0 ? env.EMAIL_REMETENTE : null,
+    emailRemetenteNome: env.EMAIL_REMETENTE_NOME && env.EMAIL_REMETENTE_NOME.length > 0 ? env.EMAIL_REMETENTE_NOME : 'economae',
+    emailConsole: env.AUTH_EMAIL_CONSOLE === '1',
   };
 }

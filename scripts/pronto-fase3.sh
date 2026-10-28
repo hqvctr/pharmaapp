@@ -5,7 +5,7 @@
 #  3. a migration 0003 sobre dados que já existiam (alertas da fase 2 ganham a situação de revisão certa);
 #  4. provisão de fontes/lojas, status e coletor em ciclo (instalação no computador do operador);
 #  5. o contrato OpenAPI (app e operador) passa no lint;
-#  6. a suíte do backend.
+#  6. a suíte do backend, inclusive os testes de login contra o Postgres do passo 1 (PG_TESTE_URL).
 # As rotas e o app entram nas próximas partes da fase e ampliam este script.
 #
 # Banco: docker compose, como nas fases anteriores. Sem Docker, aponte para um Postgres 16 já rodando:
@@ -145,7 +145,7 @@ else
 fi
 
 passo "6. suíte do backend"
-if (cd backend && npm test 2>&1 | tail -6); then echo "OK    npm test"; else echo "FALHA npm test"; falhou=1; fi
+if (cd backend && PG_TESTE_URL="$URL_BASE" npm test 2>&1 | tail -6); then echo "OK    npm test"; else echo "FALHA npm test"; falhou=1; fi
 
 echo
 if [ "$falhou" -eq 0 ]; then echo "FASE 3 (parte 1): PRONTO"; else echo "FASE 3 (parte 1): FALHOU"; exit 1; fi

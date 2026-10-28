@@ -1,5 +1,16 @@
 # Checkpoint
 
+## Fase 3, parte 2b: login por e-mail e sessões (2026-10-28, DECISIONS 71)
+
+`POST /v1/auth/email/codigo`, `/email/verificar`, `/renovar`, `/sair` no ar, mais `api/sessao.ts` (`exigirSessao`: Bearer, tenant pela sessão, termos pendentes → 403)
+para as próximas rotas. Código: `backend/src/auth/` (tokens, códigos, envio, sessões, usuários) e `api/rotas/auth.ts`; migration 0005; guia em `docs/operacao/login-por-email.md`.
+Conferido: 346 testes (14 deles contra Postgres de verdade, `PG_TESTE_URL`; o `pronto-fase3.sh` agora os roda); 4 mutações de segurança (sem checagem de audiência,
+reuso sem revogar, revogação desfeita no rollback, refresh revogado aceito) quebram os testes; servidor real com Postgres 16 e Redis: ciclo código → sessão → renovar →
+reuso derrubando tudo, sem e-mail em chave do Redis e sem token no log. Um defeito achado e corrigido no caminho: tentativas barradas pelo limite de 1/min gastavam o de 5/h.
+**Não conferido:** envio real pela Brevo (nenhuma conta usada) e o teto diário dela; o contrato ainda não é validado automaticamente contra as respostas.
+**Falta:** conta Brevo + remetente verificado + `AUTH_HMAC_KEY` no `.env` (ver o guia); login Google (decisão D4, vínculo com e-mail igual, ainda aberta); `me`, consentimentos,
+exportação e exclusão; preferências; depois feed e detalhe, onde entra `linkRastreadoDaOferta`.
+
 ## Windows atualizado (2026-10-28, tarde)
 
 Cowork guiou a atualização de `C:\economae` para a branch atual: contêineres recriados sem perder dados, `status.bat` com a contagem nova ("1 de 14 dias"),
