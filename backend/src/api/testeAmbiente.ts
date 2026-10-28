@@ -48,6 +48,8 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
     await admin.connect();
     await admin.query(`CREATE DATABASE ${nomeBanco}`);
     e.pool = new pg.Pool({ connectionString: `${URL_BASE}/${nomeBanco}`, max: 5 });
+    // O DROP DATABASE ... FORCE do fim do teste derruba conexões ociosas; sem este ouvinte o erro vira "Unhandled Error" e reprova a rodada.
+    e.pool.on('error', () => {});
     const c = await e.pool.connect();
     try {
       await migrate(c);

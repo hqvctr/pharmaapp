@@ -136,6 +136,8 @@ async function main(): Promise<void> {
   const config = await carregarConfigTenant(tenant);
   const arquivoLista = path.join(dados, 'listas', 'atual.json');
   const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
+  // Conexão ociosa derrubada pelo Postgres (reinício) não pode derrubar o coletor: o próximo ciclo abre outra.
+  pool.on('error', (err) => console.warn(`Conexão ociosa com o Postgres caiu: ${err.message}`));
   const parar = new AbortController();
   for (const s of ['SIGTERM', 'SIGINT'] as const) process.on(s, () => parar.abort());
   const log = (m: string): void => console.log(`${new Date().toISOString()} ${m}`);

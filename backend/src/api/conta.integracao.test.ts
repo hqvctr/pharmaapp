@@ -27,6 +27,8 @@ executar('conta e preferências (Postgres)', () => {
     await admin.connect();
     await admin.query(`CREATE DATABASE ${nomeBanco}`);
     pool = new pg.Pool({ connectionString: `${URL_BASE}/${nomeBanco}`, max: 5 });
+    // O DROP DATABASE ... FORCE do fim do teste derruba conexões ociosas; sem este ouvinte o erro vira "Unhandled Error" e reprova a rodada.
+    pool.on('error', () => {});
     const c = await pool.connect();
     try {
       await migrate(c);

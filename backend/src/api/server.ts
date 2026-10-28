@@ -15,6 +15,8 @@ import { iguais } from '../auth/tokens.js';
 async function main(): Promise<void> {
   const env = loadEnv();
   const pool = new pg.Pool({ connectionString: env.databaseUrl, max: 10 });
+  // Conexão ociosa que o Postgres derruba (reinício, manutenção) não pode derrubar a API: o pool abre outra na próxima consulta.
+  pool.on('error', (err) => console.warn(`Conexão ociosa com o Postgres caiu: ${err.message}`));
   const redis = new Redis(env.redisUrl, { maxRetriesPerRequest: 1, lazyConnect: false });
 
   let enviador: EnviadorEmail | null = null;
