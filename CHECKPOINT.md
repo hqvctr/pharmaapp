@@ -16,7 +16,7 @@ Para o `status.bat` novo valer lá, o responsável precisa atualizar a pasta `C:
 
 Pelo Cowork, conta de Nathália Fávaro Cândido: canal `economae` (Comparador de Preços), ID `7633b2c1-98a7-45c9-adea-e529dc67cc87`, ativo,
 metatag validada (`site/index.html`). A API já lista o canal para a chave do projeto. `fontes.lomadee.canalId` gravado em `padrao.json`.
-**Falta:** testar o encurtador de verdade (BACKLOG, decisão 68), e a Lomadee ainda pode analisar o canal depois do "Ativo".
+**Encurtador testado de verdade (mesmo dia):** link `lmdee.link` devolvido, escopo de escrita ok, mesmo link ao repetir. **Falta:** ligar `linkRastreadoDaOferta` na saída da oferta (parte 2 da fase 3); a Lomadee ainda pode analisar o canal depois do "Ativo".
 
 ## Fase 3, parte 2a: fundação do servidor e `/v1/configuracao` (2026-10-28, DECISIONS 69 e 70)
 

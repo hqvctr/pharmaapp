@@ -23,6 +23,20 @@ describe('link rastreado da Lomadee', () => {
     expect(() => escolherLink([{ shortUrls: ['https://lmdee.link.malicioso.test/x'] }], cfg)).toThrow(/nenhum link válido/);
   });
 
+  it('resposta real da Lomadee (2026-10-28, canal economae): campos extras são ignorados e o canal bate pelo id', () => {
+    const real = [
+      {
+        id: '7633b2c1-98a7-45c9-adea-e529dc67cc87',
+        name: 'economae',
+        availableChannel: { id: '66222f2a-8ee8-423c-95e5-1c17de911f31', name: 'PriceComparator' },
+        shortUrls: ['https://lmdee.link/xdi8N5UFbSkh'],
+      },
+    ];
+    expect(escolherLink(real, { ...cfg, canalId: '7633b2c1-98a7-45c9-adea-e529dc67cc87' })).toBe('https://lmdee.link/xdi8N5UFbSkh');
+    // O id de availableChannel é o do TIPO de canal, não o do canal: configurá-lo por engano não pega link nenhum.
+    expect(() => escolherLink(real, { ...cfg, canalId: '66222f2a-8ee8-423c-95e5-1c17de911f31' })).toThrow();
+  });
+
   it('com canal configurado, só usa aquele canal', () => {
     const corpo = [{ id: 'a', shortUrls: ['https://lmdee.link/a'] }, { id: 'b', shortUrls: ['https://lmdee.link/b'] }];
     expect(escolherLink(corpo, { ...cfg, canalId: 'b' })).toBe('https://lmdee.link/b');
