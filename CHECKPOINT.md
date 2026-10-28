@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Redes de afiliados: leitura do Cowork (2026-10-28)
+
+Confirmado o caminho da Amazon (formulário de Atendimento para Associados; Creators API só para quem já tem vendas qualificadas; cache de 24 h, 1 h para ofertas) e, na Awin BR, as farmácias que existem
+(Pague Menos 5%, Drogal 4%, Araujo, Venancio, Indiana) e a regra que pesa: **vários anunciantes não aceitam pessoa física**, e o projeto não tem CNPJ. Mercado Livre e Shopee seguem sem leitura oficial (o Cowork não usou o navegador).
+Detalhes e decisões pendentes em `docs/operacao/redes-afiliados.md` e no BACKLOG.
+
 ## Redes de afiliados: levantamento público (2026-10-28)
 
 `docs/operacao/redes-afiliados.md`. Achado principal, de fonte oficial: a política brasileira da Amazon (14/04/2026, item 6(y)) proíbe rastreamento e alerta de preços sem aprovação da Amazon, e o app é isso;

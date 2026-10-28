@@ -79,3 +79,38 @@ Afilio: nada encontrado. Ler as páginas públicas de cada uma.
 O que o app faz (histórico de preço e alerta de queda) é **exatamente** o que a Amazon proíbe sem aprovação e o que ela fiscaliza ativamente em 2026. Antes de escrever qualquer adaptador, cada rede deve ser
 checada nesse ponto. Ordem sugerida: (1) ler Mercado Livre e Shopee (grandes e com API); (2) abrir conta de publisher na Awin só para ver anunciantes e termos; (3) pedir aprovação por escrito à Amazon em paralelo,
 sem depender dela.
+
+---
+
+## Atualização: leitura do Cowork (2026-10-28, `docs/juridico/fontes/redes-afiliados-termos-2026-10-28.md`)
+O Cowork usou as mesmas ferramentas de leitura que eu (não o navegador), então ficou **sem leitura oficial**: Mercado Livre (4 páginas de afiliados e portal de desenvolvedores bloqueados por robots),
+Shopee (conteúdo carrega por script), Magalu (termos e API não linkados), diretório de anunciantes da Awin, Rakuten, Admitad. Trechos entre aspas foram resumidos pela ferramenta: conferir no original antes de decisão cara.
+
+**Confirmado:**
+- **Amazon:** o caminho para pedir a aprovação do item 6(y) é o formulário de Atendimento para Associados (<https://associados.amazon.com.br/contact/>), citado pela própria política. A Creators API só abre para quem **já tem conta de Associado aprovada e vendas qualificadas** e
+  pede aprovação por mercado, com justificativa; cache de 24 h (política) ou 1 h para ofertas (documentação da API): mesmo aprovado o alerta, um **histórico de preço da Amazon** parece incompatível sem aprovação específica. Comissão padrão de 13% em Bebê, Beleza, Saúde e Cuidados Pessoais, Alimentos e Bebidas.
+  Caminho realista: conta de Associado primeiro (exige site ou app declarado e vendas), pedido de aprovação depois. **Baixa prioridade.**
+- **Awin Brasil:** termos de publisher incluem "aplicativo" como espaço de divulgação (cláusula 2.1) e cada anunciante define as próprias regras. O cadastro **pode exigir um pequeno depósito** (cláusula 1.2; a FAQ diz que é reembolsado). A cláusula 10.7 limita o uso dos dados
+  obtidos na Rede às finalidades do contrato (**ler inteira antes de montar histórico de preços a partir de feed**). Feed por API ou aba Ferramentas (XML/CSV); nome oficial da API, campos (EAN, imagem) e limites **não confirmados**.
+- **Pessoa física:** vários anunciantes **não aceitam afiliado pessoa física**: Carrefour, Casas Bahia, O Boticário, Natura e Pague Menos (a versão em português diz que não; a em inglês diverge). Kabum, Drogal e Farmácias Indiana aceitam PF. **O projeto não tem CNPJ.**
+
+| Anunciante na Awin BR | Comissão | PF? | Observação |
+|---|---|---|---|
+| Pague Menos (ID 64086) | CPA 5% | divergente (pt: não) | cookie 14 ou 30 dias (divergente); e-mail permitido; push e app não mencionados |
+| Drogal | 4% | sim | e-mail permitido |
+| Drogaria Araujo | 3,1% | ? | |
+| Drogaria Venancio | 7% | ? | |
+| Farmácias Indiana | 5,6% | sim | |
+| Carrefour (ID 17665) | 1P 2,5%; 3P e alimentos 1,15% | não | proíbe "Software/Extensão/Plugin" (risco para app) |
+| Casas Bahia (ID 17629) | 3% (1P), 2% (3P e APP) | não | rastreia vendas por aplicativo |
+| Kabum (ID 17729) | 2,30% | sim | cupons só os enviados pela Awin |
+| O Boticário (ID 17659) | 10% (influenciador) | não | aprovação demora semanas |
+| Natura (ID 17658) | 4,4% a 8% | não | e-mail marketing restrito |
+| Americanas | rede privada operada pela Awin | ? | termos não vistos |
+Não encontrados na Awin BR (pode ser limite da busca): Drogasil, Droga Raia, Panvel, Drogaria São Paulo, Pacheco, Ultrafarma, Ri Happy, Baby&Co.
+- **Shopee:** a lista de proibições do blog oficial inclui *"Uso de emails publicitários para promover a Shopee sem consentimento prévio por escrito"*; exigência de perfil público com conteúdo dos últimos 3 meses. Sem regra encontrada sobre comparador, histórico, alerta, push ou cache. Aprovação "manual, 5 a 15 dias" é de terceiro.
+- **Mercado Livre:** nada oficial lido. De terceiros: sem mínimo de seguidores, WhatsApp e Telegram permitidos, janela de 24 h.
+- **Afilio:** exige 5.000 pessoas na rede, 700 em grupos ou 30.000 visitantes por mês; só fala de sites. **Não serve agora.** Rakuten e Admitad: nada público sobre termos ou anunciantes do Brasil.
+
+**Próximos passos propostos:** (1) leitura **em navegador** (não por ferramenta de busca) das páginas de Mercado Livre, Shopee e Magalu; (2) decidir **CNPJ** (muitos anunciantes da Awin exigem; também deixaria o contrato da Lomadee e a conta da Google Play em nome do projeto);
+(3) decidir o cadastro de publisher na Awin (pode ter depósito) só para ver o diretório e os termos por anunciante; (4) Amazon fica por último.
