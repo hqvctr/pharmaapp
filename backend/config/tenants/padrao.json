@@ -265,7 +265,8 @@
       "renovarPorSessao": { "maximo": 60, "janelaSegundos": 3600 },
       "eventosPorConta": { "maximo": 300, "janelaSegundos": 3600 },
       "denunciasPorConta": { "maximo": 20, "janelaSegundos": 86400 },
-      "buscaPorConta": { "maximo": 30, "janelaSegundos": 60 }
+      "buscaPorConta": { "maximo": 30, "janelaSegundos": 60 },
+      "dispositivoPorSessao": { "maximo": 30, "janelaSegundos": 3600 }
     }
   }
 }

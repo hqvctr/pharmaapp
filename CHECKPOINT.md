@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Fase 3, parte 2i: dispositivo de push (2026-10-28, DECISIONS 79)
+
+`PUT`/`DELETE /v1/dispositivo` no ar (token preso à sessão, sem consentimento não grava, o mesmo token passa de uma conta para a outra, 30/h por sessão).
+440 testes (100 contra Postgres de verdade); 15 mutações quebram o teste certo.
+**Falta nas rotas:** exportação, assinatura; admin; login Google.
+
 ## Fase 3, parte 2h: central de avisos (2026-10-28, DECISIONS 78)
 
 `GET /v1/avisos` e `POST /v1/avisos/leitura` no ar. Nada cria aviso ainda (despachante: fase 4); os testes inserem as linhas.
