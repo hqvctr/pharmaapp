@@ -44,5 +44,11 @@ revogação é gravada mesmo com a resposta 401); sair apaga o aparelho de push;
 - Consultar o resultado de um envio: `GET https://api.brevo.com/v3/smtp/statistics/events?limit=10&sort=desc` (a lista demora alguns segundos para aparecer; chave com acesso a e-mail transacional).
 - Ainda não feito com o e-mail real: a etapa `verificar` (o código só chega à caixa do responsável; o fluxo completo foi provado antes com o envio por console).
 
+## Entrega conferida no Gmail (2026-10-28, Cowork: `brevo-entrega-2026-10-28.md`)
+As duas mensagens (13:24 e 13:26) caíram na **Caixa de entrada**, sem aviso de spam, em menos de 1 s. Cabeçalhos da segunda: `From: "economae" <descubranovasformas@12291020.brevosend.com>`,
+`Reply-To: "economae" <descubranovasformas@gmail.com>`, `spf=pass`, `dkim=pass header.i=@brevosend.com`, `dmarc=pass (p=REJECT) header.from=brevosend.com`.
+O alinhamento é com brevosend.com, não com gmail.com. **Só o Gmail foi testado** (Outlook e Yahoo podem se comportar diferente). Um domínio próprio autenticado trocaria o "De"
+estranho por um endereço do app; deixou de ser bloqueio para lançar, e é melhoria de marca e de confiança.
+
 ## Não conferido
-O envio real pela Brevo (o adaptador segue a documentação da API, mas nenhum envio foi feito ainda) e em qual pasta (entrada ou spam) o Gmail coloca a mensagem.
+O envio real pela Brevo (o adaptador segue a documentação da API, mas nenhum envio foi feito ainda), a entrega em Outlook/Yahoo e a etapa `verificar` com código real.
