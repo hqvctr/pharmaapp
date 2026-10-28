@@ -1,5 +1,5 @@
 {
- "_aviso": "SINTÉTICO, no formato da documentação (docs.lomadee.com.br): { data: Produto[], count }. Campos de categories e brands presumidos. Substituir por resposta real na primeira chamada.",
+ "_aviso": "SINTÉTICO, no formato real observado em 2026-10-28 ({ data }, preço em reais, categorias no produto). Dados fictícios.",
  "data": [
   {
    "organizationId": "9001",
@@ -17,16 +17,12 @@
      "available": true,
      "seller": "sintetico",
      "images": [],
-     "categories": [
-      {
-       "name": "Proteção Solar"
-      }
-     ],
+     "categories": [],
      "brands": [],
      "pricing": [
       {
-       "listPrice": 7990,
-       "price": 7990,
+       "listPrice": 79.9,
+       "price": 79.9,
        "metadata": []
       }
      ],
@@ -39,7 +35,17 @@
      "metadata": []
     }
    ],
-   "metadata": []
+   "metadata": [],
+   "categories": [
+    {
+     "id": 240,
+     "name": "commerce_retail"
+    },
+    {
+     "id": 1,
+     "name": "health_beauty"
+    }
+   ]
   },
   {
    "organizationId": "9001",
@@ -57,16 +63,12 @@
      "available": true,
      "seller": "sintetico",
      "images": [],
-     "categories": [
-      {
-       "name": "Cabelos"
-      }
-     ],
+     "categories": [],
      "brands": [],
      "pricing": [
       {
-       "listPrice": 3990,
-       "price": 3990,
+       "listPrice": 39.9,
+       "price": 39.9,
        "metadata": []
       }
      ],
@@ -79,7 +81,17 @@
      "metadata": []
     }
    ],
-   "metadata": []
+   "metadata": [],
+   "categories": [
+    {
+     "id": 240,
+     "name": "commerce_retail"
+    },
+    {
+     "id": 1,
+     "name": "cosmetics"
+    }
+   ]
   },
   {
    "organizationId": "9001",
@@ -97,16 +109,12 @@
      "available": true,
      "seller": "sintetico",
      "images": [],
-     "categories": [
-      {
-       "name": "Eletrônicos"
-      }
-     ],
+     "categories": [],
      "brands": [],
      "pricing": [
       {
-       "listPrice": 9990,
-       "price": 9990,
+       "listPrice": 99.9,
+       "price": 99.9,
        "metadata": []
       }
      ],
@@ -119,8 +127,155 @@
      "metadata": []
     }
    ],
-   "metadata": []
+   "metadata": [],
+   "categories": [
+    {
+     "id": 240,
+     "name": "commerce_retail"
+    },
+    {
+     "id": 1,
+     "name": "electronics"
+    }
+   ]
+  },
+  {
+   "organizationId": "9001",
+   "id": "A-400",
+   "available": true,
+   "name": "Fralda Marca Z G 36 Unidades",
+   "description": "",
+   "url": "https://redir.lomadee.com/v2/exemplo-A-400",
+   "images": [],
+   "options": [
+    {
+     "id": "A-400-1",
+     "ean": "",
+     "name": "",
+     "available": true,
+     "seller": "sintetico",
+     "images": [],
+     "categories": [],
+     "brands": [],
+     "pricing": [
+      {
+       "listPrice": 69.9,
+       "price": 69.9,
+       "metadata": []
+      }
+     ],
+     "stocks": [
+      {
+       "value": 10,
+       "metadata": []
+      }
+     ],
+     "metadata": []
+    }
+   ],
+   "metadata": [],
+   "categories": [
+    {
+     "id": 240,
+     "name": "commerce_retail"
+    },
+    {
+     "id": 1,
+     "name": "hygiene"
+    }
+   ]
+  },
+  {
+   "organizationId": "9001",
+   "id": "A-500",
+   "available": true,
+   "name": "Dipirona Monoidratada 500mg 10 Comprimidos",
+   "description": "",
+   "url": "https://redir.lomadee.com/v2/exemplo-A-500",
+   "images": [],
+   "options": [
+    {
+     "id": "A-500-1",
+     "ean": "",
+     "name": "",
+     "available": true,
+     "seller": "sintetico",
+     "images": [],
+     "categories": [],
+     "brands": [],
+     "pricing": [
+      {
+       "listPrice": 8.9,
+       "price": 8.9,
+       "metadata": []
+      }
+     ],
+     "stocks": [
+      {
+       "value": 10,
+       "metadata": []
+      }
+     ],
+     "metadata": []
+    }
+   ],
+   "metadata": [],
+   "categories": [
+    {
+     "id": 240,
+     "name": "commerce_retail"
+    },
+    {
+     "id": 1,
+     "name": "medicines"
+    }
+   ]
+  },
+  {
+   "organizationId": "9001",
+   "id": "A-600",
+   "available": true,
+   "name": "Clonazepam 2mg Tarja Preta 30 Comprimidos",
+   "description": "",
+   "url": "https://redir.lomadee.com/v2/exemplo-A-600",
+   "images": [],
+   "options": [
+    {
+     "id": "A-600-1",
+     "ean": "",
+     "name": "",
+     "available": true,
+     "seller": "sintetico",
+     "images": [],
+     "categories": [],
+     "brands": [],
+     "pricing": [
+      {
+       "listPrice": 19.9,
+       "price": 19.9,
+       "metadata": []
+      }
+     ],
+     "stocks": [
+      {
+       "value": 10,
+       "metadata": []
+      }
+     ],
+     "metadata": []
+    }
+   ],
+   "metadata": [],
+   "categories": [
+    {
+     "id": 240,
+     "name": "commerce_retail"
+    },
+    {
+     "id": 1,
+     "name": "medicines"
+    }
+   ]
   }
- ],
- "count": 6
+ ]
 }

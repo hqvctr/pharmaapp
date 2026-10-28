@@ -202,17 +202,16 @@
     "lomadee": {
       "baseUrl": "https://api.lomadee.com.br/",
       "tamanhoPagina": 100,
-      "maxPaginas": 20,
+      "maxPaginas": 200,
       "intervaloMs": 1100,
+      "categoriasGenericas": ["commerce_retail", "industry_production", "services"],
       "mapaCategorias": {
-        "Proteção Solar": "cuidados_pessoais",
-        "Dermocosméticos": "cuidados_pessoais",
-        "Cabelos": "cuidados_pessoais",
-        "Higiene Íntima": "higiene_intima",
-        "Maquiagem": "maquiagem",
-        "Fraldas": "higiene_bebe",
-        "Higiene do Bebê": "higiene_bebe",
-        "Medicamentos": "medicamentos_isentos"
+        "medicines": "medicamentos_isentos",
+        "pharmacy": "medicamentos_isentos",
+        "hygiene": "cuidados_pessoais",
+        "health_beauty": "cuidados_pessoais",
+        "cosmetics": "cuidados_pessoais",
+        "food_beverages": "mercearia"
       }
     }
   },

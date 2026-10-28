@@ -259,6 +259,12 @@ rodados. A rede do ambiente já está em "Total".
 
 **Chave da Lomadee (DECISIONS 63):** vai em **Segredos de rede** do ambiente de nuvem (o proxy anexa `x-api-key`; a sessão não vê a chave) e a coleta usa `--chave-pelo-proxy`; confirmado que `api.lomadee.com.br` responde (`401 API key is required` sem chave).
 
+**Primeira coleta real da Lomadee (2026-10-28, DECISIONS 64).** A chave (segredo de rede) funcionou já na mesma sessão. Lidas as 134
+marcas da conta (Drogasil e Droga Raia não estão) e coletados 1.739 produtos de Drogasmil e PromoFarma em 50 s: 0 ilegíveis, 0
+erros, 705 bloqueados pela triagem (611 sem referência da CMED, 57 termos de venda controlada, 34 NBCAL vedado, 3 cautela), 267
+em categoria sem mapa, 767 como oferta (todas descartadas: sem 14 dias de histórico). O formato real diferia da documentação
+(preço em reais, sem `count`, categorias no produto) e o adaptador foi corrigido; 214 testes; Fases 2 e 3 passando.
+
 **Falta para a Lomadee ir ao ar** (BACKLOG): cadastrar o segredo de rede, ler os termos,
 primeira chamada real (achar as marcas, guardar uma resposta), ligar o link rastreado, vínculo das lojas. **Outros canais**: dizer quais contas existem; cada um precisa de
 termos lidos e de um adaptador (a mesma chave da Lomadee já dá acesso a outras lojas da rede dela).

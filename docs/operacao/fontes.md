@@ -32,14 +32,22 @@ config nem em log.
    (precisa de `DATABASE_URL`, `CREDENTIALS_KEY` e `--listas-medicamentos`; com segredo de rede, acrescente `--chave-pelo-proxy` e
    dispense `CREDENTIALS_KEY`). Agendamento a cada 2 h ainda não existe.
 
-## O que a API da Lomadee entrega (documentação oficial, docs.lomadee.com.br)
-Produtos em `GET /affiliate/products` (`page`, `limit` de 1 a 100, `isAvailable`, `organizationIds`), resposta
-`{ data, count }`. Cada produto tem opções com `ean` (**código de barras: serve de GTIN**), `pricing[{listPrice, price}]`
-**em centavos**, `categories`, `brands` e `seller`. Limite de 60 pedidos por minuto por chave (a coleta espera 1,1 s
-entre pedidos). Ainda **presumido**: a forma dos itens de `categories` e `brands`. Ainda **não ligado**: o link rastreado
-de afiliado (o `url` do produto não rende comissão; exige o encurtador, `POST /affiliate/shorten`).
-Na primeira chamada real, guarde uma resposta crua (sem a chave) para trocar os dados sintéticos de
-`backend/fixtures/lomadee` e confirmar categorias, marcas e se `ean` vem preenchido.
+## O que a API da Lomadee entrega (conferido em respostas reais, 2026-10-28)
+Produtos em `GET /affiliate/products` (`page`, `limit` de 1 a 100, `isAvailable`, `organizationIds`). **A resposta real difere
+da documentação**: é só `{ data: [...] }` (sem `count`: a última página é a que vem incompleta); o **preço vem em reais
+decimais** (96.99), não em centavos; `categories` fica no **produto** como `[{id, name}]` com nomes em inglês (`medicines`,
+`hygiene`, `health_beauty`, `cosmetics`, `food_beverages`, e as genéricas `commerce_retail`, `industry_production`); cada
+produto tinha uma opção, com `ean` numérico em 100% dos itens das farmácias, e `brands` vazio. Limite de 60 pedidos por
+minuto por chave (a coleta espera 1,1 s entre pedidos). Ainda **não ligado**: o link rastreado de afiliado (o `url` do
+produto é a página da loja; exige o encurtador, `POST /affiliate/shorten`).
+
+**Marcas da conta (134, lidas em 2026-10-28):** Drogasil e Droga Raia **não estão na lista**. As farmácias disponíveis são
+Drogasmil e Drogaria Rosário (mesmo site, 1.568 itens disponíveis) e PromoFarma (171 itens); BabyStock e Shopee devolvem
+catálogo vazio. A primeira coleta real leu 1.739 produtos em 50 s, sem erro.
+
+**No ambiente de nuvem**, o Node só usa o proxy (que anexa a chave do segredo de rede) com `NODE_USE_ENV_PROXY=1`:
+`NODE_USE_ENV_PROXY=1 node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --chave-pelo-proxy --listas-medicamentos <arquivo>`.
+Sem essa variável a chamada sai sem chave e a Lomadee responde 401.
 
 ## Outros canais além da Lomadee
 A mesma chave da Lomadee dá acesso a **outras lojas da rede dela**: basta vincular os ids de loja e mapear as

@@ -1,15 +1,17 @@
 // Fonte TIPO A: API de afiliados da Lomadee (documentação: https://docs.lomadee.com.br/api-reference/introduction).
 //
-// Servidor https://api.lomadee.com.br, chave no cabeçalho `x-api-key` (escopos products:read e brands:read),
-// produtos em GET /affiliate/products com page, limit (1 a 100), isAvailable e organizationIds. A resposta é
-// { data: Produto[], count } (count = total que casa com o filtro). Cada produto tem `options`; cada opção
-// tem `ean`, `pricing[{ listPrice, price }]` em CENTAVOS, `categories`, `brands`, `seller`. O limite é de 60
-// pedidos por minuto por chave.
+// Servidor https://api.lomadee.com.br, chave no cabeçalho `x-api-key`, produtos em GET /affiliate/products com
+// page, limit (1 a 100), isAvailable e organizationIds (a "loja" é a marca/organização). Limite de 60 pedidos
+// por minuto por chave.
 //
-// O QUE AINDA É PRESUMIDO (a documentação não define; ver na primeira resposta real): a forma dos itens de
-// `categories` e `brands` (aqui aceita texto ou objeto com `name`/`description`). O `url` do produto não é
-// link rastreado: gerar o link de afiliado exige o encurtador (escopo shortener:write), ainda não ligado;
-// por isso `linkAfiliado` é false.
+// FORMATO CONFERIDO EM RESPOSTAS REAIS (2026-10-28, Drogasmil e PromoFarma) e que DIVERGE da documentação:
+//  - a resposta é só { data: Produto[] }: não há `count`; a última página é a que vem com menos de `limit` itens;
+//  - `pricing[].price` e `listPrice` vêm em REAIS decimais (96.99), não em centavos;
+//  - `categories` fica no PRODUTO, como [{ id, name }] com nomes em inglês (medicines, hygiene, health_beauty,
+//    cosmetics, food_beverages, commerce_retail, industry_production...); na opção vem vazio;
+//  - `options[].ean` veio preenchido (numérico) em 100% dos itens; `options[].brands` veio vazio.
+// O `url` do produto é a página da loja, sem rastreio: o link rastreado exige o encurtador (escopo
+// shortener:write), ainda não ligado; por isso `linkAfiliado` é false.
 import type { HttpGetJson, OfertaBruta, ResultadoColeta, SourceAdapter } from './contrato.js';
 import { HttpGravado } from './gravacoes.js';
 import type { FabricaFonte } from './registro.js';
@@ -21,12 +23,15 @@ export interface ConfigLomadee {
   /** 1 a 100. */
   tamanhoPagina: number;
   maxPaginas: number;
+  /** Categorias que não dizem nada sobre o produto (ex.: commerce_retail); ficam de fora na escolha da categoria. */
+  categoriasGenericas: readonly string[];
 }
 
 interface Pagina {
   data?: unknown;
-  count?: unknown;
 }
+
+export const CATEGORIAS_GENERICAS_PADRAO: readonly string[] = ['commerce_retail', 'industry_production', 'services'];
 
 export class LomadeeAdapter implements SourceAdapter {
   readonly tipo = 'A' as const;
@@ -39,7 +44,6 @@ export class LomadeeAdapter implements SourceAdapter {
   async coletar(): Promise<ResultadoColeta> {
     const resultado: ResultadoColeta = { ofertas: [], ilegiveis: [] };
     for (const org of this.config.organizacoes) {
-      let lidos = 0;
       for (let pagina = 1; pagina <= this.config.maxPaginas; pagina++) {
         const url = new URL('affiliate/products', this.config.baseUrl);
         url.searchParams.set('organizationIds', org);
@@ -49,16 +53,16 @@ export class LomadeeAdapter implements SourceAdapter {
 
         // A URL nunca entra em erro; o HttpReal já devolve só o host e o status.
         const corpo = (await this.http.get(url)) as Pagina;
-        if (!Array.isArray(corpo.data) || typeof corpo.count !== 'number') {
+        if (!Array.isArray(corpo.data)) {
           throw new Error(`Lomadee marca ${org} página ${pagina}: resposta fora do formato esperado`);
         }
         for (const [i, item] of corpo.data.entries()) {
-          const lido = parseProduto(item);
+          const lido = parseProduto(item, this.config.categoriasGenericas);
           resultado.ofertas.push(...lido.ofertas);
           for (const erro of lido.erros) resultado.ilegiveis.push({ referencia: `marca ${org} página ${pagina} item ${i}`, erro });
         }
-        lidos += corpo.data.length;
-        if (corpo.data.length === 0 || lidos >= corpo.count) break;
+        // Sem `count`: a última página é a que vem incompleta.
+        if (corpo.data.length < this.config.tamanhoPagina) break;
       }
     }
     return resultado;
@@ -84,6 +88,15 @@ function nomeDe(v: unknown): string | null {
   return null;
 }
 
+/** Primeira categoria que diz algo sobre o produto; se só houver genéricas, a primeira delas. */
+function escolherCategoria(produto: unknown, opcao: unknown, genericas: readonly string[]): string {
+  const nomes = [produto, opcao]
+    .flatMap((v) => (Array.isArray(v) ? v : []))
+    .map(nomeDe)
+    .filter((n): n is string => n !== null);
+  return nomes.find((n) => !genericas.includes(n)) ?? nomes[0] ?? '';
+}
+
 function semHtml(html: unknown): string | null {
   if (typeof html !== 'string') return null;
   const t = html
@@ -98,7 +111,10 @@ function semHtml(html: unknown): string | null {
 }
 
 /** Um produto da Lomadee vira uma oferta por opção (variação) com preço válido. */
-export function parseProduto(item: unknown): { ofertas: OfertaBruta[]; erros: string[] } {
+export function parseProduto(
+  item: unknown,
+  categoriasGenericas: readonly string[] = CATEGORIAS_GENERICAS_PADRAO,
+): { ofertas: OfertaBruta[]; erros: string[] } {
   const ofertas: OfertaBruta[] = [];
   const erros: string[] = [];
   try {
@@ -115,10 +131,10 @@ export function parseProduto(item: unknown): { ofertas: OfertaBruta[]; erros: st
         const o = bruta as Record<string, unknown>;
         const precos = Array.isArray(o.pricing) ? (o.pricing as Array<Record<string, unknown>>) : [];
         const preco = precos[0]?.price;
-        if (typeof preco !== 'number' || !Number.isInteger(preco) || preco <= 0) throw new Error('campo pricing[0].price ausente ou inválido');
+        // Preço em reais (decimal). Centavos = reais x 100, arredondado.
+        if (typeof preco !== 'number' || !Number.isFinite(preco) || preco <= 0 || preco > 1_000_000) throw new Error('campo pricing[0].price ausente ou inválido');
         const nomeOpcao = typeof o.name === 'string' ? o.name.trim() : '';
         const ean = typeof o.ean === 'string' && /^[0-9]{8,14}$/.test(o.ean.trim()) ? o.ean.trim() : null;
-        const categorias = Array.isArray(o.categories) ? o.categories : [];
         const marcas = Array.isArray(o.brands) ? o.brands : [];
         ofertas.push({
           idExterno: `${id}:${texto(o.id, 'options[].id')}`,
@@ -126,9 +142,9 @@ export function parseProduto(item: unknown): { ofertas: OfertaBruta[]; erros: st
           descricao,
           gtin: ean,
           marca: nomeDe(marcas[0]),
-          precoCentavos: preco,
+          precoCentavos: Math.round(preco * 100),
           condicao: null,
-          categoriaFonte: nomeDe(categorias[0]) ?? '',
+          categoriaFonte: escolherCategoria(p.categories, o.categories, categoriasGenericas),
           lojaIdExterno: organizacao,
           link,
           // O url do produto não é link rastreado (exige o encurtador).
@@ -165,6 +181,10 @@ export const fabricaLomadee: FabricaFonte = {
       organizacoes: [...lojas].sort(),
       tamanhoPagina: inteiroEntre(config.tamanhoPagina, 'tamanhoPagina', 1, 100),
       maxPaginas: inteiroEntre(config.maxPaginas, 'maxPaginas', 1, 1000),
+      categoriasGenericas:
+        Array.isArray(config.categoriasGenericas) && config.categoriasGenericas.every((c) => typeof c === 'string')
+          ? (config.categoriasGenericas as string[])
+          : CATEGORIAS_GENERICAS_PADRAO,
     });
   },
   httpGravado: (dir) => new HttpGravado(dir),

@@ -25,7 +25,7 @@ const oferta = (o: Partial<OfertaBruta>): OfertaBruta => ({
   marca: null,
   precoCentavos: 1000,
   condicao: null,
-  categoriaFonte: 'Higiene do Bebê',
+  categoriaFonte: 'hygiene',
   lojaIdExterno: '9001',
   link: 'https://exemplo.test/p/1',
   linkAfiliado: true,
@@ -59,7 +59,7 @@ describe('normalizador com triagem NBCAL', () => {
   });
 
   it('produto livre sai sem advertência', () => {
-    const r = normalizarOferta(oferta({ titulo: 'Fralda Marca Z G 36 Unidades', categoriaFonte: 'Fraldas' }), listas, config);
+    const r = normalizarOferta(oferta({ titulo: 'Fralda Marca Z G 36 Unidades', categoriaFonte: 'hygiene' }), listas, config);
     expect(r.tipo === 'ok' && r.produto.advertencias).toEqual([]);
   });
 });
@@ -70,12 +70,12 @@ describe('normalizador com medicamento desligado e trava por substância (parece
   });
 
   it('isento com GTIN conhecido fica bloqueado e registrado como desligado', () => {
-    const r = normalizarOferta(oferta({ titulo: 'Analgésico 500mg 10 comprimidos', gtin: '7891000000011', categoriaFonte: 'Medicamentos' }), listas, config);
+    const r = normalizarOferta(oferta({ titulo: 'Analgésico 500mg 10 comprimidos', gtin: '7891000000011', categoriaFonte: 'medicines' }), listas, config);
     expect(r).toMatchObject({ tipo: 'bloqueado', codigo: 'MEDICAMENTO_DESLIGADO', revisaoHumana: false });
   });
 
   it('remédio mal categorizado e sem GTIN não passa como produto comum', () => {
-    const r = normalizarOferta(oferta({ titulo: 'Dipirona Sódica 500mg Gotas 20ml', categoriaFonte: 'Higiene do Bebê' }), listas, config);
+    const r = normalizarOferta(oferta({ titulo: 'Dipirona Sódica 500mg Gotas 20ml', categoriaFonte: 'hygiene' }), listas, config);
     expect(r).toMatchObject({ tipo: 'bloqueado', codigo: 'MEDICAMENTO_SEM_REFERENCIA', revisaoHumana: true });
   });
 
@@ -85,7 +85,7 @@ describe('normalizador com medicamento desligado e trava por substância (parece
   });
 
   it('produto comum segue normalmente', () => {
-    const r = normalizarOferta(oferta({ titulo: 'Fralda Marca Z G 36 Unidades', categoriaFonte: 'Fraldas' }), listas, config);
+    const r = normalizarOferta(oferta({ titulo: 'Fralda Marca Z G 36 Unidades', categoriaFonte: 'hygiene' }), listas, config);
     expect(r.tipo).toBe('ok');
   });
 });

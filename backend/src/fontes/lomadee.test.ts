@@ -5,22 +5,23 @@ import { HttpGravado } from './gravacoes.js';
 import { fabricaLomadee, LomadeeAdapter, parseProduto } from './lomadee.js';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const config = { baseUrl: 'https://api.exemplo.test/', organizacoes: ['9001', '9002'], tamanhoPagina: 100, maxPaginas: 20 };
+const config = { baseUrl: 'https://api.exemplo.test/', organizacoes: ['9001', '9002'], tamanhoPagina: 100, maxPaginas: 20, categoriasGenericas: ['commerce_retail', 'industry_production'] };
 
 const opcao = (o: Record<string, unknown> = {}) => ({
   id: 'o1', ean: '7891234567895', name: '', available: true,
-  categories: [{ name: 'Cabelos' }], brands: [{ name: 'Marca Y' }], pricing: [{ listPrice: 3000, price: 2590 }], ...o,
+  categories: [], brands: [{ name: 'Marca Y' }], pricing: [{ listPrice: 30, price: 25.9 }], ...o,
 });
 const produto = (p: Record<string, unknown> = {}, opcoes: unknown[] = [opcao()]) => ({
   organizationId: 'org-1', id: 'p1', available: true, name: 'Shampoo Hidratante 400ml',
-  description: '<p>Para <b>todos</b> os cabelos &amp; mais</p>', url: 'https://loja.test/p1', options: opcoes, ...p,
+  description: '<p>Para <b>todos</b> os cabelos &amp; mais</p>', url: 'https://loja.test/p1', options: opcoes,
+  categories: [{ id: 240, name: 'commerce_retail' }, { id: 275, name: 'cosmetics' }], ...p,
 });
 
 describe('adaptador Lomadee (respostas gravadas)', () => {
-  it('percorre as páginas de cada marca pelo count e separa itens ilegíveis', async () => {
+  it('lê as marcas das respostas gravadas e separa itens ilegíveis', async () => {
     const http = new HttpGravado(path.join(RAIZ, 'fixtures/lomadee/promocao'));
     const r = await new LomadeeAdapter(http, config).coletar();
-    expect(http.pedidos).toEqual(['org-9001-pagina-1.json', 'org-9001-pagina-2.json', 'org-9002-pagina-1.json']);
+    expect(http.pedidos).toEqual(['org-9001-pagina-1.json', 'org-9002-pagina-1.json']);
     expect(r.ofertas).toHaveLength(7);
     expect(r.ilegiveis).toHaveLength(1);
     expect(r.ilegiveis[0]!.erro).toContain('pricing');
@@ -28,7 +29,7 @@ describe('adaptador Lomadee (respostas gravadas)', () => {
 
   it('pede só disponíveis, com a marca e o tamanho de página', async () => {
     const pedidos: URL[] = [];
-    const http = { get: async (u: URL) => { pedidos.push(u); return { data: [], count: 0 }; } };
+    const http = { get: async (u: URL) => { pedidos.push(u); return { data: [] }; } };
     await new LomadeeAdapter(http, { ...config, organizacoes: ['abc'] }).coletar();
     expect(pedidos).toHaveLength(1);
     expect(pedidos[0]!.pathname).toBe('/affiliate/products');
@@ -41,22 +42,38 @@ describe('adaptador Lomadee (respostas gravadas)', () => {
     expect((erro as Error).message).toBe('Lomadee marca 9001 página 1: resposta fora do formato esperado');
   });
 
-  it('para ao receber página vazia mesmo que o count prometa mais', async () => {
+  it('sem count: segue até a página que vem incompleta', async () => {
+    const paginas = [Array.from({ length: 3 }, (_, i) => produto({ id: `a${i}` })), Array.from({ length: 3 }, (_, i) => produto({ id: `b${i}` })), [produto({ id: 'c0' })]];
+    const pedidos: string[] = [];
+    const http = { get: async (u: URL) => { pedidos.push(u.searchParams.get('page')!); return { data: paginas[pedidos.length - 1] ?? [] }; } };
+    const r = await new LomadeeAdapter(http, { ...config, organizacoes: ['9001'], tamanhoPagina: 3 }).coletar();
+    expect(pedidos).toEqual(['1', '2', '3']);
+    expect(r.ofertas).toHaveLength(7);
+  });
+
+  it('respeita maxPaginas mesmo com páginas sempre cheias', async () => {
     let chamadas = 0;
-    const http = { get: async () => { chamadas++; return { data: [], count: 50 }; } };
+    const http = { get: async () => { chamadas++; return { data: [produto(), produto({ id: 'p2' })] }; } };
+    await new LomadeeAdapter(http, { ...config, organizacoes: ['9001'], tamanhoPagina: 2, maxPaginas: 4 }).coletar();
+    expect(chamadas).toBe(4);
+  });
+
+  it('para ao receber página vazia', async () => {
+    let chamadas = 0;
+    const http = { get: async () => { chamadas++; return { data: [] }; } };
     await new LomadeeAdapter(http, { ...config, organizacoes: ['9001'] }).coletar();
     expect(chamadas).toBe(1);
   });
 });
 
 describe('parseProduto', () => {
-  it('usa o preço em centavos como veio (sem converter) e o ean como GTIN', () => {
+  it('converte o preço em reais para centavos e usa o ean como GTIN', () => {
     const { ofertas, erros } = parseProduto(produto());
     expect(erros).toEqual([]);
     expect(ofertas).toHaveLength(1);
     expect(ofertas[0]).toMatchObject({
       idExterno: 'p1:o1', titulo: 'Shampoo Hidratante 400ml', gtin: '7891234567895', marca: 'Marca Y', precoCentavos: 2590,
-      categoriaFonte: 'Cabelos', lojaIdExterno: 'org-1', link: 'https://loja.test/p1', linkAfiliado: false, disponivel: true,
+      categoriaFonte: 'cosmetics', lojaIdExterno: 'org-1', link: 'https://loja.test/p1', linkAfiliado: false, disponivel: true,
       frete: { status: 'a_confirmar' },
     });
     expect(ofertas[0]!.descricao).toBe('Para todos os cabelos & mais');
@@ -77,21 +94,32 @@ describe('parseProduto', () => {
     expect(parseProduto(produto({}, [opcao({ available: false })])).ofertas[0]!.disponivel).toBe(false);
   });
 
-  it('categoria e marca aceitam texto simples', () => {
-    const o = parseProduto(produto({}, [opcao({ categories: ['Cabelos'], brands: ['Y'] })])).ofertas[0]!;
-    expect([o.categoriaFonte, o.marca]).toEqual(['Cabelos', 'Y']);
+  it('categoria: a primeira que não é genérica, olhando o produto e depois a opção', () => {
+    expect(parseProduto(produto({ categories: [{ name: 'commerce_retail' }, { name: 'medicines' }, { name: 'hygiene' }] })).ofertas[0]!.categoriaFonte).toBe('medicines');
+    expect(parseProduto(produto({ categories: [] }, [opcao({ categories: ['hygiene'] })])).ofertas[0]!.categoriaFonte).toBe('hygiene');
   });
 
-  it('sem categoria ou marca não quebra', () => {
-    const o = parseProduto(produto({}, [opcao({ categories: [], brands: [] })])).ofertas[0]!;
-    expect([o.categoriaFonte, o.marca]).toEqual(['', null]);
+  it('só categorias genéricas: fica com a primeira; sem categoria: vazio', () => {
+    expect(parseProduto(produto({ categories: [{ name: 'commerce_retail' }, { name: 'industry_production' }] })).ofertas[0]!.categoriaFonte).toBe('commerce_retail');
+    expect(parseProduto(produto({ categories: [] })).ofertas[0]!.categoriaFonte).toBe('');
+  });
+
+  it('marca aceita texto simples ou fica nula', () => {
+    expect(parseProduto(produto({}, [opcao({ brands: ['Y'] })])).ofertas[0]!.marca).toBe('Y');
+    expect(parseProduto(produto({}, [opcao({ brands: [] })])).ofertas[0]!.marca).toBeNull();
+  });
+
+  it('centavos sem erro de ponto flutuante (19,9 e 0,29)', () => {
+    expect(parseProduto(produto({}, [opcao({ pricing: [{ price: 19.9 }] })])).ofertas[0]!.precoCentavos).toBe(1990);
+    expect(parseProduto(produto({}, [opcao({ pricing: [{ price: 0.29 }] })])).ofertas[0]!.precoCentavos).toBe(29);
   });
 
   it.each([
     ['sem opções', produto({ options: [] }), 'options'],
     ['sem url', produto({ url: undefined }), 'url'],
     ['sem organizationId', produto({ organizationId: undefined }), 'organizationId'],
-    ['preço não inteiro (reais em vez de centavos)', produto({}, [opcao({ pricing: [{ price: 25.9 }] })]), 'pricing'],
+    ['preço absurdo (provável erro de unidade)', produto({}, [opcao({ pricing: [{ price: 5_000_000 }] })]), 'pricing'],
+    ['preço como texto', produto({}, [opcao({ pricing: [{ price: '25,90' }] })]), 'pricing'],
     ['preço zero', produto({}, [opcao({ pricing: [{ price: 0 }] })]), 'pricing'],
     ['sem preço', produto({}, [opcao({ pricing: [] })]), 'pricing'],
   ])('ilegível: %s', (_c, p, campo) => {
@@ -113,7 +141,7 @@ describe('fábrica da Lomadee', () => {
     expect(fabricaLomadee.cabecalhos!({ apiKey: 'lmd_x' })).toEqual({ 'x-api-key': 'lmd_x' });
   });
   it('limita o tamanho de página a 100 (regra da API)', () => {
-    const http = { get: async () => ({ data: [], count: 0 }) };
+    const http = { get: async () => ({ data: [] }) };
     expect(() => fabricaLomadee.criar({ http, config: { baseUrl: 'https://x.test/', tamanhoPagina: 101, maxPaginas: 5 }, credenciais: {}, lojas: [] })).toThrow(/tamanhoPagina/);
   });
 });
