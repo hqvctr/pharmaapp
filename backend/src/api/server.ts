@@ -2,6 +2,8 @@ import pg from 'pg';
 import { Redis } from 'ioredis';
 import { loadEnv } from '../shared/env.js';
 import { buildApp } from './app.js';
+import { LimitadorRedis } from './limiteTaxa.js';
+import { RegistroTenantsBanco } from './tenants.js';
 
 async function main(): Promise<void> {
   const env = loadEnv();
@@ -10,6 +12,9 @@ async function main(): Promise<void> {
 
   const app = buildApp({
     logger: true,
+    trustProxy: env.trustProxy,
+    tenants: new RegistroTenantsBanco(pool),
+    limitador: new LimitadorRedis(redis),
     healthChecks: [
       { name: 'postgres', check: async () => void (await pool.query('SELECT 1')) },
       { name: 'redis', check: async () => void (await redis.ping()) },

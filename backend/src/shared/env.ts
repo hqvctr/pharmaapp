@@ -4,6 +4,8 @@ export interface EnvConfig {
   databaseUrl: string;
   redisUrl: string;
   apiPort: number;
+  /** API atrás de proxy confiável (TRUST_PROXY=1): usa X-Forwarded-For para o IP do limite de taxa. */
+  trustProxy: boolean;
 }
 
 function required(env: NodeJS.ProcessEnv, name: string): string {
@@ -23,5 +25,6 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
     databaseUrl: required(env, 'DATABASE_URL'),
     redisUrl: required(env, 'REDIS_URL'),
     apiPort: port,
+    trustProxy: env.TRUST_PROXY === '1',
   };
 }

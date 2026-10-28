@@ -220,5 +220,34 @@
   "cobertura": {
     "raioRetiradaKm": 5,
     "custoDeslocamentoPorKmCentavos": 80
+  },
+  "app": {
+    "nomeApp": "economae",
+    "urlSite": "https://economae.pages.dev",
+    "termos": { "versao": "2026-10-28", "caminho": "/termos.html" },
+    "privacidade": { "versao": "2026-10-28", "caminho": "/privacidade.html" },
+    "versaoMinima": { "android": null, "ios": null },
+    "metodosLogin": ["email", "google"],
+    "categorias": [
+      { "slug": "higiene_bebe", "rotulo": "Higiene do bebê" },
+      { "slug": "cuidados_pessoais", "rotulo": "Cuidados pessoais" },
+      { "slug": "higiene_intima", "rotulo": "Higiene íntima" },
+      { "slug": "maquiagem", "rotulo": "Maquiagem" },
+      { "slug": "limpeza", "rotulo": "Limpeza" },
+      { "slug": "mercearia", "rotulo": "Mercearia" },
+      { "slug": "pereciveis", "rotulo": "Perecíveis" }
+    ],
+    "regiao": { "cepInicio": "01000000", "cepFim": "19999999" },
+    "limites": {
+      "cepsGratuito": 1,
+      "cepsPremium": 3,
+      "maxProdutosSeguidos": 100,
+      "maxSilenciamentos": 50,
+      "quedaPercentualMin": 5,
+      "quedaPercentualMax": 90,
+      "limiteDiarioPadrao": 3
+    },
+    "planos": [],
+    "limitesTaxa": { "configuracao": { "maximo": 60, "janelaSegundos": 60 } }
   }
 }

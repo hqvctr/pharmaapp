@@ -11,6 +11,7 @@ import {
 import type { ConfigDeduplicacao } from '../avaliador/deduplicacao.js';
 import { compilarTriagemPorNome, normalizarTexto, type ModoMedicamentos, type TriagemPorNome } from '../normalizador/medicamentos.js';
 import { compilarRegrasNbcal, type RegrasNbcal } from '../normalizador/nbcal.js';
+import { validarConfigApp, type ConfigApp } from './configApp.js';
 
 export const DIR_CONFIG = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../config');
 
@@ -34,6 +35,7 @@ export interface ConfigTenant {
   medicamentos: { categoria: string; notificar: boolean; modo: ModoMedicamentos; triagemPorNome: TriagemPorNome };
   nbcal: RegrasNbcal;
   fontes: Record<string, ConfigFonte>;
+  app: ConfigApp;
 }
 
 export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFIG): Promise<ConfigTenant> {
@@ -79,5 +81,6 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
     medicamentos: { ...bruto.medicamentos, triagemPorNome },
     nbcal: compilarRegrasNbcal(bruto.nbcal),
     fontes,
+    app: validarConfigApp(bruto.app, curadoria, bruto.medicamentos.categoria),
   };
 }

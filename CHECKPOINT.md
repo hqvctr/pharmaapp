@@ -1,5 +1,24 @@
 # Checkpoint
 
+## Fase 3, parte 2a: fundação do servidor e `/v1/configuracao` (2026-10-28, DECISIONS 69 e 70)
+
+Duas frentes em paralelo, porque o canal da Lomadee pede o link do app e o app ainda não existe.
+
+**Servidor.** `GET /v1/configuracao` no ar, conforme o contrato: tenant por `X-Tenant` (400 `tenant_ausente`, 404 `tenant_desconhecido`),
+limite 60/min por IP (config `app.limitesTaxa`), `no-store` e `Vary`, erros no formato `Erro`. Peças reaproveitáveis pelas próximas rotas:
+`api/erros.ts`, `api/tenants.ts`, `api/limiteTaxa.ts`, `shared/configApp.ts` (bloco `app` do tenant, validado na carga).
+Conferido: 303 testes e `tsc` limpos; mutações (tirar `Vary`, tirar o 429) quebram os testes; servidor real contra Postgres 16 e Redis locais
+(migrations 0001–0004 aplicadas): 200 com a forma do contrato, a 61ª chamada no minuto dá 429 com `Retry-After`, `/health` ok.
+**Não conferido:** o contrato ainda não é validado automaticamente contra a resposta (sem leitor de YAML no projeto; os testes conferem as chaves à mão);
+`pronto-fase3.sh` ainda não sobe o servidor (precisa de Redis).
+
+**Lomadee.** `site/` (index, termos, privacidade) e `docs/operacao/site-publico.md`. **Nada foi publicado.** Falta o responsável:
+publicar em Cloudflare Pages, criar o canal tipo aplicativo na Lomadee com esse endereço, conferir o escopo `shortener:write`;
+só então `EncurtadorLomadee` pode ser testado de verdade (BACKLOG, decisão 68).
+
+**Próximo:** autenticação (código por e-mail com Brevo, Google, sessão e renovação), reaproveitando `api/` desta parte; depois `me`, preferências e o feed,
+onde entra `linkRastreadoDaOferta`.
+
 ## Triagem NBCAL (2026-10-27, PRONTA; pendente de revisão por advogado)
 
 A partir de [docs/juridico/parecer-d33-nbcal.md](docs/juridico/parecer-d33-nbcal.md) (DECISIONS 35–39).
