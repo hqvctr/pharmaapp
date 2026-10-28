@@ -35,5 +35,14 @@ revogação é gravada mesmo com a resposta 401); sair apaga o aparelho de push;
   (host `api.brevo.com`, cabeçalho `api-key`), valendo em sessão nova. A chave local do computador do responsável (`BREVO_API_KEY` no `.env`) ainda não existe.
 - Como saber se o segredo de rede está ativo: `GET /v3/account` com chave qualquer devolve 403 `permission_denied` (a chave real foi usada e é restrita) em vez de 401.
 
+## Primeiro envio real (2026-10-28)
+- Envio direto pelo `EnviadorBrevo` e depois pelo servidor completo (Postgres e Redis reais, `POST /v1/auth/email/codigo`) para a caixa de testes:
+  ambos `requests` e `delivered` na Brevo (`GET /v3/smtp/statistics/events`) em menos de 1 s. O segundo pedido seguido saiu 202 **sem** gerar mensagem (limite de 1/min).
+- **A Brevo reescreve o remetente de provedor gratuito:** o campo `from` do evento é `descubranovasformas@12291020.brevosend.com`, não o gmail.com. É assim que ela contorna o
+  alinhamento de DKIM/DMARC; o e-mail chega com remetente "estranho" mas autenticado. O nome de exibição "economae" é mantido pelo pedido.
+- `delivered` significa que o Gmail aceitou a mensagem; **não** diz se foi para a caixa de entrada ou o spam. Isso se confere abrindo a caixa (prompt do Cowork).
+- Consultar o resultado de um envio: `GET https://api.brevo.com/v3/smtp/statistics/events?limit=10&sort=desc` (a lista demora alguns segundos para aparecer; chave com acesso a e-mail transacional).
+- Ainda não feito com o e-mail real: a etapa `verificar` (o código só chega à caixa do responsável; o fluxo completo foi provado antes com o envio por console).
+
 ## Não conferido
-O envio real pela Brevo (o adaptador segue a documentação da API, mas nenhum envio foi feito ainda) e se o Gmail entrega ou barra mensagens com remetente gmail.com enviadas pela Brevo.
+O envio real pela Brevo (o adaptador segue a documentação da API, mas nenhum envio foi feito ainda) e em qual pasta (entrada ou spam) o Gmail coloca a mensagem.

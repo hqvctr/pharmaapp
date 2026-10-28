@@ -1,5 +1,12 @@
 # Checkpoint
 
+## Brevo testada com envio real (2026-10-28)
+
+Chave no segredo de rede, remetente `economae` verificado. Dois e-mails reais para a caixa de testes (um direto pelo `EnviadorBrevo`, um pelo servidor completo com Postgres e Redis):
+ambos `delivered` segundo a Brevo; o segundo pedido seguido não gerou mensagem (limite de 1/min com o provedor real). A Brevo reescreve o "De" gmail.com para
+`@12291020.brevosend.com`. **Falta saber se o Gmail pôs na entrada ou no spam** (prompt do Cowork) e provar a etapa `verificar` com um código real (só chega à caixa do responsável).
+Detalhes em `docs/operacao/login-por-email.md`.
+
 ## Lomadee: marcas, tipos de canal e cobertura (2026-10-28, DECISIONS 72)
 
 Relatório do Cowork em `docs/juridico/fontes/lomadee-marcas-2026-10-28.md`. As sete grandes redes de farmácia não existem na conta (nada a candidatar); cada marca define os tipos de canal
