@@ -1,5 +1,16 @@
 # Testar o app no celular
 
+## Do zero, na ordem (computador Windows com o Docker Desktop aberto)
+
+1. **Atualizar o projeto** com a versão que tem a API do app: baixe o zip de
+   `https://github.com/hqvctr/pharmaapp/archive/refs/heads/claude/zen-gates-965k2e.zip` (fica em Downloads) e dê dois cliques em
+   `scripts\windows\atualizar.bat`. Ele copia por cima (o `.env` e o banco são mantidos) e religa tudo.
+2. **Ligar o login**: dois cliques em `scripts\windows\preparar-login.bat`. Hoje o `.env` não tem a chave de login (por isso o app diria
+   "Não encontrado" ao pedir o código). Enquanto a Brevo não estiver configurada neste computador, o código de teste aparece em `ver-codigo.bat`.
+3. **Abrir o endereço para o celular**: dois cliques em `scripts\windows\tunel.bat` e copie o endereço `https://....trycloudflare.com` que ele mostra.
+4. **No app**: cole o endereço, toque em "Testar conexão" (deve aparecer "Conectado: economae"), digite o e-mail, "Enviar código".
+5. Dois cliques em `ver-codigo.bat`, leia o código da última linha e digite no app.
+
 ## Instalar o app de prévia (APK)
 
 1. Baixe o arquivo `economae-previa.apk` (enviado na conversa) no celular, ou passe do computador por cabo/Drive.
