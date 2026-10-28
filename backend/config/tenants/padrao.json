@@ -206,6 +206,7 @@
       "maxPaginas": 200,
       "intervaloMs": 1100,
       "dominiosLinkRastreado": ["lmdee.link"],
+      "canalId": "7633b2c1-98a7-45c9-adea-e529dc67cc87",
       "categoriasGenericas": ["commerce_retail", "industry_production", "services"],
       "mapaCategorias": {
         "medicines": "medicamentos_isentos",

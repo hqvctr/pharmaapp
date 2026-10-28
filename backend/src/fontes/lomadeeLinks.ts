@@ -6,7 +6,7 @@ import type { HttpPostJson } from './contrato.js';
 
 export class SemCanalError extends Error {
   constructor() {
-    super('A Lomadee não devolveu link: a conta não tem nenhum canal cadastrado (crie um canal do tipo aplicativo no painel da Lomadee)');
+    super('A Lomadee não devolveu link: a conta não tem nenhum canal cadastrado (crie um canal de divulgação no painel da Lomadee)');
     this.name = 'SemCanalError';
   }
 }
