@@ -1,5 +1,12 @@
 # Checkpoint
 
+## Lomadee: marcas, tipos de canal e cobertura (2026-10-28, DECISIONS 72)
+
+Relatório do Cowork em `docs/juridico/fontes/lomadee-marcas-2026-10-28.md`. As sete grandes redes de farmácia não existem na conta (nada a candidatar); cada marca define os tipos de canal
+que aceita, e a Drogasmil não aceita Aplicativo Mobile, então o canal "Comparador de Preços" é o certo e **não** será trocado. Código: o encurtador só gera link para as marcas em
+`fontes.lomadee.marcasPermitidasParaLink` (Drogasmil e PromoFarma) e recusa as outras antes de chamar a Lomadee. Sondagem do catálogo pela API (só leitura): fraldas e higiene do bebê
+praticamente não vêm da Lomadee; falta decidir a segunda fonte (BACKLOG). 334 testes (+14 com Postgres).
+
 ## Fase 3, parte 2b: login por e-mail e sessões (2026-10-28, DECISIONS 71)
 
 `POST /v1/auth/email/codigo`, `/email/verificar`, `/renovar`, `/sair` no ar, mais `api/sessao.ts` (`exigirSessao`: Bearer, tenant pela sessão, termos pendentes → 403)

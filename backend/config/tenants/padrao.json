@@ -207,6 +207,10 @@
       "intervaloMs": 1100,
       "dominiosLinkRastreado": ["lmdee.link"],
       "canalId": "7633b2c1-98a7-45c9-adea-e529dc67cc87",
+      "marcasPermitidasParaLink": {
+        "d855f505-7e26-4961-a182-c2139aeadd2c": "Drogasmil",
+        "6d69265c-6b83-4ff4-916f-95a75057947d": "PromoFarma"
+      },
       "categoriasGenericas": ["commerce_retail", "industry_production", "services"],
       "mapaCategorias": {
         "medicines": "medicamentos_isentos",

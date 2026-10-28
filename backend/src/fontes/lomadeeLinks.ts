@@ -11,8 +11,21 @@ export class SemCanalError extends Error {
   }
 }
 
+/** A Lomadee recusa (e pode cancelar comissões por) divulgar marca em tipo de canal que ela não aceita. */
+export class MarcaNaoPermitidaError extends Error {
+  constructor(organizationId: string) {
+    super(`Marca ${organizationId} não está na lista de marcas que aceitam o tipo de canal do economae (Comparador de Preços)`);
+    this.name = 'MarcaNaoPermitidaError';
+  }
+}
+
 export interface ConfigEncurtador {
   baseUrl: string;
+  /**
+   * Marcas (organizationId) cujo painel da Lomadee permite o tipo de canal do tenant. Link para outra marca nem é pedido:
+   * "Divulgar nos canais não permitidos pode cancelar suas comissões" (painel, 2026-10-28; DECISIONS 72).
+   */
+  marcasPermitidas: readonly string[];
   /** Domínios aceitos para o link devolvido (o resto é recusado, para um link adulterado não chegar ao usuário). */
   dominios: readonly string[];
   /** Canal a usar quando a conta tiver mais de um; sem isso, o primeiro que devolver link. */
@@ -34,6 +47,7 @@ export class EncurtadorLomadee {
   /** Link rastreado para a página do produto numa marca (`organizationId`). */
   async linkRastreado(organizationId: string, urlProduto: string): Promise<string> {
     if (!/^[0-9a-f-]{36}$/i.test(organizationId)) throw new Error('organizationId inválido');
+    if (!this.config.marcasPermitidas.includes(organizationId)) throw new MarcaNaoPermitidaError(organizationId);
     if (!urlProduto.startsWith('https://')) throw new Error('A URL do produto precisa ser https');
     const corpo = await this.http.post(new URL('affiliate/shortener/url', this.config.baseUrl), {
       organizationId,
@@ -73,9 +87,14 @@ export function encurtadorDaConfig(http: HttpPostJson, bloco: Readonly<Record<st
   if (!Array.isArray(dominios) || dominios.length === 0 || !dominios.every((d) => typeof d === 'string')) {
     throw new Error('Config inválida da Lomadee: dominiosLinkRastreado');
   }
+  const marcas = bloco.marcasPermitidasParaLink;
+  if (marcas === null || typeof marcas !== 'object' || Array.isArray(marcas) || Object.keys(marcas).length === 0 || !Object.keys(marcas).every((id) => /^[0-9a-f-]{36}$/i.test(id))) {
+    throw new Error('Config inválida da Lomadee: marcasPermitidasParaLink (objeto id da marca → nome, não vazio)');
+  }
   return new EncurtadorLomadee(http, {
     baseUrl: bloco.baseUrl,
     dominios: dominios as string[],
+    marcasPermitidas: Object.keys(marcas as Record<string, unknown>),
     ...(typeof bloco.canalId === 'string' ? { canalId: bloco.canalId } : {}),
   });
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { HttpPostJson } from './contrato.js';
-import { EncurtadorLomadee, escolherLink, SemCanalError } from './lomadeeLinks.js';
+import { encurtadorDaConfig, EncurtadorLomadee, escolherLink, MarcaNaoPermitidaError, SemCanalError } from './lomadeeLinks.js';
 
 const cfg = { dominios: ['lmdee.link'] };
 const ORG = 'd855f505-7e26-4961-a182-c2139aeadd2c';
@@ -54,10 +54,28 @@ describe('link rastreado da Lomadee', () => {
   it('envia só marca, tipo e URL (nenhum identificador de pessoa) e valida a entrada', async () => {
     const enviados: unknown[] = [];
     const http: HttpPostJson = { post: async (_u, corpo) => { enviados.push(corpo); return [{ id: 'c', shortUrls: ['https://lmdee.link/z'] }]; } };
-    const e = new EncurtadorLomadee(http, { baseUrl: 'https://api.lomadee.com.br/', dominios: ['lmdee.link'] });
+    const e = new EncurtadorLomadee(http, { baseUrl: 'https://api.lomadee.com.br/', dominios: ['lmdee.link'], marcasPermitidas: [ORG] });
     expect(await e.linkRastreado(ORG, 'https://www.drogasmil.com.br/x/p')).toBe('https://lmdee.link/z');
     expect(enviados).toEqual([{ organizationId: ORG, type: 'Custom', url: 'https://www.drogasmil.com.br/x/p' }]);
     await expect(e.linkRastreado('x', 'https://a.test')).rejects.toThrow(/organizationId/);
     await expect(e.linkRastreado(ORG, 'http://a.test')).rejects.toThrow(/https/);
+  });
+
+  it('marca fora da lista (ex.: Drogaria Rosário, que não aceita Comparador de Preços) nem chega à Lomadee', async () => {
+    let chamadas = 0;
+    const http: HttpPostJson = { post: async () => { chamadas += 1; return []; } };
+    const e = new EncurtadorLomadee(http, { baseUrl: 'https://api.lomadee.com.br/', dominios: ['lmdee.link'], marcasPermitidas: [ORG] });
+    const outra = '00000000-0000-4000-8000-000000000000';
+    await expect(e.linkRastreado(outra, 'https://www.drogariarosario.com.br/x')).rejects.toBeInstanceOf(MarcaNaoPermitidaError);
+    expect(chamadas).toBe(0);
+  });
+
+  it('a config exige a lista de marcas permitidas, com ids válidos', () => {
+    const http: HttpPostJson = { post: async () => [] };
+    const base = { baseUrl: 'https://api.lomadee.com.br/', dominiosLinkRastreado: ['lmdee.link'] };
+    expect(() => encurtadorDaConfig(http, base)).toThrow(/marcasPermitidasParaLink/);
+    expect(() => encurtadorDaConfig(http, { ...base, marcasPermitidasParaLink: {} })).toThrow(/marcasPermitidasParaLink/);
+    expect(() => encurtadorDaConfig(http, { ...base, marcasPermitidasParaLink: { nao_e_uuid: 'X' } })).toThrow(/marcasPermitidasParaLink/);
+    expect(() => encurtadorDaConfig(http, { ...base, marcasPermitidasParaLink: { [ORG]: 'Drogasmil' } })).not.toThrow();
   });
 });

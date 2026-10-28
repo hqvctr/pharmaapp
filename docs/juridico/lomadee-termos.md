@@ -44,3 +44,8 @@ equipe de produto, sem revisão de advogado.** O contrato cita telas do endereç
 - Continuar **coletando** (leitura pela API, reversível, sem exibir a ninguém).
 - **Não mostrar preços de fonte da Lomadee a usuários** nem lançar alertas antes das respostas 1 a 4 e da revisão de um advogado.
 - A fonte continua `em_observacao`.
+
+## Atualização 2026-10-28: tipo de canal por marca
+O painel mostra, em "Detalhes" de cada marca, os "Tipos de canais de divulgação permitidos", com o aviso "Divulgar nos canais não permitidos
+pode cancelar suas comissões". O canal do economae é "Comparador de Preços": Drogasmil, PromoFarma e BioVittare aceitam; Drogaria Rosário e Beep Saúde
+não. A regra está no código (`marcasPermitidasParaLink`, DECISIONS 72). Lista e comissões no relatório em `docs/juridico/fontes/lomadee-marcas-2026-10-28.md`.
