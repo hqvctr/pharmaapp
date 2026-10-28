@@ -46,17 +46,25 @@ if errorlevel 1 goto erro
 
 echo.
 echo == 4. Chave da Lomadee
-docker compose run --rm -T coletor node dist/pipeline/credencial.js --tenant padrao --fonte lomadee --verificar >nul 2>&1
+docker compose run --rm -T coletor node dist/pipeline/credencial.js --tenant padrao --fonte lomadee --testar >nul 2>&1
 if not errorlevel 1 (
-  echo A chave da Lomadee ja esta guardada.
-) else (
-  echo Cole a chave da Lomadee e aperte Enter. Nada aparece na tela enquanto voce cola; isso e normal.
-  docker compose run --rm coletor node dist/pipeline/credencial.js --tenant padrao --fonte lomadee --pedir
-  if errorlevel 1 goto erro
-  echo Chave guardada. Reiniciando o coletor para ele comecar agora...
-  docker compose restart coletor
+  echo A chave da Lomadee esta guardada e a Lomadee aceitou.
+  goto pronto
 )
+echo A chave da Lomadee ainda nao foi guardada, ou a Lomadee nao aceitou a que esta guardada.
+echo Cole a chave da Lomadee e aperte Enter. Nada aparece na tela enquanto voce cola; isso e normal.
+docker compose run --rm coletor node dist/pipeline/credencial.js --tenant padrao --fonte lomadee --pedir
+if errorlevel 1 goto erro
+docker compose run --rm -T coletor node dist/pipeline/credencial.js --tenant padrao --fonte lomadee --testar
+if errorlevel 1 (
+  echo.
+  echo A Lomadee RECUSOU essa chave. Confira se copiou a chave certa e inteira, sem espacos, e de dois cliques em trocar-chave.bat para tentar de novo.
+  goto fim
+)
+echo A Lomadee aceitou a chave. Reiniciando o coletor para ele comecar agora...
+docker compose restart coletor
 
+:pronto
 echo.
 echo == Pronto
 echo A coleta esta rodando e vai repetir a cada 2 horas, sozinha.

@@ -174,6 +174,7 @@ export const fabricaLomadee: FabricaFonte = {
   tipo: 'A',
   credenciais: ['apiKey'],
   cabecalhos: (credenciais) => ({ 'x-api-key': credenciais.apiKey ?? '' }),
+  urlTeste: (config) => new URL('affiliate/brands?page=1', String(config.baseUrl)),
   criar({ http, config, lojas }) {
     if (typeof config.baseUrl !== 'string') throw new Error('Config inválida da Lomadee: baseUrl');
     return new LomadeeAdapter(http, {

@@ -3,11 +3,13 @@
 //       lê FONTE_<FONTE>_<CAMPO> do ambiente (ex.: FONTE_LOMADEE_APPTOKEN, FONTE_LOMADEE_SOURCEID)
 //   echo '{"appToken":"...","sourceId":"..."}' | node dist/pipeline/credencial.js --tenant padrao --fonte lomadee --stdin
 //   ... --pedir        pergunta cada campo no terminal, sem mostrar o que é digitado ou colado
+//   ... --testar       usa a chave gravada num pedido de teste à fonte e diz se ela foi aceita (sai com 1 se não)
 //   ... --verificar    confere que dá para decifrar e mostra só os nomes dos campos
 // Precisa de CREDENTIALS_KEY (32 bytes em base64) e DATABASE_URL. Nunca passe o valor como argumento.
 import { parseArgs } from 'node:util';
 import pg from 'pg';
 import { gravarCredenciaisFonte, lerCredenciaisFonte } from '../fontes/credenciais.js';
+import { HttpReal, PADRAO_HTTP } from '../fontes/http.js';
 import { fabricaDo } from '../fontes/registro.js';
 import { carregarChaveCredenciais } from '../shared/cifra.js';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
@@ -64,13 +66,14 @@ async function main(): Promise<void> {
       stdin: { type: 'boolean' },
       pedir: { type: 'boolean' },
       verificar: { type: 'boolean' },
+      testar: { type: 'boolean' },
     },
   });
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error('Missing required environment variable: DATABASE_URL');
-  if (!values.tenant || !values.fonte) throw new Error('Uso: --tenant <slug> --fonte <nome> (--pedir | --de-ambiente | --stdin | --verificar)');
-  const modos = [values['de-ambiente'], values.stdin, values.pedir, values.verificar].filter(Boolean).length;
-  if (modos !== 1) throw new Error('Escolha exatamente um: --pedir, --de-ambiente, --stdin ou --verificar');
+  if (!values.tenant || !values.fonte) throw new Error('Uso: --tenant <slug> --fonte <nome> (--pedir | --de-ambiente | --stdin | --verificar | --testar)');
+  const modos = [values['de-ambiente'], values.stdin, values.pedir, values.verificar, values.testar].filter(Boolean).length;
+  if (modos !== 1) throw new Error('Escolha exatamente um: --pedir, --de-ambiente, --stdin, --verificar ou --testar');
 
   const config = await carregarConfigTenant(values.tenant);
   const bloco = config.fontes[values.fonte];
@@ -86,6 +89,21 @@ async function main(): Promise<void> {
       const c = await lerCredenciaisFonte(pool, [chave], tenantId, fonte.id);
       if (c === null) throw new Error(`Fonte ${values.fonte} sem credencial gravada`);
       console.log(JSON.stringify({ fonte: values.fonte, campos: Object.keys(c).sort(), vazios: Object.entries(c).filter(([, v]) => v === '').map(([k]) => k) }));
+      return;
+    }
+    if (values.testar) {
+      const c = await lerCredenciaisFonte(pool, [chave], tenantId, fonte.id);
+      if (c === null) throw new Error(`Fonte ${values.fonte} sem credencial gravada`);
+      if (fabrica.urlTeste === undefined) throw new Error(`O adaptador ${fabrica.adaptador} não tem teste de chave`);
+      try {
+        await new HttpReal({ ...PADRAO_HTTP, cabecalhos: fabrica.cabecalhos?.(c) ?? {} }).get(fabrica.urlTeste(bloco));
+        console.log(JSON.stringify({ fonte: values.fonte, chaveAceita: true }));
+      } catch (err) {
+        const msg = (err as Error).message;
+        console.log(JSON.stringify({ fonte: values.fonte, chaveAceita: false, motivo: msg }));
+        if (/HTTP 40[13]/.test(msg)) console.error('A fonte recusou a chave (confira se copiou a chave certa, inteira, sem espaços).');
+        process.exitCode = 1;
+      }
       return;
     }
     let campos: Record<string, string>;

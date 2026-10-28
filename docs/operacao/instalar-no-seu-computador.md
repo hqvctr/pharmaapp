@@ -33,7 +33,7 @@ Se o computador dormir, a coleta para.
 
 1. Dê dois cliques em **`instalar.bat`**. Se o Windows avisar "O Windows protegeu o computador", clique em "Mais informações" → "Executar assim mesmo" (o arquivo é só uma lista de comandos; você pode abri-lo no Bloco de Notas para ver).
 2. Uma janela preta vai mostrar os passos. **A primeira vez demora vários minutos** (baixa e monta tudo). Não feche.
-3. Quando aparecer "Cole a chave da Lomadee e aperte Enter", cole a chave (botão direito do mouse cola) e aperte Enter. **Nada aparece na tela enquanto você cola. Isso é normal e é para a sua segurança.**
+3. Quando aparecer "Cole a chave da Lomadee e aperte Enter", cole a chave (botão direito do mouse cola) e aperte Enter. **Nada aparece na tela enquanto você cola. Isso é normal e é para a sua segurança.** O instalador testa a chave na hora e avisa se a Lomadee a recusou.
 4. No fim aparece "Pronto". Aperte qualquer tecla para fechar.
 
 O instalador cria um arquivo `.env` na pasta do projeto, com senhas geradas sozinhas. **Guarde uma cópia desse arquivo** num pen drive ou no seu e-mail: sem ele você teria de digitar a chave da Lomadee de novo.
@@ -59,7 +59,7 @@ Na primeira vez, espere uns 10 minutos para a primeira coleta terminar. O primei
 |---|---|
 | "O Docker não está funcionando" | Abra o Docker Desktop, espere ficar verde e rode o `instalar.bat` de novo. |
 | Qualquer erro vermelho | Tire uma foto da janela e mande para o Claude. Rodar `instalar.bat` de novo é seguro. |
-| Quer trocar a chave da Lomadee | Abra um terminal na pasta do projeto e rode: `docker compose run --rm coletor node dist/pipeline/credencial.js --tenant padrao --fonte lomadee --pedir` e depois `docker compose restart coletor`. |
+| "A Lomadee RECUSOU essa chave" ou o `status.bat` mostra "HTTP 401" | A chave guardada está errada. Dê dois cliques em **`trocar-chave.bat`** (mesma pasta), cole a chave certa e aperte Enter. Ele testa na hora e diz se a Lomadee aceitou. |
 | Quer parar a coleta | `docker compose stop` na pasta do projeto. Para voltar: `docker compose start`. |
 
 ## Mais tarde: Google Cloud

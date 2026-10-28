@@ -23,6 +23,8 @@ export interface FabricaFonte {
   credenciais: readonly string[];
   /** Cabeçalhos de autenticação montados a partir das credenciais (ex.: `x-api-key`). Nunca vão para log. */
   cabecalhos?(credenciais: Readonly<Record<string, string>>): Record<string, string>;
+  /** Pedido barato que só funciona com credencial válida, para testar a chave logo depois de gravada. */
+  urlTeste?(config: Readonly<Record<string, unknown>>): URL;
   criar(args: ArgumentosFabrica): SourceAdapter;
   /** Só para adaptadores que sabem reproduzir respostas gravadas (testes e critério de pronto). */
   httpGravado?(dir: string): HttpGetJson;
