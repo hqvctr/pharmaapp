@@ -127,6 +127,15 @@ export function ambienteDeTeste(prefixo: string) {
         )
       ).rows[0].id;
     },
+    async aviso(o: { t?: string; userId: string; produto: string; loja?: string | null; alerta?: string | null; tipo?: string; origem?: string; preco?: number | null; queda?: number | null; validaAte?: Date | null; criadoEm?: Date; lido?: Date | null }): Promise<string> {
+      return (
+        await e.pool.query(
+          `INSERT INTO avisos (tenant_id, user_id, tipo, origem, product_id, store_id, alert_id, preco_centavos, queda, valida_ate, criado_em, lido_em)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id`,
+          [o.t ?? e.tenantId, o.userId, o.tipo ?? 'queda_percentual', o.origem ?? 'seguido', o.produto, o.loja ?? null, o.alerta ?? null, o.preco === undefined ? 5990 : o.preco, o.queda === undefined ? 0.25 : o.queda, o.validaAte ?? null, o.criadoEm ?? e.agora, o.lido ?? null],
+        )
+      ).rows[0].id;
+    },
     async historico(produto: string, loja: string, observadoEm: string, precoPorUnidade: number, precoEmbalagem = 5990) {
       await e.pool.query(`INSERT INTO price_history (tenant_id, product_id, store_id, preco_centavos, preco_por_unidade_centavos, observado_em) VALUES ($1,$2,$3,$4,$5,$6)`, [e.tenantId, produto, loja, precoEmbalagem, precoPorUnidade, observadoEm]);
     },

@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Fase 3, parte 2h: central de avisos (2026-10-28, DECISIONS 78)
+
+`GET /v1/avisos` e `POST /v1/avisos/leitura` no ar. Nada cria aviso ainda (despachante: fase 4); os testes inserem as linhas.
+433 testes (93 contra Postgres de verdade); 16 mutações (categoria, silêncio de loja e de marca, silêncio só de push, revisão do alerta, outra pessoa, total, ordem, cursor, filtro de não lidos, `lido_em` mantido, ids de outra pessoa, `ate` inclusivo, os dois campos, limite de ids) quebram o teste certo.
+**Falta nas rotas:** dispositivo (push), exportação, assinatura; admin; login Google.
+
 ## Fase 3, parte 2g: produtos (2026-10-28, DECISIONS 77)
 
 `GET /v1/produtos`, `/v1/produtos/{id}` e `/v1/produtos/{id}/historico` no ar (pesquisa por texto e GTIN, página com ofertas e link rastreado, histórico por loja).
