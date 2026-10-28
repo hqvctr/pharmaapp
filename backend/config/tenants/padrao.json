@@ -234,6 +234,7 @@
     "versaoMinima": { "android": null, "ios": null },
     "metodosLogin": ["email", "google"],
     "google": { "clientIds": [] },
+    "operador": { "refreshDias": 7 },
     "categorias": [
       { "slug": "higiene_bebe", "rotulo": "Higiene do bebê" },
       { "slug": "cuidados_pessoais", "rotulo": "Cuidados pessoais" },

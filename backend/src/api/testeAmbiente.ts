@@ -4,7 +4,7 @@ import pg from 'pg';
 import { afterAll, beforeAll, beforeEach } from 'vitest';
 import { CodigosMemoria } from '../auth/codigos.js';
 import type { VerificadorGoogle } from '../auth/google.js';
-import { criarSessao } from '../auth/sessoes.js';
+import { criarSessao, criarSessaoOperador } from '../auth/sessoes.js';
 import { iguais } from '../auth/tokens.js';
 import { migrate } from '../db/migrate.js';
 import { buildApp } from './app.js';
@@ -30,6 +30,8 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
     seq: 0,
     linkFalhaPara: new Set<string>(),
     chamadasLink: [] as string[],
+    /** E-mails de código enviados (app e operador), na ordem. */
+    enviados: [] as Array<{ para: string; codigo: string; nomeApp: string }>,
   };
   let admin: pg.Client;
   const links: ProvedorLinkOferta = {
@@ -62,13 +64,14 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
       }),
       limitador: new LimitadorMemoria(relogio),
       links,
-      auth: { db: e.pool, codigos: new CodigosMemoria(iguais, relogio), enviador: { enviarCodigo: async () => {} }, ...(opcoes.google ? { google: opcoes.google } : {}), chaveHmac: Buffer.alloc(32, 9), agora: () => e.agora },
+      auth: { db: e.pool, codigos: new CodigosMemoria(iguais, relogio), enviador: { enviarCodigo: async (para, codigo, nomeApp) => { e.enviados.push({ para, codigo, nomeApp }); } }, ...(opcoes.google ? { google: opcoes.google } : {}), chaveHmac: Buffer.alloc(32, 9), agora: () => e.agora },
     });
   });
   beforeEach(() => {
     e.agora = INICIO;
     e.linkFalhaPara.clear();
     e.chamadasLink.length = 0;
+    e.enviados.length = 0;
   });
   afterAll(async () => {
     await e.pool?.end();
@@ -83,6 +86,15 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
     /** Sessão nova para a conta, no instante atual do relógio (o access dura 1 h). */
     async reabrir(userId: string) {
       return { authorization: `Bearer ${(await criarSessao(e.pool, e.tenantId, userId, e.agora)).accessToken}` };
+    },
+    /** Operador do tenant (ou de `t`) com sessão no instante atual do relógio. */
+    async operador(o: { t?: string; nome?: string; email?: string; ativo?: boolean } = {}) {
+      e.seq += 1;
+      const tenant = o.t ?? e.tenantId;
+      const email = o.email ?? `op${e.seq}@exemplo.com`;
+      const id = (await e.pool.query(`INSERT INTO operadores (tenant_id, email, nome, ativo) VALUES ($1,$2,$3,$4) RETURNING id`, [tenant, email, o.nome ?? `Operador ${e.seq}`, o.ativo ?? true])).rows[0].id as string;
+      const par = await criarSessaoOperador(e.pool, tenant, id, e.agora, 7);
+      return { operadorId: id, email, nome: o.nome ?? `Operador ${e.seq}`, auth: { authorization: `Bearer ${par.accessToken}` }, refreshToken: par.refreshToken };
     },
     async pessoa(o: { ceps?: string[]; categorias?: string[]; termos?: boolean } = {}) {
       e.seq += 1;

@@ -17,6 +17,11 @@ export type CodigoErro =
   | 'idempotencia_conflito'
   | 'comprovante_de_outra_conta'
   | 'comprovante_invalido'
+  | 'ja_revisado'
+  | 'oferta_encerrada'
+  | 'estado_conflitante'
+  | 'bloqueado_pela_triagem'
+  | 'liberacao_nao_permitida'
   | 'validacao'
   | 'codigo_invalido'
   | 'codigo_expirado'
@@ -53,6 +58,11 @@ const MENSAGENS: Record<CodigoErro, string> = {
   idempotencia_conflito: 'Este pedido já foi enviado com outro conteúdo.',
   comprovante_de_outra_conta: 'Este comprovante pertence a outra conta.',
   comprovante_invalido: 'Comprovante inválido.',
+  ja_revisado: 'Já revisado com outro resultado.',
+  oferta_encerrada: 'A oferta deste alerta já acabou.',
+  estado_conflitante: 'Só alerta aguardando aprovação pode ser aprovado.',
+  bloqueado_pela_triagem: 'Produto barrado pela triagem (medicamento ou NBCAL); ver fila de triagem.',
+  liberacao_nao_permitida: 'Este bloqueio não pode ser liberado; só o ajuste das listas muda o resultado.',
   validacao: 'Confira os campos destacados.',
   codigo_invalido: 'Código incorreto.',
   codigo_expirado: 'Código expirado. Peça outro.',
@@ -79,6 +89,11 @@ const STATUS: Record<CodigoErro, number> = {
   idempotencia_conflito: 409,
   comprovante_de_outra_conta: 409,
   comprovante_invalido: 422,
+  ja_revisado: 409,
+  oferta_encerrada: 409,
+  estado_conflitante: 409,
+  bloqueado_pela_triagem: 422,
+  liberacao_nao_permitida: 422,
   validacao: 422,
   codigo_invalido: 422,
   codigo_expirado: 422,

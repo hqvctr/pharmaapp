@@ -16,6 +16,8 @@ export interface ConfigApp {
   metodosLogin: Array<'email' | 'google' | 'apple'>;
   /** Login com Google: IDs de cliente OAuth aceitos como audiência (públicos). Vazio = o método não é oferecido. */
   google: { clientIds: string[] };
+  /** Área do operador (admin.yaml): validade do refresh em dias (decisão D3: 7). O access dura 1 h como no app. */
+  operador: { refreshDias: number };
   categorias: Array<{ slug: string; rotulo: string }>;
   regiao: { cepInicio: string; cepFim: string };
   limites: {
@@ -141,6 +143,7 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     },
     metodosLogin: metodos,
     google: { clientIds: clientIds as string[] },
+    operador: { refreshDias: inteiro(bruto.operador?.refreshDias ?? 7, 'operador.refreshDias', 1, 30) },
     categorias,
     regiao: { cepInicio: r.cepInicio, cepFim: r.cepFim },
     limites,
