@@ -1,0 +1,5 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- seta para baixo (preço caindo) dentro de um círculo -->
+    <path android:fillColor="#FFFFFF" android:pathData="M54,30a24,24 0,1 1,0 48a24,24 0,1 1,0 -48z" />
+    <path android:fillColor="#1B7F5C" android:pathData="M50,42h8v14h8l-12,14l-12,-14h8z" />
+</vector>

@@ -15,6 +15,9 @@ Relatório do Cowork: `docs/juridico/fontes/google-login-2026-10-28.md`.
 - Cliente Android de **debug** `economae-android-debug` (`984598232826-1i256inbmffo8gdkra3m49vmf698u3hv.apps.googleusercontent.com`, pacote
   `br.com.economae.debug`, SHA-1 `10:88:D4:80:33:01:24:8B:8B:33:F4:8A:2C:4E:B5:AD:35:CF:3B:85`). **Não** entra em `clientIds`: o servidor só aceita
   token cujo `aud` seja o cliente Web. Ele só serve para o app de debug abrir a tela de login do Google.
+- **App de prévia (APK de teste):** assinado com a chave `app/app/previa.keystore`, SHA-1 `7C:1C:41:D9:F3:A9:83:20:46:B9:66:2A:E9:62:59:FF:6A:3D:36:A6`, pacote
+  `br.com.economae.debug`. O cliente Android de debug que já existe é de **outra** chave (a debug do seu computador), então o login com Google no APK de
+  prévia só funciona depois de cadastrar um segundo cliente Android com este SHA-1 (prompt do Cowork entregue em 28/10/2026). O login por e-mail não depende disso.
 - Para a Google Play (fase 6): criar o cliente Android **de release** (pacote final + SHA-1 da chave de release/Play App Signing). O servidor não muda.
 - Tela de consentimento: "economae", Externo, **Testando**, escopos `openid`, `email` e `profile`, 1 usuário de teste (a conta do responsável).
 - Sem cliente OAuth na lista `clientIds`, o servidor responde 403 `metodo_login_indisponivel` e `/v1/configuracao` não oferece o Google.

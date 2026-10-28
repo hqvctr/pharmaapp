@@ -1,5 +1,18 @@
 # Testar o app no celular
 
+## Instalar o app de prévia (APK)
+
+1. Baixe o arquivo `economae-previa.apk` (enviado na conversa) no celular, ou passe do computador por cabo/Drive.
+2. Toque no arquivo. O Android pede para permitir "instalar apps desta fonte" para o app que você usou para abrir (Chrome, Arquivos): permita só para esse.
+3. Se o Play Protect avisar "app não verificado", é esperado: é um app de teste assinado com chave de teste. Toque em "Instalar mesmo assim".
+4. Abra o **economae**, digite o endereço do servidor (abaixo), toque em "Testar conexão" e entre pelo código do e-mail.
+5. Para atualizar, instale o APK novo por cima (a assinatura é a mesma); não precisa desinstalar.
+
+**Entrar com Google** só funciona com a conta de teste (`descubranovasformas@gmail.com`) enquanto a tela de consentimento estiver em "Testando",
+e só depois de o cliente Android de prévia estar cadastrado no Google Cloud (ver `docs/operacao/login-google.md`). O login por e-mail funciona sempre.
+
+## Como o celular alcança a API
+
 O app de teste (pasta `app/`) fala com a API do economae. A API roda no seu computador (Docker). Há dois jeitos de o celular alcançá-la.
 
 ## 1. Na mesma rede Wi-Fi (mais simples)

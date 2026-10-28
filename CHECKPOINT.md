@@ -1,5 +1,9 @@
 # Checkpoint
 
+## App Android de prévia (2026-10-28, DECISIONS 86)
+
+`app/` (Kotlin + Compose) compila (`scripts/gerar-apk.sh`), passa em 8 testes unitários e no lint, e o fluxo inteiro dele está coberto por `appPrevia.integracao.test.ts` contra a API real. **Nunca rodou num aparelho** (este ambiente não tem emulador): o primeiro teste de verdade é o seu. APK assinado com a chave de prévia; para o login com Google funcionar falta o cliente Android com o SHA-1 dela (prompt do Cowork). Para o celular alcançar a API: `docs/operacao/testar-no-celular.md` (Wi-Fi ou túnel `tunel.bat`, ambos escritos sem poder rodar o Docker do Windows).
+
 ## Login com Google ligado (2026-10-28)
 
 O Cowork devolveu o relatório (`docs/juridico/fontes/google-login-2026-10-28.md`): o ID de cliente Web `economae-servidor` já existia e está em `app.google.clientIds` do tenant `padrao`. `/v1/configuracao` passa a oferecer `google`. Nada foi criado nem alterado no Google Cloud. Pendente do lado do responsável: publicar a tela de consentimento quando for hora (hoje só a conta de teste entra) e, na fase 6, o cliente Android de release.
