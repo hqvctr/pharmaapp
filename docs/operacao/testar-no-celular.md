@@ -15,6 +15,20 @@
 4. **No app**: cole o endereço, toque em "Testar conexão" (deve aparecer "Conectado: economae"), digite o e-mail, "Enviar código".
 5. Dois cliques em `ver-codigo.bat`, leia o código da última linha e digite no app.
 
+## "Nenhuma promoção aparece": é esperado por enquanto
+
+A aba **Promoções** mostra *alertas*, e o motor só cria alerta depois de **14 dias de histórico de preços** (para saber o que é queda de verdade). A
+coleta começou em 27/10, então os primeiros alertas reais só saem por volta de **11/11/2026**. Dois jeitos de testar nesse meio tempo:
+
+- **Aba Buscar** funciona já: ela mostra produtos e preços atuais coletados (procure "fralda", "shampoo", uma marca). A página do produto mostra as
+  lojas, o link e o início do histórico.
+- **Alertas de demonstração:** dois cliques em `scripts\windows\demo-feed.bat` (na pasta instalada) cria até 8 alertas em ofertas reais já coletadas
+  nas últimas horas, para você ver o feed, o detalhe, o botão da loja, útil/não útil, denunciar e silenciar. **O "preço de antes" e a queda são inventados**
+  e cada alerta aparece marcado **DEMONSTRAÇÃO** no app. Depois de aprovar o feed, `demo-feed-remover.bat` apaga todos (os alertas de verdade não são tocados).
+  Se o script disser que nenhuma oferta serve, o coletor está parado ou a última coleta tem mais de 6 horas: rode `status.bat`.
+
+Se mesmo assim a aba Buscar vier vazia, rode `status.bat` e me mande o que ele mostra.
+
 ## Instalar o app de prévia (APK)
 
 1. Baixe o arquivo `economae-previa.apk` (enviado na conversa) no celular, ou passe do computador por cabo/Drive.
