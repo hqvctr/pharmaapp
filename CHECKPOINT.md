@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Fase 3, parte 2j: exportação dos dados (2026-10-28, DECISIONS 80)
+
+`GET /v1/me/exportacao` no ar (tudo da conta, sem token de push nem hash de comprovante, 1 por hora, vale com termos pendentes). Um teste confere que toda tabela da pessoa está na exportação ou na lista de fora.
+444 testes (104 contra Postgres de verdade); 13 mutações quebram o teste certo.
+**Rotas internas do contrato concluídas, menos as que dependem de fora:** assinatura (comprovante e webhooks das lojas de apps), login Google, admin. **Falta no motor:** `prova`; despachante de push e avisos dos seguidos (fase 4).
+
 ## Fase 3, parte 2i: dispositivo de push (2026-10-28, DECISIONS 79)
 
 `PUT`/`DELETE /v1/dispositivo` no ar (token preso à sessão, sem consentimento não grava, o mesmo token passa de uma conta para a outra, 30/h por sessão).

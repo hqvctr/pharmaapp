@@ -4,6 +4,7 @@ import { comTransacao } from '../../db/transacao.js';
 import { corpoObjeto, falhaDeValidacao } from '../corpo.js';
 import { UUID } from '../cursor.js';
 import { ErroApi } from '../erros.js';
+import type { Db } from '../../pipeline/repositorio.js';
 import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
@@ -17,23 +18,28 @@ function lerAlvo(params: unknown): { tipo: 'loja' | 'marca'; alvo: string } {
   return { tipo: p.tipo, alvo: p.alvo };
 }
 
-export function rotasSilenciamentos(app: FastifyInstance, d: DepsAuth): void {
-  const SELECT = `SELECT sl.tipo, sl.alcance, sl.criado_em, sl.loja_id, sl.marca_chave,
-                         s.nome AS loja_nome,
-                         (SELECT p.marca FROM products p WHERE p.tenant_id = sl.tenant_id AND p.marca_chave = sl.marca_chave LIMIT 1) AS marca_nome
-                    FROM silenciamentos sl LEFT JOIN stores s ON s.tenant_id = sl.tenant_id AND s.id = sl.loja_id`;
-  const paraJson = (r: any) => ({
-    tipo: r.tipo,
-    alvo: r.tipo === 'loja' ? r.loja_id : r.marca_chave,
-    nome: r.tipo === 'loja' ? r.loja_nome : (r.marca_nome ?? r.marca_chave),
-    alcance: r.alcance,
-    criado_em: r.criado_em.toISOString(),
-  });
+const SELECT_SILENCIAMENTO = `SELECT sl.tipo, sl.alcance, sl.criado_em, sl.loja_id, sl.marca_chave,
+                       s.nome AS loja_nome,
+                       (SELECT p.marca FROM products p WHERE p.tenant_id = sl.tenant_id AND p.marca_chave = sl.marca_chave LIMIT 1) AS marca_nome
+                  FROM silenciamentos sl LEFT JOIN stores s ON s.tenant_id = sl.tenant_id AND s.id = sl.loja_id`;
+const paraJson = (r: any) => ({
+  tipo: r.tipo,
+  alvo: r.tipo === 'loja' ? r.loja_id : r.marca_chave,
+  nome: r.tipo === 'loja' ? r.loja_nome : (r.marca_nome ?? r.marca_chave),
+  alcance: r.alcance,
+  criado_em: r.criado_em.toISOString(),
+});
 
+/** Todos os silenciamentos da pessoa, do mais novo para o mais antigo (a lista da rota e a exportação). */
+export async function listarSilenciamentos(db: Db, tenantId: string, userId: string) {
+  const r = await db.query(`${SELECT_SILENCIAMENTO} WHERE sl.tenant_id = $1 AND sl.user_id = $2 ORDER BY sl.criado_em DESC, sl.id DESC`, [tenantId, userId]);
+  return r.rows.map(paraJson);
+}
+
+export function rotasSilenciamentos(app: FastifyInstance, d: DepsAuth): void {
   app.get('/v1/silenciamentos', async (req) => {
     const ctx = await exigirSessao(req, d.db, d.tenants, d.agora());
-    const r = await d.db.query(`${SELECT} WHERE sl.tenant_id = $1 AND sl.user_id = $2 ORDER BY sl.criado_em DESC, sl.id DESC`, [ctx.tenantId, ctx.userId]);
-    return { itens: r.rows.map(paraJson) };
+    return { itens: await listarSilenciamentos(d.db, ctx.tenantId, ctx.userId) };
   });
 
   app.put('/v1/silenciamentos/:tipo/:alvo', async (req, reply) => {
@@ -76,7 +82,7 @@ export function rotasSilenciamentos(app: FastifyInstance, d: DepsAuth): void {
       );
       return true;
     });
-    const r = await d.db.query(`${SELECT} WHERE sl.tenant_id = $1 AND sl.user_id = $2 AND sl.tipo = $3 AND (sl.loja_id = $4 OR sl.marca_chave = $5)`, [ctx.tenantId, ctx.userId, tipo, lojaId, marcaChave]);
+    const r = await d.db.query(`${SELECT_SILENCIAMENTO} WHERE sl.tenant_id = $1 AND sl.user_id = $2 AND sl.tipo = $3 AND (sl.loja_id = $4 OR sl.marca_chave = $5)`, [ctx.tenantId, ctx.userId, tipo, lojaId, marcaChave]);
     return reply.code(criado ? 201 : 200).send(paraJson(r.rows[0]));
   });
 

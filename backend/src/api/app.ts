@@ -7,6 +7,7 @@ import { rotasAlertas } from './rotas/alertas.js';
 import { rotasConta } from './rotas/conta.js';
 import type { ProvedorLinkOferta } from './linkOferta.js';
 import { rotasPreferencias } from './rotas/preferencias.js';
+import { rotasExportacao } from './rotas/exportacao.js';
 import { rotasDispositivo } from './rotas/dispositivo.js';
 import { rotasAvisos } from './rotas/avisos.js';
 import { rotasProdutos } from './rotas/produtos.js';
@@ -87,6 +88,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
       rotasSeguidos(app, d);
       rotasAvisos(app, d);
       rotasDispositivo(app, d);
+      rotasExportacao(app, d);
       if (deps.links !== undefined) {
         rotasAlertas(app, { ...d, links: deps.links });
         rotasProdutos(app, { ...d, links: deps.links });

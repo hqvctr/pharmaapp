@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { montarUsuario } from '../../auth/usuarios.js';
 import { corpoObjeto, falhaDeValidacao } from '../corpo.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
+import type { Db } from '../../pipeline/repositorio.js';
 import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
@@ -10,7 +11,7 @@ const CEP = /^[0-9]{8}$/;
 const HORA = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
 const LIMITE_DIARIO_MAXIMO = 1000; // a coluna é smallint; mais que isso nunca é um pedido razoável
 
-interface PreferenciasApi {
+export interface PreferenciasApi {
   categorias: string[];
   ceps: string[];
   silencio: { inicio: string; fim: string } | null;
@@ -27,7 +28,7 @@ export function rotasPreferencias(app: FastifyInstance, d: DepsAuth): void {
     const agora = d.agora();
     const ctx = await exigirSessao(req, d.db, d.tenants, agora);
     const usuario = await montarUsuario(d.db, ctx.tenantId, ctx.userId, ctx.tenant.config.app, agora);
-    return lerPreferencias(d, ctx.tenantId, ctx.userId, usuario.plano.ceps_permitidos);
+    return lerPreferencias(d.db, ctx.tenantId, ctx.userId, usuario.plano.ceps_permitidos);
   });
 
   app.put('/v1/preferencias', async (req) => {
@@ -96,13 +97,13 @@ export function rotasPreferencias(app: FastifyInstance, d: DepsAuth): void {
          limite_diario = EXCLUDED.limite_diario, atualizado_em = EXCLUDED.atualizado_em`,
       [ctx.userId, ctx.tenantId, categorias, ceps, silencio?.inicio ?? null, silencio?.fim ?? null, limite, agora],
     );
-    return lerPreferencias(d, ctx.tenantId, ctx.userId, permitidos);
+    return lerPreferencias(d.db, ctx.tenantId, ctx.userId, permitidos);
   });
 }
 
-async function lerPreferencias(d: DepsAuth, tenantId: string, userId: string, cepsPermitidos: number): Promise<PreferenciasApi> {
+export async function lerPreferencias(db: Db, tenantId: string, userId: string, cepsPermitidos: number): Promise<PreferenciasApi> {
   const r = (
-    await d.db.query(
+    await db.query(
       `SELECT categorias, ceps, to_char(silencio_inicio, 'HH24:MI') AS inicio, to_char(silencio_fim, 'HH24:MI') AS fim, limite_diario
          FROM user_preferences WHERE tenant_id = $1 AND user_id = $2`,
       [tenantId, userId],

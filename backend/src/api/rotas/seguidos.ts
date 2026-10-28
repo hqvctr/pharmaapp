@@ -5,27 +5,37 @@ import { produtoResumo } from '../alertas.js';
 import { corpoObjeto, falhaDeValidacao } from '../corpo.js';
 import { codificarCursor, lerCursor, lerLimite, UUID } from '../cursor.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
+import type { Db } from '../../pipeline/repositorio.js';
 import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
 const BOOLEANOS = ['promocao_excepcional', 'voltou_estoque', 'menor_preco_180d', 'promocao_acabando'] as const;
 
-export function rotasSeguidos(app: FastifyInstance, d: DepsAuth): void {
-  const COLUNAS = `sg.promocao_excepcional, sg.queda_percentual, sg.voltou_estoque, sg.menor_preco_180d, sg.promocao_acabando, sg.criado_em, sg.atualizado_em, sg.id AS seguimento_id,
-                   p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url`;
-  const paraJson = (r: any) => ({
-    produto: produtoResumo(r),
-    avisos: {
-      promocao_excepcional: r.promocao_excepcional,
-      queda_percentual: r.queda_percentual,
-      voltou_estoque: r.voltou_estoque,
-      menor_preco_180d: r.menor_preco_180d,
-      promocao_acabando: r.promocao_acabando,
-    },
-    criado_em: r.criado_em.toISOString(),
-    atualizado_em: r.atualizado_em.toISOString(),
-  });
+const COLUNAS = `sg.promocao_excepcional, sg.queda_percentual, sg.voltou_estoque, sg.menor_preco_180d, sg.promocao_acabando, sg.criado_em, sg.atualizado_em, sg.id AS seguimento_id,
+                 p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url`;
+const paraSeguimento = (r: any) => ({
+  produto: produtoResumo(r),
+  avisos: {
+    promocao_excepcional: r.promocao_excepcional,
+    queda_percentual: r.queda_percentual,
+    voltou_estoque: r.voltou_estoque,
+    menor_preco_180d: r.menor_preco_180d,
+    promocao_acabando: r.promocao_acabando,
+  },
+  criado_em: r.criado_em.toISOString(),
+  atualizado_em: r.atualizado_em.toISOString(),
+});
 
+/** Todos os seguidos da pessoa, do mais novo para o mais antigo, sem paginar (a exportação). */
+export async function todosSeguidos(db: Db, tenantId: string, userId: string) {
+  const r = await db.query(
+    `SELECT ${COLUNAS} FROM seguidos sg JOIN products p ON p.tenant_id = sg.tenant_id AND p.id = sg.product_id WHERE sg.tenant_id = $1 AND sg.user_id = $2 ORDER BY sg.criado_em DESC, sg.id DESC`,
+    [tenantId, userId],
+  );
+  return r.rows.map(paraSeguimento);
+}
+
+export function rotasSeguidos(app: FastifyInstance, d: DepsAuth): void {
   app.get('/v1/seguidos', async (req) => {
     const ctx = await exigirSessao(req, d.db, d.tenants, d.agora());
     const q = req.query as Record<string, unknown>;
@@ -47,7 +57,7 @@ export function rotasSeguidos(app: FastifyInstance, d: DepsAuth): void {
     const pagina = r.rows.slice(0, l.limite);
     const ultimo = pagina.at(-1);
     return {
-      itens: pagina.map(paraJson),
+      itens: pagina.map(paraSeguimento),
       proximo_cursor: r.rows.length > l.limite && ultimo !== undefined ? codificarCursor({ criadoEm: ultimo.criado_em.toISOString(), id: ultimo.seguimento_id }) : null,
     };
   });
@@ -103,7 +113,7 @@ export function rotasSeguidos(app: FastifyInstance, d: DepsAuth): void {
       return true;
     });
     const r = await d.db.query(`SELECT ${COLUNAS} FROM seguidos sg JOIN products p ON p.tenant_id = sg.tenant_id AND p.id = sg.product_id WHERE sg.tenant_id = $1 AND sg.user_id = $2 AND sg.product_id = $3`, [ctx.tenantId, ctx.userId, produtoId]);
-    return reply.code(criado ? 201 : 200).send(paraJson(r.rows[0]));
+    return reply.code(criado ? 201 : 200).send(paraSeguimento(r.rows[0]));
   });
 
   app.delete('/v1/seguidos/:produto_id', async (req, reply) => {
