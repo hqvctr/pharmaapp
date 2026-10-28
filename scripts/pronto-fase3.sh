@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Critério de pronto da Fase 3 (parte 1: banco e contrato). Confere, num banco descartável:
-#  1. as migrations 0001 a 0003 aplicam pelo runner do projeto;
+#  1. as migrations 0001 a 0004 aplicam pelo runner do projeto;
 #  2. o esquema do núcleo: cascata da exclusão de conta, isolamento entre tenants, restrições (scripts/fase3/esquema.sql);
 #  3. a migration 0003 sobre dados que já existiam (alertas da fase 2 ganham a situação de revisão certa);
 #  4. provisão de fontes/lojas, status e coletor em ciclo (instalação no computador do operador);
@@ -31,7 +31,7 @@ fi
 falhou=0
 passo() { echo; echo "--- $1"; }
 
-passo "1. migrations 0001 a 0003 pelo runner"
+passo "1. migrations 0001 a 0004 pelo runner"
 recria "$DB"
 (cd backend && npm run build >/dev/null)
 # O runner da fase 0 exige REDIS_URL, embora não use Redis.

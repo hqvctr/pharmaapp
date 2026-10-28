@@ -286,6 +286,13 @@ verdade e os `.bat` num Windows (o ambiente não tem o motor do Docker nem Windo
 **Próximo passo imediato:** responsável instala o Docker Desktop e roda `instalar.bat`; depois `status.bat` mostra os dias de histórico. Em paralelo,
 a parte 2 da fase 3 (servidor da API) segue como planejado abaixo.
 
+**Link rastreado e decisão de seguir sem a Lomadee (2026-10-28, DECISIONS 67 e 68).** Termos e política lidos (`docs/juridico/lomadee-termos.md`): permitem app
+como canal, exigem link rastreado, proíbem vantagem por clique, têm exclusividade com as marcas e cancelamento sem motivo, e não tratam de guardar preços nem
+da API. O responsável decidiu seguir sem esperar resposta. Pronto: migration 0004 (`offers.link_rastreado`), `fontes/lomadeeLinks.ts` (encurtador, valida o
+domínio devolvido), `links/linkRastreado.ts` (gera e guarda na primeira vez), `HttpReal.post`; 276 testes; fases 2 e 3 passando. **Bloqueio:** a conta da
+Lomadee não tem canal cadastrado, então o encurtador devolve lista vazia; falta o responsável criar um canal do tipo aplicativo. Próximo: parte 2 da fase 3
+(servidor da API) usando `linkRastreadoDaOferta` na saída da oferta.
+
 ## Fase 3, parte 1: banco e critério de pronto (2026-10-27, PRONTA)
 
 **Critério de pronto:** `./scripts/pronto-fase3.sh` (docker compose, como as fases anteriores; sem Docker,

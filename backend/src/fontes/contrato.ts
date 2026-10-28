@@ -38,3 +38,8 @@ export interface SourceAdapter {
 export interface HttpGetJson {
   get(url: URL): Promise<unknown>;
 }
+
+/** Escrita HTTP injetada (só o encurtador de link usa). */
+export interface HttpPostJson {
+  post(url: URL, corpo: unknown): Promise<unknown>;
+}

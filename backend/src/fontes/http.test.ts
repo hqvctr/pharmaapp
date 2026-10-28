@@ -10,6 +10,12 @@ const pedidos: Array<{ url: string; ua: string | undefined; accept: string | und
 beforeAll(async () => {
   servidor = createServer((req, res) => {
     pedidos.push({ url: req.url ?? '', ua: req.headers['user-agent'], accept: req.headers.accept, extra: req.headers['x-chave'] as string | undefined });
+    if (req.method === 'POST' && req.url?.startsWith('/echo')) {
+      const partes: Buffer[] = [];
+      req.on('data', (c: Buffer) => partes.push(c));
+      req.on('end', () => { res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ tipo: req.headers['content-type'], corpo: Buffer.concat(partes).toString(), chave: req.headers['x-chave'] ?? null })); });
+      return;
+    }
     if (req.url?.startsWith('/ok')) { res.setHeader('content-type', 'application/json'); res.end('{"a":1}'); }
     else if (req.url?.startsWith('/erro')) { res.statusCode = 503; res.end('indisponível'); }
     else if (req.url?.startsWith('/html')) { res.end('<html>'); }
@@ -24,6 +30,13 @@ afterAll(() => new Promise<void>((ok) => servidor.close(() => ok())));
 
 const http = (extra = {}) => new HttpReal({ userAgent: 'teste/1', timeoutMs: 200, intervaloMs: 0, ...extra });
 const url = (caminho: string) => new URL(`http://127.0.0.1:${porta}${caminho}`);
+
+describe('HttpReal.post', () => {
+  it('envia JSON com Content-Type e os cabeçalhos fixos', async () => {
+    const r = await http({ cabecalhos: { 'X-Chave': 'valor' } }).post(url('/echo'), { a: 1 });
+    expect(r).toEqual({ tipo: 'application/json', corpo: '{"a":1}', chave: 'valor' });
+  });
+});
 
 describe('HttpReal', () => {
   it('lê JSON e envia User-Agent, Accept e cabeçalhos fixos', async () => {

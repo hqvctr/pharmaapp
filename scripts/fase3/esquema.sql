@@ -203,5 +203,13 @@ SELECT pg_temp.erra('mesmo apple_sub no mesmo tenant', '23505',
 UPDATE users SET apple_sub = 'apple-1' WHERE id = pg_temp.id('ub');
 SELECT pg_temp.confere('o mesmo apple_sub pode existir em outro tenant', (SELECT count(*) FROM users WHERE apple_sub = 'apple-1'), 2);
 
+-- Migration 0004: link rastreado.
+SELECT pg_temp.erra('link rastreado precisa ser https', '23514',
+  format('UPDATE offers SET link_rastreado = ''http://x.test/a'', link_rastreado_de = ''l'', link_rastreado_em = now() WHERE id = %L', pg_temp.id('of')));
+SELECT pg_temp.erra('link rastreado vem inteiro (link, origem e data juntos)', '23514',
+  format('UPDATE offers SET link_rastreado = ''https://x.test/a'' WHERE id = %L', pg_temp.id('of')));
+UPDATE offers SET link_rastreado = 'https://lmdee.link/a', link_rastreado_de = link, link_rastreado_em = now() WHERE id = pg_temp.id('of');
+SELECT pg_temp.confere('link rastreado inteiro é aceito', (SELECT count(*) FROM offers WHERE link_rastreado IS NOT NULL), 1);
+
 ROLLBACK;
 \echo 'esquema da fase 3: todas as verificações passaram'
