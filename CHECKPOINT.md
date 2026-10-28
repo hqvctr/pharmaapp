@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Redes de afiliados: levantamento público (2026-10-28)
+
+`docs/operacao/redes-afiliados.md`. Achado principal, de fonte oficial: a política brasileira da Amazon (14/04/2026, item 6(y)) proíbe rastreamento e alerta de preços sem aprovação da Amazon, e o app é isso;
+em julho de 2026 a Amazon já cobrou isso de comparadores na Europa. Awin tem API de feed (idiomas listados sem pt_BR, a conferir) e é a candidata mais forte para cobertura ampla; Mercado Livre e Shopee bloquearam
+a leitura automática e vão para o Cowork; as grandes farmácias provavelmente não estão em nenhuma rede de afiliados. Nada foi cadastrado nem codificado.
+
 ## Brevo testada com envio real (2026-10-28)
 
 Chave no segredo de rede, remetente `economae` verificado. Dois e-mails reais para a caixa de testes (um direto pelo `EnviadorBrevo`, um pelo servidor completo com Postgres e Redis):
