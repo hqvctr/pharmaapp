@@ -25,7 +25,7 @@ Se o computador dormir, a coleta para.
 ## Passo 3. Baixar o projeto
 
 1. Abra este endereço no navegador (entre no GitHub com a sua conta se pedir):
-   https://github.com/hqvctr/pharmaapp/archive/refs/heads/claude/vibrant-bardeen-jssxce.zip
+   https://github.com/hqvctr/pharmaapp/archive/refs/heads/claude/zen-gates-965k2e.zip
 2. Quando o arquivo baixar, clique com o botão direito → **Extrair tudo**. Escolha uma pasta fácil, por exemplo `C:\economae`.
 3. Dentro da pasta extraída, abra `scripts` → `windows`.
 
