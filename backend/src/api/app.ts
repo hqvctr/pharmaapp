@@ -7,6 +7,8 @@ import { rotasAlertas } from './rotas/alertas.js';
 import { rotasConta } from './rotas/conta.js';
 import type { ProvedorLinkOferta } from './linkOferta.js';
 import { rotasPreferencias } from './rotas/preferencias.js';
+import { rotasSeguidos } from './rotas/seguidos.js';
+import { rotasSilenciamentos } from './rotas/silenciamentos.js';
 import type { RegistroTenants } from './tenants.js';
 
 // Cada dependência externa entra por interface para que o teste use uma implementação falsa.
@@ -78,6 +80,8 @@ export function buildApp(deps: AppDeps): FastifyInstance {
       rotasAuth(app, d);
       rotasConta(app, d);
       rotasPreferencias(app, d);
+      rotasSilenciamentos(app, d);
+      rotasSeguidos(app, d);
       if (deps.links !== undefined) rotasAlertas(app, { ...d, links: deps.links });
     }
   }

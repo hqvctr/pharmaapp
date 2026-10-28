@@ -118,6 +118,19 @@ export async function consultarAlertas(db: Db, f: FiltroAlertas): Promise<any[]>
 
 const num = (v: unknown): number => Number(v);
 
+/** `ProdutoResumo` do contrato a partir de uma linha com as colunas de `products`. */
+export function produtoResumo(r: any) {
+  return {
+    id: r.product_id,
+    nome: r.nome,
+    marca: r.marca_chave !== null && r.marca !== null ? { chave: r.marca_chave, nome: r.marca } : null,
+    categoria: r.categoria,
+    gtin: r.gtin,
+    embalagem: { quantidade: num(r.quantidade), unidade: r.unidade },
+    imagem_url: r.imagem_url,
+  };
+}
+
 export function paraAlerta(r: any) {
   const quantidade = num(r.quantidade);
   const efetivo = num(r.preco_efetivo_por_unidade);
@@ -128,15 +141,7 @@ export function paraAlerta(r: any) {
     criado_em: r.criado_em.toISOString(),
     destaque: r.decisao === 'notificar',
     situacao: r.situacao,
-    produto: {
-      id: r.product_id,
-      nome: r.nome,
-      marca: r.marca_chave !== null && r.marca !== null ? { chave: r.marca_chave, nome: r.marca } : null,
-      categoria: r.categoria,
-      gtin: r.gtin,
-      embalagem: { quantidade, unidade: r.unidade },
-      imagem_url: r.imagem_url,
-    },
+    produto: produtoResumo(r),
     loja: { id: r.store_id, nome: r.loja_nome, rede: r.rede, tipo: r.loja_tipo },
     preco_centavos: r.preco_centavos,
     preco_referencia_centavos: Math.max(1, Math.round(referencia * quantidade)),

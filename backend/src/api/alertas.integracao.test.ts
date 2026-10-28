@@ -260,6 +260,28 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       expect(ids(await feed(p.auth))).not.toContain(alerta);
     });
 
+    it('silenciar e seguir pela API muda o feed: "tudo" esconde, "push" não, e o produto seguido sai com seguido: true', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta } = await semear({ loja, produto });
+      const put = (url: string, corpo: unknown) => app.inject({ method: 'PUT', url, headers: p.auth, payload: corpo as never });
+      const item = async () => (await feed(p.auth)).json().itens.find((i: { id: string }) => i.id === alerta);
+
+      expect((await item()).seguido).toBe(false);
+      const avisos = { promocao_excepcional: true, queda_percentual: null, voltou_estoque: false, menor_preco_180d: false, promocao_acabando: false };
+      expect((await put(`/v1/seguidos/${produto}`, { avisos })).statusCode).toBe(201);
+      expect((await item()).seguido).toBe(true);
+
+      expect((await put(`/v1/silenciamentos/loja/${loja}`, { alcance: 'push' })).statusCode).toBe(201);
+      expect(await item()).toBeDefined(); // só o push é silenciado
+      await put(`/v1/silenciamentos/loja/${loja}`, { alcance: 'tudo' });
+      expect(await item()).toBeUndefined();
+      await app.inject({ method: 'DELETE', url: `/v1/silenciamentos/loja/${loja}`, headers: p.auth });
+      expect(await item()).toBeDefined();
+
+      expect((await put('/v1/silenciamentos/marca/pampers', { alcance: 'tudo' })).statusCode).toBe(201);
+      expect(await item()).toBeUndefined(); // a marca do produto também
+    });
+
     it('medicamento nunca aparece, mesmo na preferência', async () => {
       const loja = await criarLoja();
       const remedio = await criarProduto({ categoria: 'medicamentos_isentos', nome: 'Dipirona' });

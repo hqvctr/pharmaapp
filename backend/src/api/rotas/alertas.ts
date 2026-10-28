@@ -6,12 +6,12 @@ import { montarUsuario } from '../../auth/usuarios.js';
 import { comTransacao } from '../../db/transacao.js';
 import { consultarAlertas, paraAlerta } from '../alertas.js';
 import { corpoObjeto, falhaDeValidacao } from '../corpo.js';
+import { codificarCursor, lerCursor, UUID } from '../cursor.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
 import type { ProvedorLinkOferta } from '../linkOferta.js';
 import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CATEGORIA = /^[a-z0-9_]+$/;
 const TIPOS = ['aberto', 'clicado', 'compartilhado'];
 const ORIGENS = ['push', 'feed', 'central', 'produto'];
@@ -19,23 +19,6 @@ const VALIDADE_CHAVE_MS = 24 * 3600_000;
 
 export interface DepsAlertas extends DepsAuth {
   links: ProvedorLinkOferta;
-}
-
-function codificarCursor(c: { criadoEm: string; id: string }): string {
-  return Buffer.from(JSON.stringify(c)).toString('base64url');
-}
-
-function lerCursor(bruto: unknown): { criadoEm: string; id: string } | undefined {
-  if (bruto === undefined) return undefined;
-  const invalido = () => falhaDeValidacao([{ campo: 'cursor', mensagem: 'Cursor inválido.' }]);
-  if (typeof bruto !== 'string' || bruto.length > 512) throw invalido();
-  try {
-    const c = JSON.parse(Buffer.from(bruto, 'base64url').toString('utf8'));
-    if (typeof c?.criadoEm !== 'string' || Number.isNaN(Date.parse(c.criadoEm)) || typeof c?.id !== 'string' || !UUID.test(c.id)) throw invalido();
-    return { criadoEm: c.criadoEm, id: c.id };
-  } catch {
-    throw invalido();
-  }
 }
 
 export function rotasAlertas(app: FastifyInstance, d: DepsAlertas): void {

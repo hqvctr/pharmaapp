@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Fase 3, parte 2f: silenciamentos e seguidos (2026-10-28, DECISIONS 76)
+
+`GET`/`PUT`/`DELETE /v1/silenciamentos`, `GET /v1/seguidos`, `PUT`/`DELETE /v1/seguidos/{produto_id}` no ar; migration 0006. O feed passa a refletir o que a pessoa silencia e segue (teste de ponta a ponta pela API).
+412 testes (72 contra Postgres de verdade); nove mutações (loja de outro tenant, ttetos, remoção de qualquer pessoa, seguir produto com advertência ou medicamento, faixa do percentual, `criado_em` regravado, lista de qualquer pessoa) quebram o teste certo.
+**Falta nas rotas:** produtos (pesquisa, página, histórico), avisos (central), dispositivo (push), assinatura, exportação; admin; login Google. **Falta no motor:** `prova`; os avisos dos seguidos (queda_percentual, voltou_estoque etc.) só são guardados, ninguém os dispara ainda (fase 4, push).
+
 ## Fase 3, parte 2e: avaliação e denúncia do alerta (2026-10-28, DECISIONS 75)
 
 `PUT /v1/alertas/{id}/avaliacao` e `PUT /v1/alertas/{id}/denuncia` no ar, com a regra de esconder por limite (config `app.denuncia`), caso de denúncia para o operador e limite de 20 por dia. Corrigido no pipeline:
