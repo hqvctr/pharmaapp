@@ -11,12 +11,16 @@ config nem em log.
 1. **Chave de cifra das credenciais** (uma vez, guarde em lugar seguro; perdê-la obriga a regravar as credenciais):
    variável `CREDENTIALS_KEY` com 32 bytes em base64 (`openssl rand -base64 32`; o painel do projeto tem um botão
    que gera uma). Ao girar a chave, defina também `CREDENTIALS_KEY_VERSION` (ex.: `v2`) e regrave.
-2. **Segredo da fonte como variável de ambiente** do ambiente de nuvem (menu do ambiente → Editar). Nome:
-   `FONTE_<FONTE>_<CAMPO>` em maiúsculas. Lomadee: **`FONTE_LOMADEE_APIKEY`**. **Não cole chave nenhuma no chat.**
-   A chave precisa dos escopos `products:read` e `brands:read` (e `shortener:write` quando ligarmos o link rastreado).
-3. **Rede**: a Lomadee responde com o acesso à rede em "Total". Se o ambiente estiver restrito, libere `api.lomadee.com.br`
-   (servidor de produção; `api-beta.lomadee.com.br` é o antigo e será desligado).
-4. **Gravar a credencial cifrada** (lê as variáveis, não imprime nada além dos nomes dos campos):
+2. **Onde guardar a chave.** Num ambiente de nuvem da Anthropic, use **Segredos de rede** (tela de edição do ambiente): o proxy
+   anexa a chave às chamadas para o endereço cadastrado e a sessão nunca a vê. A caixa "Variáveis de ambiente" mostra os
+   valores a quem usa o ambiente, então não serve para chave. Lomadee: **Add secret** → Nome `Lomadee`; Tipo `Bearer`;
+   Allowed websites `api.lomadee.com.br`; em Custom headers, nome `x-api-key`, **prefixo apagado** (a chave vai pura),
+   Valor = a chave. A chave precisa dos escopos `products:read` e `brands:read` (e `shortener:write` para o link rastreado).
+   Não dá para ver o valor depois de salvar (apague e refaça para trocar). Vale em sessão **nova**.
+3. **Rede**: com o acesso à rede em "Total" não é preciso liberar endereço. `api.lomadee.com.br` é o servidor de produção
+   (`api-beta.lomadee.com.br` é o antigo e será desligado). Num computador com proxy de ambiente, rode o Node com
+   `NODE_USE_ENV_PROXY=1`.
+4. **Só quando houver servidor próprio:** gravar a credencial cifrada no banco (lê as variáveis `FONTE_LOMADEE_APIKEY` e `CREDENTIALS_KEY`, não imprime nada além dos nomes dos campos). No ambiente de nuvem com segredo de rede, **pule este passo** e use `--chave-pelo-proxy` na coleta:
    `node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --de-ambiente`
    Conferir sem expor: `... --verificar`. Alternativa: `echo '{"apiKey":"..."}' | ... --stdin`.
 5. **Achar as marcas** da Lomadee que interessam (Drogasil, Droga Raia e outras): `GET /affiliate/brands` com a chave. O id
@@ -25,7 +29,8 @@ config nem em log.
    `scripts/fase2/seed.sql`; `id_externo` = id da marca na Lomadee). O comando de provisionamento ainda não existe (D26).
 7. **Ativar a fonte** (`sources.ativa = true`) só depois de ler os termos de uso e registrar em `SOURCES.md`.
 8. **Coletar**: `node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee` ou `--todas`
-   (precisa de `DATABASE_URL`, `CREDENTIALS_KEY` e `--listas-medicamentos`). Agendamento a cada 2 h ainda não existe.
+   (precisa de `DATABASE_URL`, `CREDENTIALS_KEY` e `--listas-medicamentos`; com segredo de rede, acrescente `--chave-pelo-proxy` e
+   dispense `CREDENTIALS_KEY`). Agendamento a cada 2 h ainda não existe.
 
 ## O que a API da Lomadee entrega (documentação oficial, docs.lomadee.com.br)
 Produtos em `GET /affiliate/products` (`page`, `limit` de 1 a 100, `isAvailable`, `organizationIds`), resposta

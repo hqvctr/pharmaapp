@@ -97,6 +97,9 @@ psql_ "$DB" -q -c "DELETE FROM source_credentials"
 saida=$(CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --listas-medicamentos "$LISTAS" 2>&1) || true
 if echo "$saida" | grep -q "sem credencial gravada"; then
   echo "OK    coleta real sem credencial falha fechada"; else echo "FALHA coleta sem credencial"; falhou=1; fi
+# Modo "chave pelo proxy" (segredo de rede do ambiente de nuvem): não lê credencial do banco nem exige CREDENTIALS_KEY.
+saida=$(env -u CREDENTIALS_KEY node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --chave-pelo-proxy --listas-medicamentos "$LISTAS" 2>&1) || true
+if echo "$saida" | grep -q '"fonte":"lomadee"'; then echo "OK    --chave-pelo-proxy coleta sem credencial no banco"; else echo "$saida" | head -3; echo "FALHA --chave-pelo-proxy"; falhou=1; fi
 CREDENTIALS_KEY="$CHAVE_A" FONTE_LOMADEE_APIKEY="$SEGREDO" \
   node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --de-ambiente >/dev/null
 saida=$(CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/coletar.js --tenant padrao --todas --listas-medicamentos "$LISTAS" 2>&1) && codigo=0 || codigo=$?

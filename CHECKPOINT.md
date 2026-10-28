@@ -257,7 +257,9 @@ na URL), que não responde. Reescrito para a API de afiliados atual (`api.lomade
 preço em centavos), com os dados de teste convertidos. 209 testes; `pronto-fase2.sh` (PRONTA) e `pronto-fase3.sh` (PRONTO)
 rodados. A rede do ambiente já está em "Total".
 
-**Falta para a Lomadee ir ao ar** (BACKLOG): pôr `FONTE_LOMADEE_APIKEY` e `CREDENTIALS_KEY` no ambiente, ler os termos,
+**Chave da Lomadee (DECISIONS 63):** vai em **Segredos de rede** do ambiente de nuvem (o proxy anexa `x-api-key`; a sessão não vê a chave) e a coleta usa `--chave-pelo-proxy`; confirmado que `api.lomadee.com.br` responde (`401 API key is required` sem chave).
+
+**Falta para a Lomadee ir ao ar** (BACKLOG): cadastrar o segredo de rede, ler os termos,
 primeira chamada real (achar as marcas, guardar uma resposta), ligar o link rastreado, vínculo das lojas. **Outros canais**: dizer quais contas existem; cada um precisa de
 termos lidos e de um adaptador (a mesma chave da Lomadee já dá acesso a outras lojas da rede dela).
 

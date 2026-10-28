@@ -2,6 +2,8 @@
 //   node dist/pipeline/coletar.js --tenant padrao --fonte lomadee --gravacoes <dir> [--agora ISO]   (reprodução)
 //   node dist/pipeline/coletar.js --tenant padrao --fonte lomadee                                    (API real)
 //   node dist/pipeline/coletar.js --tenant padrao --todas                                            (todas as ativas)
+//   ... --chave-pelo-proxy   a chave é anexada pelo proxy do ambiente de nuvem ("segredo de rede"): o programa
+//                            nunca a vê, não lê credencial do banco e não manda cabeçalho de autenticação.
 // Na API real as credenciais saem do banco, cifradas (ver pipeline/credencial.ts), e a chave vem de
 // CREDENTIALS_KEY. Uma fonte com erro não impede as outras; o código de saída vira 1 se alguma falhou.
 import { parseArgs } from 'node:util';
@@ -22,6 +24,7 @@ async function main(): Promise<void> {
       tenant: { type: 'string' },
       fonte: { type: 'string' },
       todas: { type: 'boolean' },
+      'chave-pelo-proxy': { type: 'boolean' },
       gravacoes: { type: 'string' },
       agora: { type: 'string' },
       'listas-medicamentos': { type: 'string' },
@@ -42,7 +45,9 @@ async function main(): Promise<void> {
 
   const config = await carregarConfigTenant(values.tenant);
   const listas = await carregarListasMedicamentos(arquivoListas);
-  const chaves = values.gravacoes ? [] : [carregarChaveCredenciais()];
+  const peloProxy = values['chave-pelo-proxy'] === true;
+  if (peloProxy && values.gravacoes) throw new Error('--chave-pelo-proxy não vale com --gravacoes');
+  const chaves = values.gravacoes || peloProxy ? [] : [carregarChaveCredenciais()];
 
   const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
   let falhou = false;
@@ -65,6 +70,13 @@ async function main(): Promise<void> {
           if (fabrica.httpGravado === undefined) throw new Error(`O adaptador ${fabrica.adaptador} não reproduz gravações`);
           http = fabrica.httpGravado(values.gravacoes);
           credenciais = Object.fromEntries(fabrica.credenciais.map((c) => [c, 'gravacao']));
+        } else if (peloProxy) {
+          // O proxy do ambiente de nuvem põe a chave na chamada para o host cadastrado como segredo de rede.
+          credenciais = {};
+          http = new HttpReal({
+            ...PADRAO_HTTP,
+            ...(typeof bloco.intervaloMs === 'number' ? { intervaloMs: bloco.intervaloMs } : {}),
+          });
         } else {
           const lidas = await lerCredenciaisFonte(pool, chaves, tenantId, fonte.id);
           if (lidas === null) throw new Error(`Fonte ${nome} sem credencial gravada (use pipeline/credencial.js)`);
