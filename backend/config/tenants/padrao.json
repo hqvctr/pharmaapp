@@ -200,9 +200,10 @@
   },
   "fontes": {
     "lomadee": {
-      "baseUrl": "https://api.lomadee.com/",
+      "baseUrl": "https://api.lomadee.com.br/",
       "tamanhoPagina": 100,
       "maxPaginas": 20,
+      "intervaloMs": 1100,
       "mapaCategorias": {
         "Proteção Solar": "cuidados_pessoais",
         "Dermocosméticos": "cuidados_pessoais",

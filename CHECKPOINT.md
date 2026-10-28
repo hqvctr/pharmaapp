@@ -252,8 +252,13 @@ e foi **rodado inteiro** com o código novo (9 condições e 193 testes, PRONTA)
 (segredo não aparece na saída nem em claro no banco, chave errada não decifra, `--todas` isola a falha de uma fonte;
 mutação conferida). Guia: `docs/operacao/fontes.md`.
 
-**Falta para a Lomadee ir ao ar** (BACKLOG): liberar o host da API na rede, pôr as variáveis no ambiente, ler os
-termos, primeira chamada real, vínculo das lojas. **Outros canais**: dizer quais contas existem; cada um precisa de
+**Correção importante (2026-10-28, DECISIONS 62).** O adaptador da Lomadee mirava uma API antiga (`api.lomadee.com`, token
+na URL), que não responde. Reescrito para a API de afiliados atual (`api.lomadee.com.br`, `x-api-key`, produtos com `ean` e
+preço em centavos), com os dados de teste convertidos. 209 testes; `pronto-fase2.sh` (PRONTA) e `pronto-fase3.sh` (PRONTO)
+rodados. A rede do ambiente já está em "Total".
+
+**Falta para a Lomadee ir ao ar** (BACKLOG): pôr `FONTE_LOMADEE_APIKEY` e `CREDENTIALS_KEY` no ambiente, ler os termos,
+primeira chamada real (achar as marcas, guardar uma resposta), ligar o link rastreado, vínculo das lojas. **Outros canais**: dizer quais contas existem; cada um precisa de
 termos lidos e de um adaptador (a mesma chave da Lomadee já dá acesso a outras lojas da rede dela).
 
 ## Fase 3, parte 1: banco e critério de pronto (2026-10-27, PRONTA)

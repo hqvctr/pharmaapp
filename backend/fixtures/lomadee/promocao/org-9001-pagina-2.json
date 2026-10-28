@@ -1,0 +1,160 @@
+{
+ "_aviso": "SINTÉTICO, no formato da documentação (docs.lomadee.com.br): { data: Produto[], count }. Campos de categories e brands presumidos. Substituir por resposta real na primeira chamada.",
+ "data": [
+  {
+   "organizationId": "9001",
+   "id": "A-400",
+   "available": true,
+   "name": "Fralda Marca Z G 36 Unidades",
+   "description": "",
+   "url": "https://redir.lomadee.com/v2/exemplo-A-400",
+   "images": [],
+   "options": [
+    {
+     "id": "A-400-1",
+     "ean": "",
+     "name": "",
+     "available": true,
+     "seller": "sintetico",
+     "images": [],
+     "categories": [
+      {
+       "name": "Fraldas"
+      }
+     ],
+     "brands": [],
+     "pricing": [
+      {
+       "listPrice": 5990,
+       "price": 5990,
+       "metadata": []
+      }
+     ],
+     "stocks": [
+      {
+       "value": 10,
+       "metadata": []
+      }
+     ],
+     "metadata": []
+    }
+   ],
+   "metadata": []
+  },
+  {
+   "organizationId": "9001",
+   "id": "A-500",
+   "available": true,
+   "name": "Dipirona Monoidratada 500mg 10 Comprimidos",
+   "description": "",
+   "url": "https://redir.lomadee.com/v2/exemplo-A-500",
+   "images": [],
+   "options": [
+    {
+     "id": "A-500-1",
+     "ean": "",
+     "name": "",
+     "available": true,
+     "seller": "sintetico",
+     "images": [],
+     "categories": [
+      {
+       "name": "Medicamentos"
+      }
+     ],
+     "brands": [],
+     "pricing": [
+      {
+       "listPrice": 890,
+       "price": 890,
+       "metadata": []
+      }
+     ],
+     "stocks": [
+      {
+       "value": 10,
+       "metadata": []
+      }
+     ],
+     "metadata": []
+    }
+   ],
+   "metadata": []
+  },
+  {
+   "organizationId": "9001",
+   "id": "A-600",
+   "available": true,
+   "name": "Clonazepam 2mg Tarja Preta 30 Comprimidos",
+   "description": "",
+   "url": "https://redir.lomadee.com/v2/exemplo-A-600",
+   "images": [],
+   "options": [
+    {
+     "id": "A-600-1",
+     "ean": "",
+     "name": "",
+     "available": true,
+     "seller": "sintetico",
+     "images": [],
+     "categories": [
+      {
+       "name": "Medicamentos"
+      }
+     ],
+     "brands": [],
+     "pricing": [
+      {
+       "listPrice": 1990,
+       "price": 1990,
+       "metadata": []
+      }
+     ],
+     "stocks": [
+      {
+       "value": 10,
+       "metadata": []
+      }
+     ],
+     "metadata": []
+    }
+   ],
+   "metadata": []
+  },
+  {
+   "organizationId": "9001",
+   "id": "A-700",
+   "available": true,
+   "name": "Item sem preço",
+   "description": "",
+   "url": "x",
+   "images": [],
+   "options": [
+    {
+     "id": "A-700-1",
+     "ean": "",
+     "name": "",
+     "available": true,
+     "seller": "sintetico",
+     "images": [],
+     "categories": [
+      {
+       "name": "Cabelos"
+      }
+     ],
+     "brands": [],
+     "pricing": [],
+     "stocks": [
+      {
+       "value": 10,
+       "metadata": []
+      }
+     ],
+     "metadata": []
+    }
+   ],
+   "metadata": []
+  }
+ ],
+ "count": 7
+}

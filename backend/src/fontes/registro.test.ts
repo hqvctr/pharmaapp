@@ -5,10 +5,10 @@ import { adaptadoresRegistrados, fabricaDo, registrarFabrica, validarCredenciais
 const http: HttpGetJson = { get: async () => ({}) };
 
 describe('registro de fontes', () => {
-  it('a Lomadee está registrada, é TIPO A e exige appToken e sourceId', () => {
+  it('a Lomadee está registrada, é TIPO A e exige só a apiKey', () => {
     const f = fabricaDo('lomadee');
     expect(f.tipo).toBe('A');
-    expect([...f.credenciais]).toEqual(['appToken', 'sourceId']);
+    expect([...f.credenciais]).toEqual(['apiKey']);
     expect(adaptadoresRegistrados()).toContain('lomadee');
   });
 
@@ -34,9 +34,9 @@ describe('registro de fontes', () => {
   describe('credenciais', () => {
     it('faltando ou vazio recusa, nomeando só os campos (nunca valores)', () => {
       const f = fabricaDo('lomadee');
-      expect(() => validarCredenciais(f, { appToken: 'abc' })).toThrow('Credenciais ausentes para lomadee: sourceId');
-      expect(() => validarCredenciais(f, { appToken: '', sourceId: '' })).toThrow(/appToken, sourceId/);
-      expect(() => validarCredenciais(f, { appToken: 'abc', sourceId: '1' })).not.toThrow();
+      expect(() => validarCredenciais(f, {})).toThrow('Credenciais ausentes para lomadee: apiKey');
+      expect(() => validarCredenciais(f, { apiKey: '' })).toThrow(/apiKey/);
+      expect(() => validarCredenciais(f, { apiKey: 'lmd_x' })).not.toThrow();
     });
   });
 
@@ -44,7 +44,7 @@ describe('registro de fontes', () => {
     const f = fabricaDo('lomadee');
     const base = { baseUrl: 'https://api.exemplo.test/', tamanhoPagina: 100, maxPaginas: 5 };
     it('monta o adaptador com as lojas ordenadas', () => {
-      const a = f.criar({ http, config: base, credenciais: { appToken: 't', sourceId: 's' }, lojas: ['9002', '9001'] });
+      const a = f.criar({ http, config: base, credenciais: { apiKey: 't' }, lojas: ['9002', '9001'] });
       expect(a.tipo).toBe('A');
     });
     it('config inválida falha com o nome do campo', () => {

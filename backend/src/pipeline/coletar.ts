@@ -73,6 +73,7 @@ async function main(): Promise<void> {
           http = new HttpReal({
             ...PADRAO_HTTP,
             ...(typeof bloco.intervaloMs === 'number' ? { intervaloMs: bloco.intervaloMs } : {}),
+            cabecalhos: fabrica.cabecalhos?.(credenciais) ?? {},
           });
         }
         const adapter = fabrica.criar({ http, config: bloco, credenciais, lojas: [...lojas.keys()] });

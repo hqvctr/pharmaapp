@@ -21,6 +21,8 @@ export interface FabricaFonte {
   tipo: TipoFonte;
   /** Campos secretos que a fonte exige. Faltou um, a coleta não roda. */
   credenciais: readonly string[];
+  /** Cabeçalhos de autenticação montados a partir das credenciais (ex.: `x-api-key`). Nunca vão para log. */
+  cabecalhos?(credenciais: Readonly<Record<string, string>>): Record<string, string>;
   criar(args: ArgumentosFabrica): SourceAdapter;
   /** Só para adaptadores que sabem reproduzir respostas gravadas (testes e critério de pronto). */
   httpGravado?(dir: string): HttpGetJson;

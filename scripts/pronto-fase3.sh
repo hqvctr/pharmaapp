@@ -76,28 +76,28 @@ confere_saida() { # descrição, comando, texto que NÃO pode aparecer na saída
   local saida; saida=$(eval "$2" 2>&1) || true
   if echo "$saida" | grep -q "$3"; then echo "FALHA $1 (o segredo apareceu na saída)"; falhou=1; else echo "OK    $1"; fi
 }
-if CREDENTIALS_KEY="$CHAVE_A" FONTE_LOMADEE_APPTOKEN="$SEGREDO" FONTE_LOMADEE_SOURCEID="42" \
-   node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --de-ambiente | grep -q '"gravados":\["appToken","sourceId"\]'; then
+if CREDENTIALS_KEY="$CHAVE_A" FONTE_LOMADEE_APIKEY="$SEGREDO" \
+   node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --de-ambiente | grep -q '"gravados":\["apiKey"\]'; then
   echo "OK    credencial gravada a partir do ambiente"
 else echo "FALHA gravar credencial"; falhou=1; fi
 confere_saida "a gravação não imprime o segredo" \
-  "CREDENTIALS_KEY='$CHAVE_A' FONTE_LOMADEE_APPTOKEN='$SEGREDO' FONTE_LOMADEE_SOURCEID=42 node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --de-ambiente" "$SEGREDO"
+  "CREDENTIALS_KEY='$CHAVE_A' FONTE_LOMADEE_APIKEY='$SEGREDO' node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --de-ambiente" "$SEGREDO"
 obtido=$(psql_ "$DB" -Atc "SELECT position(convert_to('$SEGREDO','UTF8') in texto_cifrado) FROM source_credentials")
 if [ "$obtido" = "0" ]; then echo "OK    o segredo não está em claro no banco"; else echo "FALHA segredo em claro no banco ($obtido)"; falhou=1; fi
-if CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --verificar | grep -q '"campos":\["appToken","sourceId"\]'; then
+if CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --verificar | grep -q '"campos":\["apiKey"\]'; then
   echo "OK    --verificar decifra e mostra só os nomes dos campos"
 else echo "FALHA verificar credencial"; falhou=1; fi
 if CREDENTIALS_KEY="$CHAVE_B" node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --verificar >/dev/null 2>&1; then
   echo "FALHA chave errada decifrou"; falhou=1; else echo "OK    chave errada não decifra"; fi
 # Campo que a fonte não conhece e campo faltando são recusados.
-if echo '{"appToken":"x","sourceId":"1","extra":"y"}' | CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --stdin >/dev/null 2>&1; then
+if echo '{"apiKey":"x","extra":"y"}' | CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --stdin >/dev/null 2>&1; then
   echo "FALHA aceitou campo desconhecido"; falhou=1; else echo "OK    campo desconhecido recusado"; fi
 # Coleta real sem credencial falha fechada; --todas isola a fonte com problema (sem config) das demais.
 psql_ "$DB" -q -c "DELETE FROM source_credentials"
 saida=$(CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/coletar.js --tenant padrao --fonte lomadee --listas-medicamentos "$LISTAS" 2>&1) || true
 if echo "$saida" | grep -q "sem credencial gravada"; then
   echo "OK    coleta real sem credencial falha fechada"; else echo "FALHA coleta sem credencial"; falhou=1; fi
-CREDENTIALS_KEY="$CHAVE_A" FONTE_LOMADEE_APPTOKEN="$SEGREDO" FONTE_LOMADEE_SOURCEID="42" \
+CREDENTIALS_KEY="$CHAVE_A" FONTE_LOMADEE_APIKEY="$SEGREDO" \
   node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --de-ambiente >/dev/null
 saida=$(CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/coletar.js --tenant padrao --todas --listas-medicamentos "$LISTAS" 2>&1) && codigo=0 || codigo=$?
 if echo "$saida" | grep -q '"fonte":"lomadee"' && echo "$saida" | grep -q "sem-config\] Tenant sem configuração" && [ "$codigo" = 1 ]; then
