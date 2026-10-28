@@ -10,7 +10,7 @@ const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const tenant = await carregarConfigTenant('padrao');
 const listas = await carregarListasMedicamentos(path.join(RAIZ, 'fixtures/medicamentos/listas_teste.json'));
 const config: ConfigNormalizacao = {
-  mapaCategorias: tenant.fontes.lomadee!.mapaCategorias,
+  mapaCategorias: tenant.fontes['lomadee']!.mapaCategorias,
   categoriaMedicamentos: tenant.medicamentos.categoria,
   modoMedicamentos: tenant.medicamentos.modo,
   triagemPorNome: tenant.medicamentos.triagemPorNome,

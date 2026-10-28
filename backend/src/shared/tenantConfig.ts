@@ -14,11 +14,15 @@ import { compilarRegrasNbcal, type RegrasNbcal } from '../normalizador/nbcal.js'
 
 export const DIR_CONFIG = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../config');
 
-export interface ConfigFonteLomadee {
-  baseUrl: string;
-  tamanhoPagina: number;
-  maxPaginas: number;
+/**
+ * Bloco `fontes.<nome>` do tenant. `adaptador` escolhe o módulo em `fontes/registro.ts` (padrão: o próprio
+ * nome); o resto é a config daquele adaptador, validada por ele. Segredo nunca entra aqui.
+ */
+export interface ConfigFonte {
+  adaptador: string;
+  /** Categoria da fonte (normalizada) → categoria do app. Fora do mapa: ignorada. */
   mapaCategorias: Record<string, string>;
+  [campo: string]: unknown;
 }
 
 export interface ConfigTenant {
@@ -29,7 +33,7 @@ export interface ConfigTenant {
   deduplicacao: ConfigDeduplicacao;
   medicamentos: { categoria: string; notificar: boolean; modo: ModoMedicamentos; triagemPorNome: TriagemPorNome };
   nbcal: RegrasNbcal;
-  fontes: { lomadee?: ConfigFonteLomadee };
+  fontes: Record<string, ConfigFonte>;
 }
 
 export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFIG): Promise<ConfigTenant> {
@@ -48,14 +52,23 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
   }
   const triagemPorNome = compilarTriagemPorNome(bruto.medicamentos.triagemPorNome);
   const curadoria = validarConfigCuradoria(bruto.curadoria);
-  const lomadee = bruto.fontes?.lomadee as ConfigFonteLomadee | undefined;
-  if (lomadee !== undefined) {
-    lomadee.mapaCategorias = Object.fromEntries(
-      Object.entries(lomadee.mapaCategorias).map(([k, v]) => {
-        if (curadoria.categorias[v] === undefined) throw new Error(`Config inválida: categoria "${v}" não existe em curadoria`);
-        return [normalizarTexto(k), v];
-      }),
-    );
+  const fontes: Record<string, ConfigFonte> = {};
+  for (const [nome, bloco] of Object.entries((bruto.fontes ?? {}) as Record<string, Record<string, unknown>>)) {
+    if (!/^[a-z0-9-]+$/.test(nome)) throw new Error(`Config inválida: nome de fonte "${nome}"`);
+    const adaptador = bloco.adaptador ?? nome;
+    if (typeof adaptador !== 'string') throw new Error(`Config inválida: fontes.${nome}.adaptador`);
+    const mapa = bloco.mapaCategorias as Record<string, string> | undefined;
+    if (mapa === undefined || typeof mapa !== 'object') throw new Error(`Config inválida: fontes.${nome}.mapaCategorias`);
+    fontes[nome] = {
+      ...bloco,
+      adaptador,
+      mapaCategorias: Object.fromEntries(
+        Object.entries(mapa).map(([k, v]) => {
+          if (curadoria.categorias[v] === undefined) throw new Error(`Config inválida: categoria "${v}" não existe em curadoria`);
+          return [normalizarTexto(k), v];
+        }),
+      ),
+    };
   }
   return {
     slug: bruto.slug,
@@ -65,6 +78,6 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
     deduplicacao: dedup,
     medicamentos: { ...bruto.medicamentos, triagemPorNome },
     nbcal: compilarRegrasNbcal(bruto.nbcal),
-    fontes: { lomadee },
+    fontes,
   };
 }

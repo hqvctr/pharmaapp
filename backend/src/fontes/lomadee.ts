@@ -5,6 +5,8 @@
 // foram vistos numa resposta real. Confirmar e ajustar parseOferta na vinculação da fonte.
 // A Lomadee não informa GTIN, marca, embalagem, frete nem validade.
 import type { HttpGetJson, OfertaBruta, ResultadoColeta, SourceAdapter } from './contrato.js';
+import { HttpGravado } from './gravacoes.js';
+import type { FabricaFonte } from './registro.js';
 
 export interface ConfigLomadee {
   baseUrl: string;
@@ -91,3 +93,26 @@ export function parseOferta(item: unknown): OfertaBruta {
     frete: { status: 'a_confirmar' },
   };
 }
+
+function inteiroPositivo(v: unknown, campo: string): number {
+  if (typeof v !== 'number' || !Number.isInteger(v) || v <= 0) throw new Error(`Config inválida da Lomadee: ${campo}`);
+  return v;
+}
+
+export const fabricaLomadee: FabricaFonte = {
+  adaptador: 'lomadee',
+  tipo: 'A',
+  credenciais: ['appToken', 'sourceId'],
+  criar({ http, config, credenciais, lojas }) {
+    if (typeof config.baseUrl !== 'string') throw new Error('Config inválida da Lomadee: baseUrl');
+    return new LomadeeAdapter(http, {
+      baseUrl: config.baseUrl,
+      appToken: credenciais.appToken ?? '',
+      sourceId: credenciais.sourceId ?? '',
+      lojas: [...lojas].sort(),
+      tamanhoPagina: inteiroPositivo(config.tamanhoPagina, 'tamanhoPagina'),
+      maxPaginas: inteiroPositivo(config.maxPaginas, 'maxPaginas'),
+    });
+  },
+  httpGravado: (dir) => new HttpGravado(dir),
+};

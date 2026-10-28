@@ -4,22 +4,29 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-if [ ! -f .env ]; then
-  echo "Falta .env. Copie .env.example para .env e defina POSTGRES_PASSWORD." >&2
-  exit 1
-fi
-set -a; . ./.env; set +a
-
 DB=pronto_fase2
-docker compose up -d --wait postgres
-docker compose exec -T postgres dropdb -U "$POSTGRES_USER" --if-exists "$DB"
-docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$DB"
-psql_() { docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$DB" -v ON_ERROR_STOP=1 "$@"; }
+# Sem Docker, aponte para um Postgres 16 rodando: PRONTO_PG_URL=postgres://usuario@127.0.0.1:5432
+if [ -n "${PRONTO_PG_URL:-}" ]; then
+  psql "${PRONTO_PG_URL}/postgres" -qc "DROP DATABASE IF EXISTS $DB" -c "CREATE DATABASE $DB"
+  psql_() { psql "${PRONTO_PG_URL}/$DB" -v ON_ERROR_STOP=1 "$@"; }
+  URL_BANCO="$PRONTO_PG_URL/$DB"
+else
+  if [ ! -f .env ]; then
+    echo "Falta .env. Copie .env.example para .env e defina POSTGRES_PASSWORD." >&2
+    exit 1
+  fi
+  set -a; . ./.env; set +a
+  docker compose up -d --wait postgres
+  docker compose exec -T postgres dropdb -U "$POSTGRES_USER" --if-exists "$DB"
+  docker compose exec -T postgres createdb -U "$POSTGRES_USER" "$DB"
+  psql_() { docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$DB" -v ON_ERROR_STOP=1 "$@"; }
+  URL_BANCO="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT:-5432}/${DB}"
+fi
 
 (cd backend && npm run build >/dev/null)
-export DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@127.0.0.1:${POSTGRES_PORT:-5432}/${DB}"
+export DATABASE_URL="$URL_BANCO"
 # O runner de migration da fase 0 exige REDIS_URL, embora não use Redis.
-REDIS_URL="redis://127.0.0.1:${REDIS_PORT:-6379}" node backend/dist/db/migrate.js
+REDIS_URL="redis://127.0.0.1:6379" node backend/dist/db/migrate.js
 psql_ -q < scripts/fase2/seed.sql
 
 GRAV=backend/fixtures/lomadee

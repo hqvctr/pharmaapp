@@ -239,3 +239,48 @@ export async function inserirAlerta(db: Db, a: NovoAlerta): Promise<void> {
     ],
   );
 }
+
+/** Fontes ativas e não bloqueadas do tenant, para a coleta de todas. */
+export async function listarFontesAtivas(db: Db, tenantId: string): Promise<string[]> {
+  const r = await db.query<{ nome: string }>(
+    `SELECT nome FROM sources WHERE tenant_id = $1 AND ativa AND status_confianca <> 'bloqueada' ORDER BY nome`,
+    [tenantId],
+  );
+  return r.rows.map((l) => l.nome);
+}
+
+export interface CredencialGravada {
+  chaveVersao: string;
+  iv: Buffer;
+  textoCifrado: Buffer;
+  tag: Buffer;
+  atualizadaEm: Date;
+}
+
+export async function gravarCredencialCifrada(
+  db: Db,
+  tenantId: string,
+  sourceId: string,
+  c: Omit<CredencialGravada, 'atualizadaEm'>,
+  operadorId: string | null,
+): Promise<void> {
+  await db.query(
+    `INSERT INTO source_credentials (tenant_id, source_id, chave_versao, iv, texto_cifrado, tag, atualizada_em, atualizada_por)
+          VALUES ($1, $2, $3, $4, $5, $6, now(), $7)
+     ON CONFLICT (tenant_id, source_id) DO UPDATE
+       SET chave_versao = EXCLUDED.chave_versao, iv = EXCLUDED.iv, texto_cifrado = EXCLUDED.texto_cifrado,
+           tag = EXCLUDED.tag, atualizada_em = now(), atualizada_por = EXCLUDED.atualizada_por`,
+    [tenantId, sourceId, c.chaveVersao, c.iv, c.textoCifrado, c.tag, operadorId],
+  );
+}
+
+export async function lerCredencialCifrada(db: Db, tenantId: string, sourceId: string): Promise<CredencialGravada | null> {
+  const r = await db.query(
+    `SELECT chave_versao, iv, texto_cifrado, tag, atualizada_em FROM source_credentials WHERE tenant_id = $1 AND source_id = $2`,
+    [tenantId, sourceId],
+  );
+  if (r.rowCount !== 1) return null;
+  const l = r.rows[0];
+  return { chaveVersao: l.chave_versao, iv: l.iv, textoCifrado: l.texto_cifrado, tag: l.tag, atualizadaEm: l.atualizada_em };
+}
+

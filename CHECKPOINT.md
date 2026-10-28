@@ -243,6 +243,19 @@ decisão). Recomenda manter medicamento desligado (já é a decisão 58); sem pr
 consulta formal pronta para revisão OAB, mas o projeto ainda não tem CNPJ. A equipe conferiu no texto
 oficial o art. 53 da RDC 44, a Lei 15.357 e a nota de 19/08/2026.
 
+## Fontes múltiplas e credenciais (2026-10-28, DECISIONS 61)
+
+O responsável tem login e chave de API da Lomadee e quer habilitar outros canais além dela. Feito (sem a chave, que
+nunca passou pelo chat): registro de adaptadores, config genérica por fonte, `coletar --todas`, credenciais cifradas
+no banco com comando de gravação que lê o ambiente, HTTP real seguro. `pronto-fase2.sh` ganhou `PRONTO_PG_URL`
+e foi **rodado inteiro** com o código novo (9 condições e 193 testes, PRONTA); `pronto-fase3.sh` ganhou o passo 3b
+(segredo não aparece na saída nem em claro no banco, chave errada não decifra, `--todas` isola a falha de uma fonte;
+mutação conferida). Guia: `docs/operacao/fontes.md`.
+
+**Falta para a Lomadee ir ao ar** (BACKLOG): liberar o host da API na rede, pôr as variáveis no ambiente, ler os
+termos, primeira chamada real, vínculo das lojas. **Outros canais**: dizer quais contas existem; cada um precisa de
+termos lidos e de um adaptador (a mesma chave da Lomadee já dá acesso a outras lojas da rede dela).
+
 ## Fase 3, parte 1: banco e critério de pronto (2026-10-27, PRONTA)
 
 **Critério de pronto:** `./scripts/pronto-fase3.sh` (docker compose, como as fases anteriores; sem Docker,
