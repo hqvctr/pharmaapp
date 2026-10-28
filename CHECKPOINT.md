@@ -1,5 +1,10 @@
 # Checkpoint
 
+## Windows atualizado (2026-10-28, tarde)
+
+Cowork guiou a atualização de `C:\economae` para a branch atual: contêineres recriados sem perder dados, `status.bat` com a contagem nova ("1 de 14 dias"),
+energia em "Nunca suspender". O serviço `api` do compose também subiu no computador do responsável (só em `127.0.0.1`).
+
 ## Coleta no Windows conferida (2026-10-28)
 
 Relatório do Cowork (`coleta-windows-2026-10-28.md`): a coleta **já estava instalada e rodando** no computador do responsável desde 27/10 às 23:11
