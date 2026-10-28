@@ -2,6 +2,10 @@
 
 ## Do zero, na ordem (computador Windows com o Docker Desktop aberto)
 
+> **Importante:** rode os `.bat` **sempre na pasta onde o economae foi instalado** (a que tem o arquivo `.env`, onde você rodou o `instalar.bat`).
+> Rodar numa pasta nova, extraída do zip, faz o Docker criar um banco novo e vazio (e dá erro de "porta já em uso", porque o antigo continua ligado).
+> Por isso o primeiro passo é copiar os arquivos do zip por cima da pasta instalada, à mão.
+
 1. **Atualizar o projeto** com a versão que tem a API do app: baixe o zip de
    `https://github.com/hqvctr/pharmaapp/archive/refs/heads/claude/zen-gates-965k2e.zip` (fica em Downloads) e dê dois cliques em
    `scripts\windows\atualizar.bat`. Ele copia por cima (o `.env` e o banco são mantidos) e religa tudo.

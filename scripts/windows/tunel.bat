@@ -8,6 +8,10 @@ if errorlevel 1 (
   echo O Docker nao esta aberto. Abra o "Docker Desktop" e tente de novo.
   goto fim
 )
+if not exist .env (
+  echo Esta pasta NAO e a do economae instalado: nao tem o arquivo .env. Rode este arquivo na pasta onde voce rodou o instalar.bat.
+  goto fim
+)
 rem Atras do tunel a API precisa confiar no cabecalho do proxy para limitar por IP certo.
 findstr /b /c:"TRUST_PROXY=" .env >nul 2>&1
 if errorlevel 1 echo TRUST_PROXY=1>>.env

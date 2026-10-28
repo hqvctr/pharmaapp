@@ -10,6 +10,13 @@ if errorlevel 1 (
   goto fim
 )
 
+rem Seguranca: so roda na pasta onde o economae foi instalado (a que tem o .env). Em outra pasta o Docker criaria um banco novo e vazio.
+if not exist .env (
+  echo Esta pasta NAO e a do economae instalado: nao tem o arquivo .env.
+  echo Abra a pasta onde voce rodou o instalar.bat pela primeira vez e rode o atualizar.bat que esta la.
+  goto fim
+)
+
 set ZIP=
 for /f "delims=" %%f in ('dir /b /o-d "%USERPROFILE%\Downloads\pharmaapp*.zip" 2^>nul') do if not defined ZIP set "ZIP=%USERPROFILE%\Downloads\%%f"
 if not defined ZIP (
