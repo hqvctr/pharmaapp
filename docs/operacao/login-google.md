@@ -4,15 +4,20 @@ O app envia o **ID token** que o Google entrega depois do "Entrar com Google". O
 confere a assinatura com as chaves públicas do Google, o emissor, a validade, a audiência (o ID de cliente OAuth do projeto) e, quando o app manda,
 o `nonce`. **Não existe segredo de cliente no servidor**: só o ID de cliente, que é público.
 
-## O que falta para ligar (depende de você, via Cowork)
+## Situação (28/10/2026): ligado no tenant `padrao`
 
-1. O ID de cliente OAuth **do tipo "Aplicativo da Web"** do projeto do Google Cloud/Firebase do economae (o app Android usa esse ID como
-   `serverClientId`, e é ele que aparece como `aud` no token). O prompt do Cowork que levanta isso já foi entregue; ele devolve um `.md` com o ID.
-2. Colar o ID em `backend/config/tenants/padrao.json`, em `app.google.clientIds` (lista; aceita mais de um). **Enquanto a lista estiver vazia, o
-   servidor responde 403 `metodo_login_indisponivel` e `/v1/configuracao` não oferece o Google** (o app não mostra um botão que falharia).
-3. Reiniciar a API. Não precisa de migration nem de variável de ambiente.
+Relatório do Cowork: `docs/juridico/fontes/google-login-2026-10-28.md`.
 
-Cliente Android (nome do pacote + SHA-1 da chave de assinatura) é do app, não do servidor; o de release só existe na fase 6 (Google Play).
+- Projeto Google Cloud/Firebase do economae: "My First Project", ID `project-79519032-1c32-4dac-a1f` (único projeto; é o mesmo do Firebase).
+- **ID de cliente Web do servidor** (já existia, nome `economae-servidor`, criado em 29/09/2026):
+  `984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com`. Está em `backend/config/tenants/padrao.json`, `app.google.clientIds`.
+  É o que o app Android deve pedir como `serverClientId`, e é o `aud` que o servidor exige.
+- Cliente Android de **debug** `economae-android-debug` (`984598232826-1i256inbmffo8gdkra3m49vmf698u3hv.apps.googleusercontent.com`, pacote
+  `br.com.economae.debug`, SHA-1 `10:88:D4:80:33:01:24:8B:8B:33:F4:8A:2C:4E:B5:AD:35:CF:3B:85`). **Não** entra em `clientIds`: o servidor só aceita
+  token cujo `aud` seja o cliente Web. Ele só serve para o app de debug abrir a tela de login do Google.
+- Para a Google Play (fase 6): criar o cliente Android **de release** (pacote final + SHA-1 da chave de release/Play App Signing). O servidor não muda.
+- Tela de consentimento: "economae", Externo, **Testando**, escopos `openid`, `email` e `profile`, 1 usuário de teste (a conta do responsável).
+- Sem cliente OAuth na lista `clientIds`, o servidor responde 403 `metodo_login_indisponivel` e `/v1/configuracao` não oferece o Google.
 
 ## Como a conta é encontrada (DECISIONS 40 e 82)
 

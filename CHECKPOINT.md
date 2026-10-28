@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Login com Google ligado (2026-10-28)
+
+O Cowork devolveu o relatório (`docs/juridico/fontes/google-login-2026-10-28.md`): o ID de cliente Web `economae-servidor` já existia e está em `app.google.clientIds` do tenant `padrao`. `/v1/configuracao` passa a oferecer `google`. Nada foi criado nem alterado no Google Cloud. Pendente do lado do responsável: publicar a tela de consentimento quando for hora (hoje só a conta de teste entra) e, na fase 6, o cliente Android de release.
+
 ## Fase 3, parte 3: área do operador (2026-10-28, DECISIONS 83)
 
 `/v1/admin` no ar: login do operador, alertas, lojas, fontes (inclusive credencial só de escrita), denúncias, triagem (com liberação respeitada pela coleta), ofertas manuais (lista e encerramento), busca de produto e auditoria. 21 das 22 operações; falta o cadastro de oferta manual (fase 5) e a **tela** do painel. `contrato.test.ts` guarda quais operações dos contratos ainda não têm rota.

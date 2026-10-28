@@ -175,7 +175,7 @@ executar('login com Google com as chaves do Google fora do ar', () => {
   });
 });
 
-const semCliente = ambienteDeTeste('teste_google_off', { google });
+const semCliente = ambienteDeTeste('teste_google_off', { google, clientIdsGoogle: [] });
 executar('login com Google desligado (sem cliente OAuth no tenant)', () => {
   it('403 metodo_login_indisponivel e o app não oferece o método em /v1/configuracao', async () => {
     const r = await semCliente.chamar('POST', '/v1/auth/google', {}, { id_token: 'a.b.c' }, TENANT);

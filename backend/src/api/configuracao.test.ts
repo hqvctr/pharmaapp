@@ -26,6 +26,8 @@ describe('GET /v1/configuracao', () => {
       ['categorias', 'fuso', 'limites', 'metodos_login', 'nome_app', 'planos', 'privacidade', 'regiao', 'tenant', 'termos', 'versao_minima'].sort(),
     );
     expect(c.tenant).toBe('padrao');
+    // O tenant padrão tem o cliente OAuth web do Google configurado: o app oferece os dois métodos.
+    expect(c.metodos_login).toEqual(['email', 'google']);
     expect(c.termos.url).toBe(`${padrao.config.app.urlSite}/termos`);
     expect(c.privacidade.url).toBe(`${padrao.config.app.urlSite}/privacidade`);
     expect(c.regiao).toEqual({ cep_inicio: '01000000', cep_fim: '19999999' });
