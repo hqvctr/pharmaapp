@@ -74,6 +74,17 @@ export async function registrarBloqueio(
   );
 }
 
+/** Códigos de bloqueio que o operador liberou para cada oferta da fonte (admin: triagem `liberado`): id externo → códigos. */
+export async function bloqueiosLiberados(db: Db, tenantId: string, sourceId: string): Promise<Map<string, Set<string>>> {
+  const r = await db.query(
+    `SELECT id_externo, codigo FROM triagem_bloqueios WHERE tenant_id = $1 AND source_id = $2 AND resultado = 'liberado'`,
+    [tenantId, sourceId],
+  );
+  const mapa = new Map<string, Set<string>>();
+  for (const l of r.rows) mapa.set(l.id_externo, (mapa.get(l.id_externo) ?? new Set()).add(l.codigo));
+  return mapa;
+}
+
 /** Identificador estável da marca (`^[a-z0-9-]+$`): sem acento, minúsculo, hífen no lugar de tudo que não é letra ou número. */
 export function chaveDaMarca(marca: string | null): string | null {
   if (marca === null) return null;

@@ -90,3 +90,52 @@ describe('normalizador com medicamento desligado e trava por substância (parece
   });
 });
 
+describe('liberação do operador (D20)', () => {
+  const liberando = (...codigos: string[]) => ({ ...config, liberados: new Set(codigos) });
+
+  it('cautela da NBCAL liberada passa como produto comum, sem advertência', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Protetor de Mamilo Silicone' }), listas, liberando('NBCAL_CAUTELA'));
+    expect(r.tipo).toBe('ok');
+    if (r.tipo === 'ok') expect(r.produto.advertencias).toEqual([]);
+  });
+
+  it('filtro de texto de medicamento liberado passa, na categoria da fonte, e não como medicamento', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Shampoo tarja preta' }), listas, liberando('TERMO_DE_VENDA_CONTROLADA'));
+    expect(r.tipo).toBe('ok');
+    if (r.tipo === 'ok') expect(r.produto.ehMedicamento).toBe(false);
+  });
+
+  it('liberar outro código não destrava: cada bloqueio tem o seu', () => {
+    expect(normalizarOferta(oferta({ titulo: 'Protetor de Mamilo Silicone' }), listas, liberando('TERMO_DE_VENDA_CONTROLADA'))).toMatchObject({ tipo: 'bloqueado', codigo: 'NBCAL_CAUTELA' });
+    expect(normalizarOferta(oferta({ titulo: 'Mamadeira tarja preta' }), listas, liberando('NBCAL_CAUTELA'))).toMatchObject({ tipo: 'bloqueado', codigo: 'TERMO_DE_VENDA_CONTROLADA' });
+  });
+
+  it('liberar o texto não livra da NBCAL: mamadeira com o termo liberado continua vedada', () => {
+    expect(normalizarOferta(oferta({ titulo: 'Mamadeira tarja preta' }), listas, liberando('TERMO_DE_VENDA_CONTROLADA'))).toMatchObject({ tipo: 'bloqueado', codigo: 'NBCAL_VEDADO' });
+  });
+
+  it('medicamento sem referência na categoria de medicamentos (sem texto) nunca é destravado', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Analgésico Genérico 20 comprimidos', categoriaFonte: 'medicines' }), listas, liberando('MEDICAMENTO_SEM_REFERENCIA'));
+    expect(r).toMatchObject({ tipo: 'bloqueado', codigo: 'MEDICAMENTO_SEM_REFERENCIA', revisaoHumana: false });
+  });
+
+  it('texto liberado numa oferta da categoria de medicamentos continua sendo tratado como medicamento', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Vitamina Zeta tarja preta', categoriaFonte: 'medicines' }), listas, liberando('TERMO_DE_VENDA_CONTROLADA'));
+    expect(r.tipo).toBe('ok');
+    if (r.tipo === 'ok') {
+      expect(r.produto.ehMedicamento).toBe(true);
+      expect(r.produto.categoria).toBe(config.categoriaMedicamentos);
+    }
+  });
+
+  it('o que é vedado por lei nunca é destravado, mesmo que o código esteja na lista de liberados', () => {
+    expect(normalizarOferta(oferta({ titulo: 'Mamadeira 240ml' }), listas, liberando('NBCAL_VEDADO', 'NBCAL_CAUTELA', 'TERMO_DE_VENDA_CONTROLADA'))).toMatchObject({ tipo: 'bloqueado', codigo: 'NBCAL_VEDADO' });
+  });
+
+  it('medicamento achado por GTIN na CMED nunca é destravado', () => {
+    const comCmed = { ...listas, porGtin: new Map([['07891000000028'.padStart(14, '0'), { gtin: '7891000000028', isentoPrescricao: false, principioAtivo: 'x' }]]) } as unknown as typeof listas;
+    const r = normalizarOferta(oferta({ titulo: 'Remédio qualquer', gtin: '7891000000028' }), comCmed, liberando('MEDICAMENTO_COM_PRESCRICAO', 'SUBSTANCIA_CONTROLADA', 'MEDICAMENTO_SEM_REFERENCIA'));
+    expect(r).toMatchObject({ tipo: 'bloqueado', codigo: 'MEDICAMENTO_COM_PRESCRICAO' });
+  });
+});
+

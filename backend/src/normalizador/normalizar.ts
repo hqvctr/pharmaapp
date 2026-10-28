@@ -20,7 +20,15 @@ export interface ConfigNormalizacao {
   modoMedicamentos: ModoMedicamentos;
   triagemPorNome: TriagemPorNome;
   nbcal: RegrasNbcal;
+  /**
+   * Códigos de bloqueio que um operador liberou para ESTA oferta (admin: triagem `liberado`, D20). Só valem os que a triagem
+   * permite liberar (cautela da NBCAL e filtro de texto de medicamento); um código vedado ou de GTIN da CMED aqui é ignorado.
+   */
+  liberados?: ReadonlySet<string>;
 }
+
+/** Códigos que a liberação do operador consegue destravar (D20). Os demais só mudam ajustando as listas. */
+export const CODIGOS_LIBERAVEIS: ReadonlySet<string> = new Set(['NBCAL_CAUTELA', 'TERMO_DE_VENDA_CONTROLADA', 'MEDICAMENTO_SEM_REFERENCIA']);
 
 export type CodigoBloqueio = CodigoBloqueioMedicamento | 'NBCAL_VEDADO' | 'NBCAL_CAUTELA';
 
@@ -66,12 +74,16 @@ export function normalizarOferta(
     config.categoriaMedicamentos,
     { modo: config.modoMedicamentos, triagemPorNome: config.triagemPorNome },
   );
-  if (!triagem.liberado) {
+  // Liberação do operador: só vale para bloqueio de texto (revisão humana), nunca para medicamento achado por GTIN na CMED.
+  const liberadoPeloOperador =
+    !triagem.liberado && triagem.revisaoHumana && CODIGOS_LIBERAVEIS.has(triagem.codigo) && config.liberados?.has(triagem.codigo) === true;
+  if (!triagem.liberado && !liberadoPeloOperador) {
     return { tipo: 'bloqueado', codigo: triagem.codigo, detalhe: triagem.detalhe, revisaoHumana: triagem.revisaoHumana };
   }
   // NBCAL também antes do descarte por categoria: o tipo do produto decide, não a categoria da fonte.
   const nbcal = triarNbcal(bruta.titulo, bruta.descricao, config.nbcal);
-  if (nbcal.tipo === 'vedado' || nbcal.tipo === 'cautela') {
+  const cautelaLiberada = nbcal.tipo === 'cautela' && config.liberados?.has('NBCAL_CAUTELA') === true;
+  if ((nbcal.tipo === 'vedado' || nbcal.tipo === 'cautela') && !cautelaLiberada) {
     return {
       tipo: 'bloqueado',
       codigo: nbcal.tipo === 'vedado' ? 'NBCAL_VEDADO' : 'NBCAL_CAUTELA',
@@ -79,7 +91,7 @@ export function normalizarOferta(
       revisaoHumana: false,
     };
   }
-  if (categoriaMapeada === undefined && !triagem.ehMedicamento) {
+  if (categoriaMapeada === undefined && !(triagem.liberado && triagem.ehMedicamento)) {
     return { tipo: 'categoria_ignorada', categoriaFonte: bruta.categoriaFonte };
   }
 
@@ -97,9 +109,10 @@ export function normalizarOferta(
       familiaChave: sha256(familia),
       marca: bruta.marca,
       nome: bruta.titulo,
-      categoria: triagem.categoria,
+      // Liberado pelo operador: vale a categoria da fonte. Se ela for a de medicamentos, o produto continua tratado como medicamento.
+      categoria: triagem.liberado ? triagem.categoria : (categoriaMapeada ?? ''),
       embalagem,
-      ehMedicamento: triagem.ehMedicamento,
+      ehMedicamento: triagem.liberado ? triagem.ehMedicamento : categoriaMapeada === config.categoriaMedicamentos,
       advertencias: nbcal.tipo === 'advertencia' ? nbcal.advertencias : [],
     },
   };

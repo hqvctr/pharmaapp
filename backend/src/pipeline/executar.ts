@@ -39,6 +39,8 @@ export interface ContextoColeta {
   log: (msg: string) => void;
 }
 
+const SEM_LIBERACAO: ReadonlySet<string> = new Set();
+
 export async function executarColeta(ctx: ContextoColeta): Promise<ResumoColeta> {
   const resumo: ResumoColeta = {
     coletadas: 0,
@@ -60,8 +62,10 @@ export async function executarColeta(ctx: ContextoColeta): Promise<ResumoColeta>
   resumo.ilegiveis = coleta.ilegiveis.length;
   for (const i of coleta.ilegiveis) ctx.log(`ilegível: ${i.referencia}: ${i.erro}`);
 
+  const liberados = await repo.bloqueiosLiberados(ctx.pool, ctx.tenantId, ctx.fonte.id);
   for (const bruta of coleta.ofertas) {
     const norm = normalizarOferta(bruta, ctx.listas, {
+      liberados: liberados.get(bruta.idExterno) ?? SEM_LIBERACAO,
       mapaCategorias: ctx.mapaCategorias,
       categoriaMedicamentos: ctx.config.medicamentos.categoria,
       modoMedicamentos: ctx.config.medicamentos.modo,
