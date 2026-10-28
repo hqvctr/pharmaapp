@@ -1,5 +1,11 @@
 # Checkpoint
 
+## Fase 3, parte 2g: produtos (2026-10-28, DECISIONS 77)
+
+`GET /v1/produtos`, `/v1/produtos/{id}` e `/v1/produtos/{id}/historico` no ar (pesquisa por texto e GTIN, página com ofertas e link rastreado, histórico por loja).
+425 testes (85 contra Postgres de verdade); onze mutações (advertência, categoria, marca e loja silenciadas, relevância, janela, conversão da embalagem, limite de taxa, trava de marca no histórico, GTIN exato) quebram o teste certo.
+**Falta nas rotas:** avisos (central), dispositivo (push), exportação, assinatura; admin; login Google.
+
 ## Fase 3, parte 2f: silenciamentos e seguidos (2026-10-28, DECISIONS 76)
 
 `GET`/`PUT`/`DELETE /v1/silenciamentos`, `GET /v1/seguidos`, `PUT`/`DELETE /v1/seguidos/{produto_id}` no ar; migration 0006. O feed passa a refletir o que a pessoa silencia e segue (teste de ponta a ponta pela API).

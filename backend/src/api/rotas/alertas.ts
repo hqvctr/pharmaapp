@@ -2,13 +2,13 @@
 import { createHash } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { diaLocal } from '../../avaliador/historico.js';
-import { montarUsuario } from '../../auth/usuarios.js';
 import { comTransacao } from '../../db/transacao.js';
 import { consultarAlertas, paraAlerta } from '../alertas.js';
 import { corpoObjeto, falhaDeValidacao } from '../corpo.js';
 import { codificarCursor, lerCursor, UUID } from '../cursor.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
 import type { ProvedorLinkOferta } from '../linkOferta.js';
+import { preferenciasDaPessoa } from '../pessoa.js';
 import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
@@ -22,13 +22,8 @@ export interface DepsAlertas extends DepsAuth {
 }
 
 export function rotasAlertas(app: FastifyInstance, d: DepsAlertas): void {
-  /** CEPs que o plano usa e as categorias escolhidas; vazio = a lista é vazia por falta de preferência. */
-  async function preferencias(tenantId: string, userId: string, ctx: { tenant: { config: { app: any } } }, agora: Date) {
-    const usuario = await montarUsuario(d.db, tenantId, userId, ctx.tenant.config.app, agora);
-    const r = (await d.db.query(`SELECT categorias, ceps FROM user_preferences WHERE tenant_id = $1 AND user_id = $2`, [tenantId, userId])).rows[0];
-    const ceps: string[] = (r?.ceps ?? []).slice(0, usuario.plano.ceps_permitidos);
-    return { ceps, categorias: (r?.categorias ?? []) as string[] };
-  }
+  const preferencias = (tenantId: string, userId: string, ctx: { tenant: { config: any } }, agora: Date) =>
+    preferenciasDaPessoa(d.db, tenantId, userId, ctx.tenant.config.app, agora);
 
   /** O alerta, se a pessoa poderia tê-lo visto (mesmas regras do detalhe); senão 404. */
   async function alertaVisivel(ctx: { tenantId: string; userId: string; tenant: { config: any } }, id: string, agora: Date) {
