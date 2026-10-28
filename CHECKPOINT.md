@@ -275,6 +275,17 @@ em categoria sem mapa, 767 como oferta (todas descartadas: sem 14 dias de histó
 primeira chamada real (achar as marcas, guardar uma resposta), ligar o link rastreado, vínculo das lojas. **Outros canais**: dizer quais contas existem; cada um precisa de
 termos lidos e de um adaptador (a mesma chave da Lomadee já dá acesso a outras lojas da rede dela).
 
+**Pacote para rodar no computador do responsável (2026-10-28, DECISIONS 66).** O histórico de 14 dias só começa quando algo coleta sem parar,
+então a coleta agora roda sozinha a cada 2 horas: `pipeline/ciclo.ts` (coleta todas as fontes ativas, mantém a lista da CMED em dia,
+tenta de novo em 15 min se o ciclo nem coletou), `pipeline/provisionar.ts` (cria fonte e lojas a partir de `config/vinculos/`; idempotente),
+`pipeline/status.ts` (diz em português quantos dias de histórico já existem), `credencial --pedir` (a chave é digitada/colada sem aparecer),
+serviços `provisionar` e `coletor` no compose, `scripts/windows/instalar.bat` e `status.bat`, guia `docs/operacao/instalar-no-seu-computador.md`.
+Conferido: 263 testes; `pronto-fase3.sh` (novo passo 3c: provisão, status, `--pedir` sem terminal, ciclo com parada limpa) e `pronto-fase2.sh`
+passando; coleta real da Drogasmil e PromoFarma em banco provisionado (1.739 itens; 762 ofertas guardadas, 727 barradas). **Não conferido:** `docker compose up` de
+verdade e os `.bat` num Windows (o ambiente não tem o motor do Docker nem Windows); a primeira execução no computador do responsável é o teste.
+**Próximo passo imediato:** responsável instala o Docker Desktop e roda `instalar.bat`; depois `status.bat` mostra os dias de histórico. Em paralelo,
+a parte 2 da fase 3 (servidor da API) segue como planejado abaixo.
+
 ## Fase 3, parte 1: banco e critério de pronto (2026-10-27, PRONTA)
 
 **Critério de pronto:** `./scripts/pronto-fase3.sh` (docker compose, como as fases anteriores; sem Docker,

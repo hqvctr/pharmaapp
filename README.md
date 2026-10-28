@@ -19,7 +19,8 @@ curl http://127.0.0.1:3000/health
 (cd backend && npm ci && npm test)
 ```
 
-Lista de medicamentos (CMED): `./scripts/atualizar-listas-medicamentos.sh` (ver `docs/operacao/lista-de-medicamentos.md`).
+Coletar preços sem parar no seu computador (Windows): [docs/operacao/instalar-no-seu-computador.md](docs/operacao/instalar-no-seu-computador.md).
+Lista de medicamentos (CMED): o coletor atualiza sozinho; na mão, `./scripts/atualizar-listas-medicamentos.sh` (ver `docs/operacao/lista-de-medicamentos.md`).
 Critério de pronto de cada fase: `scripts/pronto-faseN.sh`. A fase 3 aceita `PRONTO_PG_URL` para rodar contra um Postgres sem Docker.
 
 ## Estrutura
@@ -37,7 +38,8 @@ backend/
   src/pipeline/      coleta ponta a ponta e SQL
   src/db/            runner de migration
   src/shared/        leitura de ambiente
-docker-compose.yml   postgres, redis, migrate, api
+docker-compose.yml   postgres, redis, migrate, api (+ provisionar e coletor, perfil `coleta`)
+scripts/windows/     instalar.bat e status.bat (coleta no computador do responsável)
 ```
 
 ## Subir um cliente novo (tenant)

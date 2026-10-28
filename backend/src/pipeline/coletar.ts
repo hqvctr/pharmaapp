@@ -6,17 +6,13 @@
 //                            nunca a vê, não lê credencial do banco e não manda cabeçalho de autenticação.
 // Na API real as credenciais saem do banco, cifradas (ver pipeline/credencial.ts), e a chave vem de
 // CREDENTIALS_KEY. Uma fonte com erro não impede as outras; o código de saída vira 1 se alguma falhou.
+// Para rodar sozinho a cada 2 horas, veja pipeline/ciclo.ts.
 import { parseArgs } from 'node:util';
 import pg from 'pg';
-import type { HttpGetJson } from '../fontes/contrato.js';
-import { lerCredenciaisFonte } from '../fontes/credenciais.js';
-import { HttpReal, PADRAO_HTTP } from '../fontes/http.js';
-import { fabricaDo, validarCredenciais } from '../fontes/registro.js';
 import { carregarListasMedicamentos } from '../normalizador/listas.js';
 import { carregarChaveCredenciais } from '../shared/cifra.js';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
-import { executarColeta } from './executar.js';
-import * as repo from './repositorio.js';
+import { coletarFontes, type ModoCredencial } from './coletarFontes.js';
 
 async function main(): Promise<void> {
   const { values } = parseArgs({
@@ -42,76 +38,33 @@ async function main(): Promise<void> {
   if (values.agora && !values.gravacoes) throw new Error('--agora só vale com --gravacoes');
   const agora = values.agora ? new Date(values.agora) : new Date();
   if (Number.isNaN(agora.getTime())) throw new Error(`--agora inválido: ${values.agora}`);
+  const peloProxy = values['chave-pelo-proxy'] === true;
+  if (peloProxy && values.gravacoes) throw new Error('--chave-pelo-proxy não vale com --gravacoes');
+  const modo: ModoCredencial = values.gravacoes
+    ? { tipo: 'gravacoes', dir: values.gravacoes }
+    : peloProxy
+      ? { tipo: 'proxy' }
+      : { tipo: 'banco', chaves: [carregarChaveCredenciais()] };
 
   const config = await carregarConfigTenant(values.tenant);
   const listas = await carregarListasMedicamentos(arquivoListas);
-  const peloProxy = values['chave-pelo-proxy'] === true;
-  if (peloProxy && values.gravacoes) throw new Error('--chave-pelo-proxy não vale com --gravacoes');
-  const chaves = values.gravacoes || peloProxy ? [] : [carregarChaveCredenciais()];
-
   const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
-  let falhou = false;
   try {
-    const tenantId = await repo.buscarTenant(pool, values.tenant);
-    const nomes = values.fonte ? [values.fonte] : await repo.listarFontesAtivas(pool, tenantId);
-    if (nomes.length === 0) console.error('Nenhuma fonte ativa neste tenant');
-
-    for (const nome of nomes) {
-      try {
-        const bloco = config.fontes[nome];
-        if (bloco === undefined) throw new Error(`Tenant sem configuração da fonte ${nome}`);
-        const fabrica = fabricaDo(bloco.adaptador);
-        const fonte = await repo.buscarFonte(pool, tenantId, nome);
-        const lojas = await repo.buscarLojasDaFonte(pool, tenantId, fonte.id);
-
-        let http: HttpGetJson;
-        let credenciais: Record<string, string>;
-        if (values.gravacoes) {
-          if (fabrica.httpGravado === undefined) throw new Error(`O adaptador ${fabrica.adaptador} não reproduz gravações`);
-          http = fabrica.httpGravado(values.gravacoes);
-          credenciais = Object.fromEntries(fabrica.credenciais.map((c) => [c, 'gravacao']));
-        } else if (peloProxy) {
-          // O proxy do ambiente de nuvem põe a chave na chamada para o host cadastrado como segredo de rede.
-          credenciais = {};
-          http = new HttpReal({
-            ...PADRAO_HTTP,
-            ...(typeof bloco.intervaloMs === 'number' ? { intervaloMs: bloco.intervaloMs } : {}),
-          });
-        } else {
-          const lidas = await lerCredenciaisFonte(pool, chaves, tenantId, fonte.id);
-          if (lidas === null) throw new Error(`Fonte ${nome} sem credencial gravada (use pipeline/credencial.js)`);
-          validarCredenciais(fabrica, lidas);
-          credenciais = lidas;
-          http = new HttpReal({
-            ...PADRAO_HTTP,
-            ...(typeof bloco.intervaloMs === 'number' ? { intervaloMs: bloco.intervaloMs } : {}),
-            cabecalhos: fabrica.cabecalhos?.(credenciais) ?? {},
-          });
-        }
-        const adapter = fabrica.criar({ http, config: bloco, credenciais, lojas: [...lojas.keys()] });
-        const resumo = await executarColeta({
-          pool,
-          tenantId,
-          fonte,
-          lojas,
-          adapter,
-          config,
-          mapaCategorias: bloco.mapaCategorias,
-          listas,
-          agora,
-          log: (m) => console.error(`[${nome}] ${m}`),
-        });
-        console.log(JSON.stringify({ fonte: nome, agora: agora.toISOString(), ...resumo }));
-        if (resumo.erros > 0) falhou = true;
-      } catch (err) {
-        falhou = true;
-        console.error(`[${nome}] ${err instanceof Error ? err.message : err}`);
-      }
-    }
+    const { resultados, falhou } = await coletarFontes({
+      pool,
+      tenantSlug: values.tenant,
+      config,
+      listas,
+      fontes: values.fonte ? [values.fonte] : 'ativas',
+      modo,
+      agora,
+      log: (m) => console.error(m),
+    });
+    for (const r of resultados) if (r.resumo) console.log(JSON.stringify({ fonte: r.fonte, agora: agora.toISOString(), ...r.resumo }));
+    if (falhou) process.exitCode = 1;
   } finally {
     await pool.end();
   }
-  if (falhou) process.exitCode = 1;
 }
 
 main().catch((err) => {

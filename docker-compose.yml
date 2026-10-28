@@ -6,8 +6,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: unless-stopped
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -18,8 +19,9 @@ services:
 
   redis:
     image: redis:7.4.1-alpine
+    restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s
@@ -43,8 +45,9 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       API_PORT: "3000"
+    restart: unless-stopped
     ports:
-      - "${API_PORT:-3000}:3000"
+      - "127.0.0.1:${API_PORT:-3000}:3000"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -56,5 +59,42 @@ services:
       timeout: 3s
       retries: 20
 
+  # Coleta de preços (perfil "coleta": COMPOSE_PROFILES=coleta no .env). Veja docs/operacao/instalar-no-seu-computador.md.
+  provisionar:
+    profiles: ["coleta"]
+    build: ./backend
+    command: ["node", "dist/pipeline/provisionar.js", "--tenant", "${TENANT:-padrao}"]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  coletor:
+    profiles: ["coleta"]
+    build: ./backend
+    command: ["node", "dist/pipeline/ciclo.js"]
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CREDENTIALS_KEY: ${CREDENTIALS_KEY:-}
+      CREDENTIALS_KEY_VERSION: ${CREDENTIALS_KEY_VERSION:-v1}
+      TENANT: ${TENANT:-padrao}
+      INTERVALO_COLETA_MIN: ${INTERVALO_COLETA_MIN:-120}
+      NODE_OPTIONS: --max-old-space-size=2048
+    volumes:
+      - dados:/app/data
+    depends_on:
+      provisionar:
+        condition: service_completed_successfully
+    healthcheck:
+      # Saudável se o último ciclo terminou há menos de 6 horas.
+      test: ["CMD", "node", "-e", "process.exit(Date.now()-require('fs').statSync('/app/data/ultimo-ciclo.json').mtimeMs<6*3600e3?0:1)"]
+      interval: 5m
+      timeout: 10s
+      retries: 1
+      start_period: 40m
+
 volumes:
   pgdata:
+  dados:

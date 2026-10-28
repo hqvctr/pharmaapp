@@ -1,0 +1,36 @@
+{
+  "fontes": [
+    {
+      "nome": "lomadee",
+      "tipo": "A",
+      "frequenciaMinutos": 120,
+      "regiao": "SP",
+      "statusConfianca": "em_observacao",
+      "confiabilidade": "alta",
+      "baseLegal": "Programa de afiliados Lomadee; termos ainda não lidos (ver SOURCES.md)",
+      "ativa": true
+    }
+  ],
+  "lojas": [
+    {
+      "fonte": "lomadee",
+      "idExterno": "d855f505-7e26-4961-a182-c2139aeadd2c",
+      "rede": "Drogasmil",
+      "nome": "Drogasmil (online)",
+      "tipo": "online",
+      "status": "em_observacao",
+      "reputacao": 0.5,
+      "faixasCep": [{ "inicio": "01000000", "fim": "19999999", "prazoDias": 3 }]
+    },
+    {
+      "fonte": "lomadee",
+      "idExterno": "6d69265c-6b83-4ff4-916f-95a75057947d",
+      "rede": "PromoFarma",
+      "nome": "PromoFarma (online)",
+      "tipo": "online",
+      "status": "em_observacao",
+      "reputacao": 0.5,
+      "faixasCep": [{ "inicio": "01000000", "fim": "19999999", "prazoDias": 3 }]
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# Arquivos do Windows ficam como estao (fim de linha CRLF), inclusive no ZIP baixado do GitHub.
+scripts/windows/*.bat -text

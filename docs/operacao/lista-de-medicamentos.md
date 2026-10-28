@@ -9,7 +9,7 @@ qualquer outra: se a fonte de ofertas entregar o código de barras, a triagem fu
 Droga Raia é a **fonte de ofertas** delas (hoje não estão na conta da Lomadee), não a lista.
 
 ## Como atualizar (a CMED publica várias vezes por ano)
-`./scripts/atualizar-listas-medicamentos.sh` baixa a lista mais recente da página da Anvisa e converte
+O coletor em ciclo (`pipeline/ciclo.ts`) já refaz isso sozinho quando a lista tem mais de 7 dias. `./scripts/atualizar-listas-medicamentos.sh` baixa a lista mais recente da página da Anvisa e converte
 (cerca de 10 s). Saída em `backend/data/listas/` (`cmed-AAAA-MM-DD.json` e `atual.json`); esses arquivos não vão para o git.
 Usar na coleta: `--listas-medicamentos backend/data/listas/atual.json` (ou a variável `LISTAS_MEDICAMENTOS`).
 Só a conversão: `node backend/dist/normalizador/converterCmed.js --cmed <lista_pmc.xlsx> --saida <arquivo.json>`.

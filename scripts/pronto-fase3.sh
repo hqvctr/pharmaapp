@@ -3,8 +3,9 @@
 #  1. as migrations 0001 a 0003 aplicam pelo runner do projeto;
 #  2. o esquema do núcleo: cascata da exclusão de conta, isolamento entre tenants, restrições (scripts/fase3/esquema.sql);
 #  3. a migration 0003 sobre dados que já existiam (alertas da fase 2 ganham a situação de revisão certa);
-#  4. o contrato OpenAPI (app e operador) passa no lint;
-#  5. a suíte do backend.
+#  4. provisão de fontes/lojas, status e coletor em ciclo (instalação no computador do operador);
+#  5. o contrato OpenAPI (app e operador) passa no lint;
+#  6. a suíte do backend.
 # As rotas e o app entram nas próximas partes da fase e ampliam este script.
 #
 # Banco: docker compose, como nas fases anteriores. Sem Docker, aponte para um Postgres 16 já rodando:
@@ -108,14 +109,42 @@ if echo "$saida" | grep -q '"fonte":"lomadee"' && echo "$saida" | grep -q "sem-c
 else echo "$saida" | head -5; echo "FALHA --todas ($codigo)"; falhou=1; fi
 if echo "$saida" | grep -q "$SEGREDO"; then echo "FALHA o segredo apareceu na saída da coleta"; falhou=1; else echo "OK    a coleta não imprime o segredo"; fi
 
-passo "4. contrato OpenAPI"
+passo "3c. instalação no computador do operador: provisão, status e coletor em ciclo"
+DB_PROV=pronto_fase3_prov
+recria "$DB_PROV"
+export DATABASE_URL="$URL_BASE/$DB_PROV" REDIS_URL="redis://127.0.0.1:6379"
+node backend/dist/db/migrate.js >/dev/null
+r=$(node backend/dist/pipeline/provisionar.js --tenant padrao)
+if echo "$r" | grep -q '"fontesCriadas":\["lomadee"\]' && [ "$(echo "$r" | grep -o 'online' | wc -l)" = "2" ]; then
+  echo "OK    provisão cria a fonte e as 2 lojas"; else echo "$r"; echo "FALHA provisão"; falhou=1; fi
+psql_ "$DB_PROV" -q -c "UPDATE stores SET status = 'aprovada', reputacao = 0.9 WHERE rede = 'Drogasmil'"
+r=$(node backend/dist/pipeline/provisionar.js --tenant padrao)
+if echo "$r" | grep -q '"fontesCriadas":\[\],"lojasCriadas":\[\]' \
+   && [ "$(psql_ "$DB_PROV" -Atc "SELECT status || reputacao FROM stores WHERE rede = 'Drogasmil'")" = "aprovada0.90" ] \
+   && [ "$(psql_ "$DB_PROV" -Atc "SELECT count(*) FROM stores")" = "2" ]; then
+  echo "OK    rodar de novo não duplica nem desfaz o que o operador mudou"; else echo "$r"; echo "FALHA provisão repetida"; falhou=1; fi
+saida=$(node backend/dist/pipeline/status.js)
+if echo "$saida" | grep -q "Ainda não há nenhum preço guardado"; then echo "OK    status em português quando ainda não há dados"; else echo "$saida"; echo "FALHA status"; falhou=1; fi
+saida=$(CREDENTIALS_KEY="$CHAVE_A" node backend/dist/pipeline/credencial.js --tenant padrao --fonte lomadee --pedir </dev/null 2>&1) && codigo=0 || codigo=$?
+if [ "$codigo" != 0 ] && echo "$saida" | grep -q "terminal interativo"; then echo "OK    --pedir sem terminal recusa em vez de travar"; else echo "$saida"; echo "FALHA --pedir"; falhou=1; fi
+# Coletor em ciclo: sem credencial o ciclo falha com mensagem clara, grava o estado e o SIGTERM encerra limpo.
+DADOS_TESTE=$(mktemp -d)
+mkdir -p "$DADOS_TESTE/listas" && cp "$LISTAS" "$DADOS_TESTE/listas/atual.json"
+saida=$(DADOS="$DADOS_TESTE" CREDENTIALS_KEY="$CHAVE_A" timeout -s TERM 15 node backend/dist/pipeline/ciclo.js 2>&1) && codigo=0 || codigo=$?
+if { [ "$codigo" = 0 ] || [ "$codigo" = 124 ]; } && echo "$saida" | grep -q "sem credencial gravada" && echo "$saida" | grep -q "Coletor parado" \
+   && grep -q '"falhou": true' "$DADOS_TESTE/ultimo-ciclo.json"; then
+  echo "OK    coletor em ciclo: falha clara sem credencial, grava o estado e encerra limpo"
+else echo "$saida" | head -8; echo "FALHA coletor em ciclo ($codigo)"; falhou=1; fi
+export DATABASE_URL="$URL_BASE/$DB" REDIS_URL="redis://127.0.0.1:6379"
+
+passo "5. contrato OpenAPI"
 if lint=$(npx --yes @redocly/cli@1.34.5 lint backend/openapi/openapi.yaml backend/openapi/admin.yaml 2>&1) && echo "$lint" | grep -q "valid"; then
   echo "OK    lint do contrato (app e operador)"
 else
   echo "$lint" | tail -15; echo "FALHA lint do contrato"; falhou=1
 fi
 
-passo "5. suíte do backend"
+passo "6. suíte do backend"
 if (cd backend && npm test 2>&1 | tail -6); then echo "OK    npm test"; else echo "FALHA npm test"; falhou=1; fi
 
 echo
