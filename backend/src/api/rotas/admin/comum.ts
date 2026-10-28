@@ -59,3 +59,16 @@ export const resumoOperador = (id: string | null, nome: string | null) => (id ==
 export function revisaoJson(operadorId: string | null, operadorNome: string | null, em: Date | null, observacao: string | null) {
   return operadorId === null || em === null ? null : { operador: { id: operadorId, nome: operadorNome as string }, em: em.toISOString(), observacao };
 }
+
+const DATA_HORA = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+
+/** Data e hora de query (ISO 8601 com fuso); outro formato vira erro de campo. */
+export function lerDataHora(q: Record<string, unknown>, nome: string, campos: CampoInvalido[]): Date | undefined {
+  const v = q[nome];
+  if (v === undefined) return undefined;
+  if (typeof v !== 'string' || !DATA_HORA.test(v) || Number.isNaN(Date.parse(v))) {
+    campos.push({ campo: nome, mensagem: 'Use data e hora, como 2026-10-27T15:00:00Z.' });
+    return undefined;
+  }
+  return new Date(v);
+}

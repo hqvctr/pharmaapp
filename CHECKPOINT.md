@@ -1,5 +1,10 @@
 # Checkpoint
 
+## Fase 3, parte 3: área do operador (2026-10-28, DECISIONS 83)
+
+`/v1/admin` no ar: login do operador, alertas, lojas, fontes (inclusive credencial só de escrita), denúncias, triagem (com liberação respeitada pela coleta), ofertas manuais (lista e encerramento), busca de produto e auditoria. 21 das 22 operações; falta o cadastro de oferta manual (fase 5) e a **tela** do painel. `contrato.test.ts` guarda quais operações dos contratos ainda não têm rota.
+Mutações em todos os blocos (login, sessões, alertas, lojas/fontes, moderação, normalizador, ofertas/busca/auditoria) quebram o teste certo.
+
 ## Fase 3, parte 2l: login com Google (2026-10-28, DECISIONS 82)
 
 `POST /v1/auth/google` no ar, **desligado até o ID de cliente web entrar em `app.google.clientIds`** (vem do Cowork; ver `docs/operacao/login-google.md`). Verificação própria do ID token (RS256, JWKS com cache, audiência, validade, nonce), testada com chaves locais e por 14 mutações do verificador, 7 da conta e 5 da rota.

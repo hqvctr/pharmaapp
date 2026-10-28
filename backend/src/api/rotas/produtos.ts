@@ -13,19 +13,19 @@ import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
 const CATEGORIA = /^[a-z0-9_]+$/;
-const MAX_PALAVRAS = 6;
+export const MAX_PALAVRAS = 6;
 
 export interface DepsProdutos extends DepsAuth {
   links: ProvedorLinkOferta;
 }
 
 /** Escapa os curingas do LIKE: o texto da pessoa nunca vira padrão. */
-const escapar = (t: string): string => t.replace(/[\\%_]/g, (c) => `\\${c}`);
+export const escapar = (t: string): string => t.replace(/[\\%_]/g, (c) => `\\${c}`);
 
-function cursorDeOffset(offset: number): string {
+export function cursorDeOffset(offset: number): string {
   return Buffer.from(JSON.stringify({ o: offset })).toString('base64url');
 }
-function lerOffset(bruto: unknown): number {
+export function lerOffset(bruto: unknown): number {
   if (bruto === undefined) return 0;
   const invalido = () => falhaDeValidacao([{ campo: 'cursor', mensagem: 'Cursor inválido.' }]);
   if (typeof bruto !== 'string' || bruto.length > 512) throw invalido();
