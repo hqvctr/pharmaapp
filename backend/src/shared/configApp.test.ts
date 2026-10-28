@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validarConfigApp } from './configApp.js';
+import { metodosLoginOferecidos, validarConfigApp } from './configApp.js';
 import { carregarConfigTenant } from './tenantConfig.js';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -38,8 +38,24 @@ describe('config do app (bloco `app` do tenant)', () => {
     ['gratuito maior que premium', (a: any) => (a.limites.cepsGratuito = 3, a.limites.cepsPremium = 2)],
     ['método de login desconhecido', (a: any) => (a.metodosLogin = ['email', 'sms'])],
     ['sem método de login', (a: any) => (a.metodosLogin = [])],
+    ['clientIds do Google não é lista', (a: any) => (a.google = { clientIds: 'x' })],
+    ['clientId do Google fora do formato', (a: any) => (a.google = { clientIds: ['abc'] })],
+    ['clientId do Google repetido', (a: any) => (a.google = { clientIds: ['1-a.apps.googleusercontent.com', '1-a.apps.googleusercontent.com'] })],
+    ['clientId do Google que não é texto', (a: any) => (a.google = { clientIds: [5] })],
+    ['mais de 5 clientIds do Google', (a: any) => (a.google = { clientIds: [1, 2, 3, 4, 5, 6].map((n) => `${n}-a.apps.googleusercontent.com`) })],
     ['limite de taxa zerado', (a: any) => (a.limitesTaxa.configuracao.maximo = 0)],
   ])('recusa: %s', async (_nome, alterar) => {
     expect(await validar(alterar)).toThrow(/Config inválida: app\./);
+  });
+
+  it('sem `google` no bloco, nenhum cliente; o Google só é oferecido com cliente OAuth', async () => {
+    const b = bruto();
+    delete b.app.google;
+    const c = await carregarConfigTenant('padrao');
+    const app = validarConfigApp(b.app, c.curadoria, b.medicamentos.categoria);
+    expect(app.google.clientIds).toEqual([]);
+    expect(app.metodosLogin).toContain('google');
+    expect(metodosLoginOferecidos(app)).toEqual(['email']);
+    expect(metodosLoginOferecidos({ ...app, google: { clientIds: ['1-a.apps.googleusercontent.com'] } })).toEqual(['email', 'google']);
   });
 });

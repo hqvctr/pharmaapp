@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { afterAll, beforeAll, beforeEach } from 'vitest';
 import { CodigosMemoria } from '../auth/codigos.js';
+import type { VerificadorGoogle } from '../auth/google.js';
 import { criarSessao } from '../auth/sessoes.js';
 import { iguais } from '../auth/tokens.js';
 import { migrate } from '../db/migrate.js';
@@ -10,6 +11,7 @@ import { buildApp } from './app.js';
 import { ErroApi } from './erros.js';
 import type { ProvedorLinkOferta } from './linkOferta.js';
 import { LimitadorMemoria } from './limiteTaxa.js';
+import { carregarConfigTenant } from '../shared/tenantConfig.js';
 import { RegistroTenantsBanco } from './tenants.js';
 
 export const URL_BASE = process.env.PG_TESTE_URL;
@@ -17,7 +19,7 @@ export const VIGENTE = '2026-10-28';
 export const DROGASMIL = 'd855f505-7e26-4961-a182-c2139aeadd2c'; // marca liberada em fontes.lomadee.marcasPermitidasParaLink
 export const INICIO = new Date('2026-11-01T12:00:00Z');
 
-export function ambienteDeTeste(prefixo: string) {
+export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorGoogle; clientIdsGoogle?: string[] } = {}) {
   const nomeBanco = `${prefixo}_${process.pid}_${Date.now()}`;
   const e = {
     pool: undefined as unknown as pg.Pool,
@@ -54,10 +56,13 @@ export function ambienteDeTeste(prefixo: string) {
     const relogio = () => e.agora.getTime();
     e.app = buildApp({
       healthChecks: [],
-      tenants: new RegistroTenantsBanco(e.pool),
+      tenants: new RegistroTenantsBanco(e.pool, async (slug) => {
+        const c = await carregarConfigTenant(slug);
+        return opcoes.clientIdsGoogle === undefined ? c : { ...c, app: { ...c.app, google: { clientIds: opcoes.clientIdsGoogle } } };
+      }),
       limitador: new LimitadorMemoria(relogio),
       links,
-      auth: { db: e.pool, codigos: new CodigosMemoria(iguais, relogio), enviador: { enviarCodigo: async () => {} }, chaveHmac: Buffer.alloc(32, 9), agora: () => e.agora },
+      auth: { db: e.pool, codigos: new CodigosMemoria(iguais, relogio), enviador: { enviarCodigo: async () => {} }, ...(opcoes.google ? { google: opcoes.google } : {}), chaveHmac: Buffer.alloc(32, 9), agora: () => e.agora },
     });
   });
   beforeEach(() => {
@@ -139,8 +144,8 @@ export function ambienteDeTeste(prefixo: string) {
     async historico(produto: string, loja: string, observadoEm: string, precoPorUnidade: number, precoEmbalagem = 5990) {
       await e.pool.query(`INSERT INTO price_history (tenant_id, product_id, store_id, preco_centavos, preco_por_unidade_centavos, observado_em) VALUES ($1,$2,$3,$4,$5,$6)`, [e.tenantId, produto, loja, precoEmbalagem, precoPorUnidade, observadoEm]);
     },
-    chamar(method: 'GET' | 'PUT' | 'POST' | 'DELETE', url: string, auth: Record<string, string>, payload?: unknown, extra: Record<string, string> = {}) {
-      return e.app.inject({ method, url, headers: { ...auth, ...extra }, ...(payload !== undefined ? { payload: payload as never } : {}) });
+    chamar(method: 'GET' | 'PUT' | 'POST' | 'DELETE', url: string, auth: Record<string, string>, payload?: unknown, extra: Record<string, string> = {}, ip?: string) {
+      return e.app.inject({ method, url, headers: { ...auth, ...extra }, ...(payload !== undefined ? { payload: payload as never } : {}), ...(ip !== undefined ? { remoteAddress: ip } : {}) });
     },
   };
   return h;

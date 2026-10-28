@@ -1,5 +1,6 @@
 // GET /v1/configuracao: configuração pública do tenant, lida na abertura do app. Sem login.
 import type { FastifyInstance } from 'fastify';
+import { metodosLoginOferecidos } from '../../shared/configApp.js';
 import { ErroApi } from '../erros.js';
 import type { LimitadorTaxa } from '../limiteTaxa.js';
 import { tenantDaRequisicao, type RegistroTenants, type TenantAtivo } from '../tenants.js';
@@ -15,7 +16,7 @@ export function corpoConfiguracao(t: TenantAtivo) {
     termos: { versao: app.termos.versao, url: app.urlSite + app.termos.caminho },
     privacidade: { versao: app.privacidade.versao, url: app.urlSite + app.privacidade.caminho },
     versao_minima: app.versaoMinima,
-    metodos_login: app.metodosLogin,
+    metodos_login: metodosLoginOferecidos(app),
     categorias: app.categorias,
     regiao: { cep_inicio: app.regiao.cepInicio, cep_fim: app.regiao.cepFim },
     limites: {

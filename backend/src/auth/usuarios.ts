@@ -18,6 +18,41 @@ export async function acharOuCriarPorEmail(
   return { userId: r.rows[0].id, contaNova: r.rows[0].nova === true };
 }
 
+export interface ContaGoogle {
+  userId: string;
+  contaNova: boolean;
+}
+
+/**
+ * Conta do login com Google (DECISIONS 40, D2–D5): 1) pelo `sub`; 2) se o Google declara o e-mail verificado e já existe conta
+ * com ele, vincula o `sub` a ela; 3) senão cria. Sem e-mail, ou com e-mail não verificado e sem conta pelo `sub`, devolve `null`
+ * (o chamador responde `credencial_invalida`). Conta de mesmo e-mail já ligada a outro `sub` também devolve `null`.
+ * Deve rodar numa transação.
+ */
+export async function acharOuCriarPorGoogle(
+  db: Db,
+  tenantId: string,
+  g: { sub: string; email: string | null; emailVerificado: boolean },
+  agora: Date,
+): Promise<ContaGoogle | null> {
+  const porSub = await db.query(`SELECT id FROM users WHERE tenant_id = $1 AND google_sub = $2`, [tenantId, g.sub]);
+  if (porSub.rowCount === 1) return { userId: porSub.rows[0].id, contaNova: false };
+  if (g.email === null || !g.emailVerificado) return null;
+  const email = g.email.trim().toLowerCase();
+  const porEmail = await db.query(`SELECT id, google_sub FROM users WHERE tenant_id = $1 AND lower(email) = $2 FOR UPDATE`, [tenantId, email]);
+  if (porEmail.rowCount === 1) {
+    if (porEmail.rows[0].google_sub !== null) return null;
+    await db.query(`UPDATE users SET google_sub = $3 WHERE tenant_id = $1 AND id = $2`, [tenantId, porEmail.rows[0].id, g.sub]);
+    return { userId: porEmail.rows[0].id, contaNova: false };
+  }
+  // `email_verificado_em` fica nulo: ele marca o método "código por e-mail", que esta pessoa ainda não usou.
+  const nova = await db.query(
+    `INSERT INTO users (tenant_id, email, google_sub, criado_em) VALUES ($1, $2, $3, $4) RETURNING id`,
+    [tenantId, email, g.sub, agora],
+  );
+  return { userId: nova.rows[0].id, contaNova: true };
+}
+
 export interface UsuarioApi {
   id: string;
   email: string;

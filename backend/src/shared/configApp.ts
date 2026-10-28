@@ -14,6 +14,8 @@ export interface ConfigApp {
   privacidade: DocumentoLegalConfig;
   versaoMinima: { android: string | null; ios: string | null };
   metodosLogin: Array<'email' | 'google' | 'apple'>;
+  /** Login com Google: IDs de cliente OAuth aceitos como audiência (públicos). Vazio = o método não é oferecido. */
+  google: { clientIds: string[] };
   categorias: Array<{ slug: string; rotulo: string }>;
   regiao: { cepInicio: string; cepFim: string };
   limites: {
@@ -72,6 +74,12 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     inv('metodosLogin');
   }
   if (new Set(metodos).size !== metodos.length) inv('metodosLogin (repetido)');
+
+  const clientIds = bruto.google?.clientIds ?? [];
+  if (!Array.isArray(clientIds) || clientIds.length > 5 || new Set(clientIds).size !== clientIds.length) inv('google.clientIds');
+  for (const [i, id] of (clientIds as unknown[]).entries()) {
+    if (typeof id !== 'string' || !/^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(id)) inv(`google.clientIds[${i}]`);
+  }
 
   if (!Array.isArray(bruto.categorias) || bruto.categorias.length === 0) inv('categorias');
   const vistos = new Set<string>();
@@ -132,6 +140,7 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
       ios: versaoMinima(bruto.versaoMinima?.ios, 'versaoMinima.ios'),
     },
     metodosLogin: metodos,
+    google: { clientIds: clientIds as string[] },
     categorias,
     regiao: { cepInicio: r.cepInicio, cepFim: r.cepFim },
     limites,
@@ -140,4 +149,9 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     denuncia,
     limitesTaxa,
   };
+}
+
+/** Métodos que o app pode mostrar: o Google só entra com cliente OAuth configurado (senão o botão falharia sempre). */
+export function metodosLoginOferecidos(app: ConfigApp): ConfigApp['metodosLogin'] {
+  return app.metodosLogin.filter((m) => m !== 'google' || app.google.clientIds.length > 0);
 }

@@ -8,6 +8,7 @@ import { ProvedorLinkDeProducao } from './linkOferta.js';
 import { fabricaEncurtadorDeProducao, type ModoCredencialApi } from './encurtadorProducao.js';
 import { carregarChaveCredenciais } from '../shared/cifra.js';
 import { CodigosRedis } from '../auth/codigos.js';
+import { VerificadorGoogleJwks } from '../auth/google.js';
 import { EnviadorBrevo, EnviadorConsole, type EnviadorEmail } from '../auth/enviador.js';
 import { iguais } from '../auth/tokens.js';
 
@@ -24,7 +25,7 @@ async function main(): Promise<void> {
   if (env.authHmacKey !== null && env.authHmacKey.length < 32) throw new Error('AUTH_HMAC_KEY precisa ter ao menos 32 caracteres');
   const auth =
     env.authHmacKey !== null && enviador !== null
-      ? { db: pool, codigos: new CodigosRedis(redis, iguais), enviador, chaveHmac: Buffer.from(env.authHmacKey), agora: () => new Date() }
+      ? { db: pool, codigos: new CodigosRedis(redis, iguais), enviador, chaveHmac: Buffer.from(env.authHmacKey), google: new VerificadorGoogleJwks(), agora: () => new Date() }
       : undefined;
   if (auth === undefined) console.warn('Login por e-mail DESLIGADO: faltam AUTH_HMAC_KEY e (BREVO_API_KEY + EMAIL_REMETENTE ou AUTH_EMAIL_CONSOLE=1).');
 

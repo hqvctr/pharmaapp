@@ -233,6 +233,7 @@
     "privacidade": { "versao": "2026-10-28", "caminho": "/privacidade" },
     "versaoMinima": { "android": null, "ios": null },
     "metodosLogin": ["email", "google"],
+    "google": { "clientIds": [] },
     "categorias": [
       { "slug": "higiene_bebe", "rotulo": "Higiene do bebê" },
       { "slug": "cuidados_pessoais", "rotulo": "Cuidados pessoais" },

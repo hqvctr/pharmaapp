@@ -4,8 +4,9 @@ import type pg from 'pg';
 import { type ArmazenamentoCodigos } from '../../auth/codigos.js';
 import { type EnviadorEmail } from '../../auth/enviador.js';
 import { criarSessao, ErroSessaoRevogadaPorReuso, renovarSessao, revogarSessao, type ParDeTokens } from '../../auth/sessoes.js';
+import { ChavesGoogleIndisponiveis, TokenGoogleInvalido, type VerificadorGoogle } from '../../auth/google.js';
 import { chaveEmail, hmacCodigo, iguais, novoCodigo } from '../../auth/tokens.js';
-import { acharOuCriarPorEmail, montarUsuario } from '../../auth/usuarios.js';
+import { acharOuCriarPorEmail, acharOuCriarPorGoogle, montarUsuario } from '../../auth/usuarios.js';
 import { comTransacao } from '../../db/transacao.js';
 import { corpoObjeto } from '../corpo.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
@@ -21,6 +22,8 @@ export interface DepsAuth {
   enviador: EnviadorEmail;
   /** Chave do HMAC do código de e-mail (segredo; só em variável de ambiente). */
   chaveHmac: Buffer;
+  /** Login com Google. Ausente, ou tenant sem cliente OAuth: o método responde 403 `metodo_login_indisponivel`. */
+  google?: VerificadorGoogle;
   agora: () => Date;
 }
 
@@ -124,6 +127,52 @@ export function rotasAuth(app: FastifyInstance, d: DepsAuth): void {
       return { par: await criarSessao(c, tenant.id, u.userId, agora), contaNova: u.contaNova, userId: u.userId };
     });
     return sessaoJson(par, contaNova, await montarUsuario(d.db, tenant.id, userId, tenant.config.app, agora));
+  });
+
+  app.post('/v1/auth/google', async (req) => {
+    const tenant = await tenantDaRequisicao(req, d.tenants);
+    const espera = await limitar(d, tenant, 'googlePorIp', `${tenant.slug}:${req.ip}`);
+    if (espera !== null) throw new ErroApi('muitas_requisicoes', undefined, undefined, espera);
+    const cfg = tenant.config.app;
+    if (d.google === undefined || !cfg.metodosLogin.includes('google') || cfg.google.clientIds.length === 0) throw new ErroApi('metodo_login_indisponivel');
+
+    const b = corpoObjeto(req);
+    const campos: CampoInvalido[] = [];
+    if (typeof b.id_token !== 'string' || b.id_token.length === 0 || b.id_token.length > 4096) campos.push({ campo: 'id_token', mensagem: 'Envie o ID token do Google.' });
+    if (b.nonce !== undefined && (typeof b.nonce !== 'string' || b.nonce.length === 0 || b.nonce.length > 128)) campos.push({ campo: 'nonce', mensagem: 'Nonce inválido.' });
+    if (campos.length > 0) throw new ErroApi('validacao', undefined, campos);
+
+    let identidade;
+    try {
+      identidade = await d.google.verificar(b.id_token as string, { audiencias: cfg.google.clientIds, ...(typeof b.nonce === 'string' ? { nonce: b.nonce } : {}) });
+    } catch (err) {
+      if (err instanceof TokenGoogleInvalido) {
+        req.log.info({ motivo: err.message }, 'login com Google recusado');
+        throw new ErroApi('credencial_invalida');
+      }
+      if (err instanceof ChavesGoogleIndisponiveis) {
+        req.log.error({ err: err.message }, 'chaves do Google indisponíveis');
+        throw new ErroApi('servico_indisponivel', undefined, undefined, 30);
+      }
+      throw err;
+    }
+
+    const agora = d.agora();
+    // Duas entradas simultâneas de uma conta nova disputam o índice único; a que perde repete e acha a conta da outra.
+    const entrar = () =>
+      comTransacao(d.db, async (c) => {
+        const conta = await acharOuCriarPorGoogle(c, tenant.id, identidade, agora);
+        if (conta === null) throw new ErroApi('credencial_invalida');
+        return { conta, par: await criarSessao(c, tenant.id, conta.userId, agora) };
+      });
+    let feito;
+    try {
+      feito = await entrar();
+    } catch (err) {
+      if ((err as { code?: string }).code !== '23505') throw err;
+      feito = await entrar();
+    }
+    return sessaoJson(feito.par, feito.conta.contaNova, await montarUsuario(d.db, tenant.id, feito.conta.userId, cfg, agora));
   });
 
   app.post('/v1/auth/renovar', async (req) => {

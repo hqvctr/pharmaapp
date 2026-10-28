@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Fase 3, parte 2l: login com Google (2026-10-28, DECISIONS 82)
+
+`POST /v1/auth/google` no ar, **desligado até o ID de cliente web entrar em `app.google.clientIds`** (vem do Cowork; ver `docs/operacao/login-google.md`). Verificação própria do ID token (RS256, JWKS com cache, audiência, validade, nonce), testada com chaves locais e por 14 mutações do verificador, 7 da conta e 5 da rota.
+
 ## Fase 3, parte 2k: prova do alerta (2026-10-28, DECISIONS 81)
 
 O pipeline grava menor, maior e dias medidos na criação do alerta (migration 0007) e a API devolve `prova`. Testado de ponta a ponta com o pipeline de verdade (20 dias de coleta, queda, alerta) e por mutação (janela, dia corrente, contagem de dias, produto, mapeamento).
