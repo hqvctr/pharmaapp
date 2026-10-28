@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { descreverStatus, type Contagens } from './status.js';
 
-const base: Contagens = { produtos: 10, ofertas: 20, linhasHistorico: 30, primeiraObservacao: null, ultimaColeta: null, bloqueios: 2, alertas: 0 };
+const base: Contagens = { produtos: 10, ofertas: 20, linhasHistorico: 30, primeiraObservacao: null, diasFechados: 0, ultimaColeta: null, bloqueios: 2, alertas: 0 };
 const agora = new Date('2026-11-15T12:00:00Z');
 
 describe('status da coleta', () => {
@@ -10,15 +10,27 @@ describe('status da coleta', () => {
   });
 
   it('conta os dias de histórico e quanto falta', () => {
-    const t = descreverStatus({ ...base, primeiraObservacao: new Date('2026-11-08T12:00:00Z') }, null, agora).join('\n');
+    const t = descreverStatus({ ...base, primeiraObservacao: new Date('2026-11-08T12:00:00Z'), diasFechados: 7 }, null, agora).join('\n');
     expect(t).toContain('7 de 14 dias');
     expect(t).toContain('Faltam cerca de 7 dias');
   });
 
   it('14 dias ou mais: libera a avaliação', () => {
-    const t = descreverStatus({ ...base, primeiraObservacao: new Date('2026-10-30T12:00:00Z') }, null, agora).join('\n');
+    const t = descreverStatus({ ...base, primeiraObservacao: new Date('2026-10-30T12:00:00Z'), diasFechados: 16 }, null, agora).join('\n');
     expect(t).toContain('16 de 14 dias');
     expect(t).toContain('Já dá para avaliar');
+  });
+
+  it('conta dias fechados com preço, não o tempo corrido: parada de uma semana não conta como 14 dias', () => {
+    const t = descreverStatus({ ...base, primeiraObservacao: new Date('2026-10-01T12:00:00Z'), diasFechados: 5 }, null, agora).join('\n');
+    expect(t).toContain('5 de 14 dias');
+    expect(t).not.toContain('Já dá para avaliar');
+  });
+
+  it('primeiro dia ainda aberto: 0 dias e explica que o dia de hoje não conta', () => {
+    const t = descreverStatus({ ...base, primeiraObservacao: new Date('2026-11-15T09:00:00Z'), diasFechados: 0 }, null, agora).join('\n');
+    expect(t).toContain('0 de 14 dias');
+    expect(t).toContain('dia de hoje ainda não conta');
   });
 
   it('coleta parada há muitas horas pede atenção', () => {

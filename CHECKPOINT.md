@@ -1,5 +1,17 @@
 # Checkpoint
 
+## Coleta no Windows conferida (2026-10-28)
+
+Relatório do Cowork (`coleta-windows-2026-10-28.md`): a coleta **já estava instalada e rodando** no computador do responsável desde 27/10 às 23:11
+(Docker Desktop 4.97.0, `C:\economae`, `.env` existente), com 7 ciclos seguidos "ok" a cada 2 horas, 1739 itens da Lomadee por ciclo e nenhum erro.
+Ninguém precisou colar a chave de novo. O `status.bat` (rodado pelo responsável) mostrou 747 produtos, 762 ofertas, 1524 preços, 727 barrados, 0 alertas.
+Os números estranhados se explicam: 1524 = 762 ofertas × 2 dias de calendário (o histórico grava a primeira observação do dia e toda mudança, DECISIONS 27);
+762 de 1739 é o que sobra depois dos 727 barrados e dos itens de categoria sem mapa (BACKLOG, achados da primeira coleta).
+**Corrigido:** o `status.bat` contava o tempo corrido desde a primeira coleta ("0 de 14 dias" nas primeiras 24 h, e contaria 14 mesmo com a coleta parada por dias);
+agora conta dias fechados com preço guardado, no fuso do tenant, igual ao motor. Conferido num Postgres de verdade. 305 testes.
+Os `.bat` ainda não foram *instalados do zero* num Windows, mas `status.bat` e o coletor em ciclo estão provados no computador real.
+Para o `status.bat` novo valer lá, o responsável precisa atualizar a pasta `C:\economae` com a versão da branch atual (baixar o zip de novo e substituir os arquivos, mantendo o `.env`).
+
 ## Canal da Lomadee criado (2026-10-28)
 
 Pelo Cowork, conta de Nathália Fávaro Cândido: canal `economae` (Comparador de Preços), ID `7633b2c1-98a7-45c9-adea-e529dc67cc87`, ativo,
