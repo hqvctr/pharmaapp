@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Fase 3, parte 2k: prova do alerta (2026-10-28, DECISIONS 81)
+
+O pipeline grava menor, maior e dias medidos na criação do alerta (migration 0007) e a API devolve `prova`. Testado de ponta a ponta com o pipeline de verdade (20 dias de coleta, queda, alerta) e por mutação (janela, dia corrente, contagem de dias, produto, mapeamento).
+
 ## Fase 3, parte 2j: exportação dos dados (2026-10-28, DECISIONS 80)
 
 `GET /v1/me/exportacao` no ar (tudo da conta, sem token de push nem hash de comprovante, 1 por hora, vale com termos pendentes). Um teste confere que toda tabela da pessoa está na exportação ou na lista de fora.

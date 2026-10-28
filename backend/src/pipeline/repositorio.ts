@@ -2,7 +2,7 @@
 import type pg from 'pg';
 import type { Confiabilidade, StatusConfianca } from '../curadoria/tipos.js';
 import type { UltimoAlerta } from '../avaliador/deduplicacao.js';
-import type { LinhaHistorico } from '../avaliador/historico.js';
+import type { LinhaHistorico, LinhaPreco, Prova } from '../avaliador/historico.js';
 import type { OfertaBruta } from '../fontes/contrato.js';
 import type { ProdutoNormalizado } from '../normalizador/normalizar.js';
 
@@ -234,20 +234,32 @@ export interface NovoAlerta {
   rotuloCondicao: string | null;
   entregaAConfirmar: boolean;
   criadoEm: Date;
+  /** O que o motor mediu antes de avisar; `null` quando não há observação medida. */
+  prova: Prova | null;
 }
 
 export async function inserirAlerta(db: Db, a: NovoAlerta): Promise<void> {
   await db.query(
     `INSERT INTO alerts (tenant_id, offer_id, store_id, familia_chave, score, decisao, motivo, preco_centavos,
                          preco_efetivo_por_unidade, preco_referencia_por_unidade, valida_ate, rotulo_condicao,
-                         entrega_a_confirmar, criado_em)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+                         entrega_a_confirmar, criado_em, prova_menor_centavos, prova_maior_centavos, prova_dias)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
     [
       a.tenantId, a.offerId, a.storeId, a.familiaChave, a.score, a.decisao, a.motivo, a.precoCentavos,
       a.precoEfetivoPorUnidade, a.precoReferenciaPorUnidade, a.validaAte, a.rotuloCondicao, a.entregaAConfirmar,
-      a.criadoEm,
+      a.criadoEm, a.prova?.menorPrecoCentavos ?? null, a.prova?.maiorPrecoCentavos ?? null, a.prova?.diasMedidos ?? null,
     ],
   );
+}
+
+/** Preços (da embalagem, não por unidade) observados para o produto na loja desde `desde`, para a prova do alerta. */
+export async function precosDaEmbalagem(db: Db, tenantId: string, productId: string, storeId: string, desde: Date): Promise<LinhaPreco[]> {
+  const r = await db.query(
+    `SELECT observado_em, preco_centavos FROM price_history
+      WHERE tenant_id = $1 AND product_id = $2 AND store_id = $3 AND observado_em >= $4 ORDER BY observado_em`,
+    [tenantId, productId, storeId, desde],
+  );
+  return r.rows.map((l) => ({ observadoEm: l.observado_em, precoCentavos: Number(l.preco_centavos) }));
 }
 
 /** Fontes ativas e não bloqueadas do tenant, para a coleta de todas. */

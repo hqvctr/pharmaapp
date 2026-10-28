@@ -189,6 +189,19 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       expect(r.json().vazio_por).toBeNull();
     });
 
+    it('mostra a prova gravada na criação do alerta (menor, maior e dias medidos), no feed e no detalhe; sem prova é null', async () => {
+      const { loja, produto, p } = await cenario();
+      const { alerta } = await semear({ loja, produto, preco: 5990, decisao: 'notificar' });
+      const { alerta: semProva } = await semear({ loja, produto: await criarProduto(), preco: 5990, decisao: 'notificar' });
+      await pool.query(`UPDATE alerts SET prova_menor_centavos = 6490, prova_maior_centavos = 8990, prova_dias = 37 WHERE id = $1`, [alerta]);
+      const esperada = { menor_preco_centavos: 6490, maior_preco_centavos: 8990, dias_medidos: 37 };
+      const lista = (await feed(p.auth)).json().itens;
+      expect(lista.find((i: { id: string }) => i.id === alerta).prova).toEqual(esperada);
+      expect(lista.find((i: { id: string }) => i.id === semProva).prova).toBeNull();
+      const d = await app.inject({ method: 'GET', url: `/v1/alertas/${alerta}`, headers: p.auth });
+      expect(d.json().prova).toEqual(esperada);
+    });
+
     it('somente_feed aparece sem destaque; aguardando aprovação só depois de aprovado; rejeitado nunca', async () => {
       const { loja, produto, p } = await cenario();
       const sf = await semear({ loja, produto, decisao: 'somente_feed' });

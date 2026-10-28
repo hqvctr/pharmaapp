@@ -87,7 +87,7 @@ export async function consultarAlertas(db: Db, f: FiltroAlertas): Promise<any[]>
   const limite = f.alertaId !== undefined ? 1 : (f.limite ?? 20) + 1;
   const r = await db.query(
     `SELECT a.id, a.criado_em, a.decisao, a.preco_centavos, a.preco_efetivo_por_unidade, a.preco_referencia_por_unidade,
-            a.rotulo_condicao, a.entrega_a_confirmar,
+            a.rotulo_condicao, a.entrega_a_confirmar, a.prova_menor_centavos, a.prova_maior_centavos, a.prova_dias,
             o.id AS offer_id, o.valida_de, o.valida_ate, o.coletada_em, o.link, o.link_afiliado, o.frete_status, o.frete_centavos,
             (o.criada_por IS NOT NULL) AS manual, src.nome AS fonte,
             ${situacaoSql()} AS situacao,
@@ -157,7 +157,7 @@ export function paraAlerta(r: any) {
     // O texto legal sai do código, nunca da config nem do banco (nbcal.ts).
     advertencias: (r.advertencias as string[]).map((codigo) => ({ codigo, texto: TEXTOS_ADVERTENCIA[codigo as keyof typeof TEXTOS_ADVERTENCIA] })),
     seguido: r.seguido === true,
-    // A medição (menor, maior e dias) ainda não é gravada na criação do alerta; o contrato aceita null (BACKLOG).
-    prova: null,
+    // O que o motor mediu quando criou o alerta; null em alerta antigo e em oferta manual.
+    prova: r.prova_menor_centavos === null ? null : { menor_preco_centavos: r.prova_menor_centavos, maior_preco_centavos: r.prova_maior_centavos, dias_medidos: r.prova_dias },
   };
 }

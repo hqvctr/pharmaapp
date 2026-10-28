@@ -4,7 +4,7 @@ import type pg from 'pg';
 import { avaliarOferta } from '../curadoria/motor.js';
 import type { Decisao } from '../curadoria/tipos.js';
 import { deduplicar } from '../avaliador/deduplicacao.js';
-import { agregarPorDia, diaLocal } from '../avaliador/historico.js';
+import { agregarPorDia, calcularProva, diaLocal } from '../avaliador/historico.js';
 import type { SourceAdapter } from '../fontes/contrato.js';
 import type { ListasMedicamentos } from '../normalizador/medicamentos.js';
 import { normalizarOferta, type ProdutoNormalizado } from '../normalizador/normalizar.js';
@@ -198,6 +198,14 @@ async function processarOferta(
     resumo.alertasSuprimidos++;
     return;
   }
+  // A prova é o retrato do que foi medido agora (o histórico muda depois), na mesma janela do motor.
+  const janelaProva = ctx.config.curadoria.janelaPisoDias;
+  const prova = calcularProva(
+    await repo.precosDaEmbalagem(db, tenantId, productId, loja.storeId, new Date(agora.getTime() - (janelaProva + 1) * DIA_MS)),
+    agora,
+    ctx.config.fuso,
+    janelaProva,
+  );
   await repo.inserirAlerta(db, {
     tenantId,
     offerId,
@@ -213,6 +221,7 @@ async function processarOferta(
     rotuloCondicao: resultado.rotuloCondicao,
     entregaAConfirmar: resultado.entregaAConfirmar,
     criadoEm: agora,
+    prova,
   });
   resumo.alertasCriados++;
 }

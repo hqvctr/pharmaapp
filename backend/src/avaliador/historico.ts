@@ -49,3 +49,34 @@ export function agregarPorDia(
       embalagem: { quantidade: 1, unidade },
     }));
 }
+
+export interface LinhaPreco {
+  observadoEm: Date;
+  precoCentavos: number;
+}
+
+export interface Prova {
+  menorPrecoCentavos: number;
+  maiorPrecoCentavos: number;
+  diasMedidos: number;
+}
+
+/**
+ * O que o motor mediu antes de avisar, para uma embalagem numa loja: menor e maior preço e quantos dias tiveram preço observado,
+ * na mesma janela do motor (dias fechados, sem o dia corrente, até `janelaDias` para trás). `null` quando não há observação.
+ */
+export function calcularProva(linhas: readonly LinhaPreco[], agora: Date, fuso: string, janelaDias: number): Prova | null {
+  const hoje = diaLocal(agora, fuso);
+  const inicio = agora.getTime() - janelaDias * 86_400_000;
+  const dias = new Set<string>();
+  let menor = Infinity;
+  let maior = -Infinity;
+  for (const l of linhas) {
+    const dia = diaLocal(l.observadoEm, fuso);
+    if (dia >= hoje || l.observadoEm.getTime() < inicio) continue;
+    dias.add(dia);
+    menor = Math.min(menor, l.precoCentavos);
+    maior = Math.max(maior, l.precoCentavos);
+  }
+  return dias.size === 0 ? null : { menorPrecoCentavos: menor, maiorPrecoCentavos: maior, diasMedidos: dias.size };
+}
