@@ -52,6 +52,10 @@ services:
       EMAIL_REMETENTE_NOME: ${EMAIL_REMETENTE_NOME:-economae}
       AUTH_EMAIL_CONSOLE: ${AUTH_EMAIL_CONSOLE:-}
       TRUST_PROXY: ${TRUST_PROXY:-}
+      # Link rastreado da Lomadee no detalhe do alerta: a credencial cifrada no banco (mesma chave do coletor) ou o proxy da nuvem.
+      CREDENTIALS_KEY: ${CREDENTIALS_KEY:-}
+      CREDENTIALS_KEY_VERSION: ${CREDENTIALS_KEY_VERSION:-v1}
+      LOMADEE_PELO_PROXY: ${LOMADEE_PELO_PROXY:-}
     restart: unless-stopped
     ports:
       - "127.0.0.1:${API_PORT:-3000}:3000"

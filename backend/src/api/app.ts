@@ -3,7 +3,9 @@ import { ErroApi } from './erros.js';
 import { LimitadorMemoria, type LimitadorTaxa } from './limiteTaxa.js';
 import { rotasAuth, type DepsAuth } from './rotas/auth.js';
 import { rotaConfiguracao } from './rotas/configuracao.js';
+import { rotasAlertas } from './rotas/alertas.js';
 import { rotasConta } from './rotas/conta.js';
+import type { ProvedorLinkOferta } from './linkOferta.js';
 import { rotasPreferencias } from './rotas/preferencias.js';
 import type { RegistroTenants } from './tenants.js';
 
@@ -21,6 +23,8 @@ export interface AppDeps {
   limitador?: LimitadorTaxa;
   /** Sem isto as rotas de login não existem. `tenants` e `limitador` vêm do bloco acima. */
   auth?: Omit<DepsAuth, 'tenants' | 'limitador'>;
+  /** Link do botão da oferta. Sem isto as rotas de alerta não existem. */
+  links?: ProvedorLinkOferta;
   /** true atrás de proxy confiável (Cloudflare Tunnel): sem isso `req.ip` é o do proxy e o limite por IP some. */
   trustProxy?: boolean;
 }
@@ -74,6 +78,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
       rotasAuth(app, d);
       rotasConta(app, d);
       rotasPreferencias(app, d);
+      if (deps.links !== undefined) rotasAlertas(app, { ...d, links: deps.links });
     }
   }
 

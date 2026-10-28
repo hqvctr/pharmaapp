@@ -26,6 +26,7 @@ export interface ConfigApp {
     limiteDiarioPadrao: number;
   };
   planos: Array<{ plano: string; loja: string; produtoLojaId: string }>;
+  feed: { coletaMaximaHoras: number };
   limitesTaxa: Record<string, { maximo: number; janelaSegundos: number }>;
 }
 
@@ -105,6 +106,8 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     produtoLojaId: texto(p?.produtoLojaId, `planos[${i}].produtoLojaId`),
   }));
 
+  const feed = { coletaMaximaHoras: inteiro(bruto.feed?.coletaMaximaHoras, 'feed.coletaMaximaHoras', 1, 168) };
+
   const limitesTaxa: ConfigApp['limitesTaxa'] = {};
   for (const [rota, v] of Object.entries((bruto.limitesTaxa ?? {}) as Record<string, any>)) {
     limitesTaxa[rota] = {
@@ -127,6 +130,7 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     regiao: { cepInicio: r.cepInicio, cepFim: r.cepFim },
     limites,
     planos,
+    feed,
     limitesTaxa,
   };
 }

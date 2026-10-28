@@ -13,6 +13,8 @@ export interface EnvConfig {
   emailRemetenteNome: string;
   /** AUTH_EMAIL_CONSOLE=1: escreve o código no log em vez de enviar. Só desenvolvimento. */
   emailConsole: boolean;
+  /** LOMADEE_PELO_PROXY=1: a chave da Lomadee é anexada pelo proxy do ambiente (nuvem); sem isso a API lê a credencial do banco. */
+  lomadeePeloProxy: boolean;
 }
 
 function required(env: NodeJS.ProcessEnv, name: string): string {
@@ -38,5 +40,6 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
     emailRemetente: env.EMAIL_REMETENTE && env.EMAIL_REMETENTE.length > 0 ? env.EMAIL_REMETENTE : null,
     emailRemetenteNome: env.EMAIL_REMETENTE_NOME && env.EMAIL_REMETENTE_NOME.length > 0 ? env.EMAIL_REMETENTE_NOME : 'economae',
     emailConsole: env.AUTH_EMAIL_CONSOLE === '1',
+    lomadeePeloProxy: env.LOMADEE_PELO_PROXY === '1',
   };
 }

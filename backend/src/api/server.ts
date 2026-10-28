@@ -4,6 +4,9 @@ import { loadEnv } from '../shared/env.js';
 import { buildApp } from './app.js';
 import { LimitadorRedis } from './limiteTaxa.js';
 import { RegistroTenantsBanco } from './tenants.js';
+import { ProvedorLinkDeProducao } from './linkOferta.js';
+import { fabricaEncurtadorDeProducao, type ModoCredencialApi } from './encurtadorProducao.js';
+import { carregarChaveCredenciais } from '../shared/cifra.js';
 import { CodigosRedis } from '../auth/codigos.js';
 import { EnviadorBrevo, EnviadorConsole, type EnviadorEmail } from '../auth/enviador.js';
 import { iguais } from '../auth/tokens.js';
@@ -25,10 +28,23 @@ async function main(): Promise<void> {
       : undefined;
   if (auth === undefined) console.warn('Login por e-mail DESLIGADO: faltam AUTH_HMAC_KEY e (BREVO_API_KEY + EMAIL_REMETENTE ou AUTH_EMAIL_CONSOLE=1).');
 
+  const tenants = new RegistroTenantsBanco(pool);
+  let modoCredencial: ModoCredencialApi = { tipo: 'nenhum' };
+  if (env.lomadeePeloProxy) modoCredencial = { tipo: 'proxy' };
+  else {
+    try {
+      modoCredencial = { tipo: 'banco', chaves: [carregarChaveCredenciais()] };
+    } catch {
+      console.warn('Sem CREDENTIALS_KEY nem LOMADEE_PELO_PROXY: ofertas da Lomadee não terão link rastreado e o detalhe responderá 503.');
+    }
+  }
+  const links = new ProvedorLinkDeProducao(pool, tenants, fabricaEncurtadorDeProducao(pool, modoCredencial));
+
   const app = buildApp({
     logger: true,
     trustProxy: env.trustProxy,
-    tenants: new RegistroTenantsBanco(pool),
+    tenants,
+    links,
     limitador: new LimitadorRedis(redis),
     ...(auth !== undefined ? { auth } : {}),
     healthChecks: [

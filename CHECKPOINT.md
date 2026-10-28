@@ -1,5 +1,13 @@
 # Checkpoint
 
+## Fase 3, parte 2d: feed, detalhe e eventos do alerta (2026-10-28, DECISIONS 74)
+
+`GET /v1/alertas`, `GET /v1/alertas/{id}`, `POST /v1/alertas/{id}/eventos` no ar, com o link rastreado da Lomadee gerado no detalhe (`api/linkOferta.ts`, `api/encurtadorProducao.ts`). O app já consegue mostrar uma oferta de verdade.
+**Achado e corrigido:** o pipeline não gravava as advertências da NBCAL nem a chave da marca; agora grava (`products.advertencias`, `marca_chave`) e o feed só mostra produto com advertência se o texto legal é conhecido.
+Conferido: 391 testes (51 contra Postgres de verdade); oito mutações nas regras (advertência sem texto, trava de marca, categoria de medicamento, filtro de tenant, alerta rejeitado/pendente, silenciamento, preço da oferta mudado, idempotência)
+quebram cada uma o teste certo; servidor real (Postgres, Redis e a Lomadee de verdade pelo proxy): login por código, termos, preferências, feed, detalhe com `https://lmdee.link/...` gerado e reaproveitado, evento 204, sem token nem chave no log.
+**Falta:** avaliação e denúncia do alerta, produtos/histórico/pesquisa, seguidos, silenciamentos, avisos, dispositivo, exportação; `prova` (gravar menor/maior/dias na criação do alerta); loja física (geocodificação de CEP); imagem do produto (a fonte não entrega); login Google.
+
 ## Fase 3, parte 2c: conta, consentimentos e preferências (2026-10-28, DECISIONS 73)
 
 `GET`/`DELETE /v1/me`, `PUT /v1/me/consentimentos`, `GET`/`PUT /v1/preferencias` no ar (`api/rotas/conta.ts`, `api/rotas/preferencias.ts`, `api/corpo.ts`). Com o aceite de termos funcionando, as demais rotas autenticadas deixam de dar 403.
