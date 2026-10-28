@@ -3,13 +3,19 @@
 Três páginas estáticas: `index.html` (o que é o app, com aviso de afiliado), `termos.html` e `privacidade.html`
 (provisórias, marcadas como em revisão jurídica). Servem a duas coisas:
 
-1. **O endereço do app para a Lomadee.** O canal do tipo aplicativo pede um link; enquanto o app não está na
-   Google Play, o link é este site. *Não confirmado:* o formulário da Lomadee pode exigir link de loja de apps.
-   Se exigir, ver "Se a Lomadee recusar" abaixo.
+1. **O endereço do canal na Lomadee.** O canal "Aplicativo Mobile" **exige link de loja de apps** (Google Play, Apple
+   Store ou Microsoft Store; conferido no formulário em 2026-10-28), então o site sozinho não serve a esse tipo. Ver "Se a Lomadee recusar".
 2. **As URLs de termos e privacidade** que `GET /v1/configuracao` devolve (config `app.urlSite` + `app.termos.caminho`
    e `app.privacidade.caminho` em `backend/config/tenants/padrao.json`).
 
-## Publicar (decisão do responsável; nada foi publicado)
+## Estado (2026-10-28): PUBLICADO em https://economae.pages.dev
+
+Projeto Cloudflare Pages `economae` ligado a `hqvctr/pharmaapp`, branch de produção `claude/zen-gates-965k2e`, sem build, saída `site`.
+A Cloudflare serve `/termos` e `/privacidade` (redireciona os `.html`), e a config usa os caminhos sem `.html`.
+**Pendências:** (a) trocar a branch de produção quando houver uma branch estável (apagar a atual derruba o site); (b) conferir no GitHub se o app da
+Cloudflare ficou limitado ao repositório `pharmaapp`.
+
+## Como foi publicado (referência)
 
 Opção recomendada: **Cloudflare Pages** (grátis, aceita repositório privado, sem cartão).
 1. Cloudflare → Workers & Pages → Create → Pages → conectar o repositório `hqvctr/pharmaapp`.

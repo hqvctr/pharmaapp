@@ -23,8 +23,8 @@ describe('GET /v1/configuracao', () => {
       ['categorias', 'fuso', 'limites', 'metodos_login', 'nome_app', 'planos', 'privacidade', 'regiao', 'tenant', 'termos', 'versao_minima'].sort(),
     );
     expect(c.tenant).toBe('padrao');
-    expect(c.termos.url).toBe(`${padrao.config.app.urlSite}/termos.html`);
-    expect(c.privacidade.url).toBe(`${padrao.config.app.urlSite}/privacidade.html`);
+    expect(c.termos.url).toBe(`${padrao.config.app.urlSite}/termos`);
+    expect(c.privacidade.url).toBe(`${padrao.config.app.urlSite}/privacidade`);
     expect(c.regiao).toEqual({ cep_inicio: '01000000', cep_fim: '19999999' });
     expect(Object.keys(c.limites).sort()).toEqual(
       ['ceps_gratuito', 'ceps_premium', 'limite_diario_padrao', 'max_produtos_seguidos', 'max_silenciamentos', 'queda_percentual_max', 'queda_percentual_min'].sort(),

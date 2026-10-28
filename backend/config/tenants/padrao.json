@@ -224,8 +224,8 @@
   "app": {
     "nomeApp": "economae",
     "urlSite": "https://economae.pages.dev",
-    "termos": { "versao": "2026-10-28", "caminho": "/termos.html" },
-    "privacidade": { "versao": "2026-10-28", "caminho": "/privacidade.html" },
+    "termos": { "versao": "2026-10-28", "caminho": "/termos" },
+    "privacidade": { "versao": "2026-10-28", "caminho": "/privacidade" },
     "versaoMinima": { "android": null, "ios": null },
     "metodosLogin": ["email", "google"],
     "categorias": [
