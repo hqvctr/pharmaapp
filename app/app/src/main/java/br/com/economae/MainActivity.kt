@@ -4,29 +4,26 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-
-private val Cores = lightColorScheme(
-    primary = Color(0xFF1B7F5C),
-    onPrimary = Color.White,
-    secondaryContainer = Color(0xFFD7F0E6),
-    tertiary = Color(0xFFB3261E),
-)
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        // De ponta a ponta: o fundo do tema vai até atrás das barras do sistema (claras ou escuras conforme o modo).
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme(colorScheme = Cores) {
-                Surface(Modifier.fillMaxSize()) { Raiz() }
+            TemaEconomae {
+                Surface(Modifier.fillMaxSize()) { Box(Modifier.safeDrawingPadding()) { Raiz() } }
             }
         }
     }

@@ -13,6 +13,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -28,7 +32,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -37,7 +40,10 @@ import org.json.JSONObject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Moldura(titulo: String, aoVoltar: () -> Unit, conteudo: @Composable () -> Unit) {
-    Scaffold(topBar = { TopAppBar(title = { Text(titulo, maxLines = 1) }, navigationIcon = { TextButton(aoVoltar) { Text("‹ Voltar") } }) }) { margem ->
+    Scaffold(topBar = {
+        TopAppBar(title = { Text(titulo, maxLines = 1, style = MaterialTheme.typography.titleLarge) },
+            navigationIcon = { IconButton(aoVoltar) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Voltar") } })
+    }) { margem ->
         androidx.compose.foundation.layout.Box(Modifier.padding(margem).fillMaxSize()) { conteudo() }
     }
 }
@@ -66,19 +72,21 @@ fun TelaAlerta(m: Modelo, id: String, origem: String) {
             }
 
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), Arrangement.spacedBy(6.dp)) {
-                Text(p.getString("nome"), style = MaterialTheme.typography.titleLarge)
-                Text("${loja.getString("nome")} · ${embalagemTexto(p)}", style = MaterialTheme.typography.bodyMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = androidx.compose.ui.Alignment.Bottom) {
-                    Text(reais(a.getInt("preco_centavos")), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                    Text("-${percentual(a.getDouble("queda"))}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+                val queda = percentual(a.getDouble("queda"))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Selo("-$queda", TipoSelo.Destaque, descricao = "queda de $queda", estilo = MaterialTheme.typography.labelLarge)
+                    a.textoOuNulo("rotulo_condicao")?.let { Selo(it, tipoDoRotulo(it), estilo = MaterialTheme.typography.labelLarge) }
                 }
-                Text("Referência: ${reais(a.getInt("preco_referencia_centavos"))} (mediana dos últimos 30 dias)", style = MaterialTheme.typography.bodySmall)
-                a.textoOuNulo("rotulo_condicao")?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
+                Text(p.getString("nome"), style = MaterialTheme.typography.titleLarge)
+                Text("${loja.getString("nome")} · ${embalagemTexto(p)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(reais(a.getInt("preco_centavos")), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.tertiary)
+                Text("Referência: ${reais(a.getInt("preco_referencia_centavos"))} (mediana dos últimos 30 dias)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (!ativa) Text(if (a.getString("situacao") == "em_revisao") "Esta oferta está em revisão." else "Esta promoção já acabou.", color = MaterialTheme.colorScheme.error)
 
                 a.optJSONObject("prova")?.let { prova ->
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer), modifier = Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(12.dp)) {
+                    // A faixa "Economize" do KV: rosa-claro, cantos de 16.
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer), shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().padding(top = 6.dp)) {
+                        Column(Modifier.padding(14.dp)) {
                             val dias = prova.getInt("dias_medidos")
                             Text("Nesta loja, em $dias ${if (dias == 1) "dia medido" else "dias medidos"}:", style = MaterialTheme.typography.labelLarge)
                             Text("menor ${reais(prova.getInt("menor_preco_centavos"))} · maior ${reais(prova.getInt("maior_preco_centavos"))}", style = MaterialTheme.typography.bodyMedium)
@@ -97,7 +105,7 @@ fun TelaAlerta(m: Modelo, id: String, origem: String) {
                 Linha("Coletado em", dataHora(a.getString("coletada_em")))
 
                 a.lista("advertencias").forEach { adv ->
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer), shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                         Text(adv.getString("texto"), Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -105,7 +113,7 @@ fun TelaAlerta(m: Modelo, id: String, origem: String) {
                 Botao(if (a.optBoolean("link_afiliado")) "Ver na loja (link de afiliado)" else "Ver na loja", ativa) {
                     evento("clicado"); abrirNoNavegador(contexto, a.getString("link"))
                 }
-                if (a.optBoolean("link_afiliado")) Text("Este link pode render uma comissão ao economae, sem custo para você.", style = MaterialTheme.typography.bodySmall)
+                if (a.optBoolean("link_afiliado")) Text("Este link pode render uma comissão ao economae, sem custo para você.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 OutlinedButton({
                     evento("compartilhado")
                     val envio = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, "${p.getString("nome")} por ${reais(a.getInt("preco_centavos"))} na ${loja.getString("rede")}: ${a.getString("link")}")

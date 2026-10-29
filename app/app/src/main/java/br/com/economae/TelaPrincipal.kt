@@ -1,6 +1,7 @@
 package br.com.economae
 
 import android.content.Intent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,13 +23,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -45,6 +53,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -52,15 +62,20 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 private val ABAS = listOf("Promoções", "Buscar", "Avisos", "Conta")
+private val ICONES = listOf(Icons.Rounded.Home, Icons.Rounded.Search, Icons.Rounded.Notifications, Icons.Rounded.Person)
 
 @Composable
 fun TelaPrincipal(m: Modelo, aba: Int) {
     Scaffold(bottomBar = {
-        NavigationBar {
+        // Barra do KV: branca, item ativo em rosa.
+        val c = MaterialTheme.colorScheme
+        val cores = NavigationBarItemDefaults.colors(selectedIconColor = c.onPrimaryContainer, selectedTextColor = c.primary, indicatorColor = c.primaryContainer,
+            unselectedIconColor = c.onSurfaceVariant, unselectedTextColor = c.onSurfaceVariant)
+        NavigationBar(containerColor = c.surfaceContainerLow) {
             ABAS.forEachIndexed { i, nome ->
-                NavigationBarItem(selected = i == aba, onClick = { m.raiz(Tela.Principal(i)) }, label = { Text(nome) }, icon = {
+                NavigationBarItem(selected = i == aba, onClick = { m.raiz(Tela.Principal(i)) }, colors = cores, label = { Text(nome, style = MaterialTheme.typography.labelMedium) }, icon = {
                     BadgedBox(badge = { if (i == 2 && m.naoLidos > 0) Badge { Text(m.naoLidos.toString()) } }) {
-                        Text(listOf("%", "?", "!", "•")[i], style = MaterialTheme.typography.titleLarge)
+                        Icon(ICONES[i], contentDescription = null) // o rótulo embaixo já nomeia a aba
                     }
                 })
             }
@@ -83,10 +98,13 @@ fun AbaFeed(m: Modelo) {
     var categoria by remember { mutableStateOf<String?>(null) }
     val cats = m.config?.optJSONArray("categorias")?.objetos() ?: emptyList()
     Column(Modifier.fillMaxSize()) {
-        Text("Promoções para você", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 4.dp))
+        Logotipo(modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 0.dp))
+        Text("Promoções para você", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(16.dp, 8.dp, 16.dp, 4.dp))
+        // Chips do KV: o escolhido em rosa cheio.
+        val coresChip = FilterChipDefaults.filterChipColors(selectedContainerColor = MaterialTheme.colorScheme.primary, selectedLabelColor = MaterialTheme.colorScheme.onPrimary)
         LazyRow(contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip(categoria == null, { categoria = null }, { Text("Todas") }) }
-            items(cats) { c -> FilterChip(categoria == c.getString("slug"), { categoria = c.getString("slug") }, { Text(c.getString("rotulo")) }) }
+            item { FilterChip(categoria == null, { categoria = null }, { Text("Todas") }, colors = coresChip) }
+            items(cats) { c -> FilterChip(categoria == c.getString("slug"), { categoria = c.getString("slug") }, { Text(c.getString("rotulo")) }, colors = coresChip) }
         }
         Carregar(listOf(categoria, m.versao), {
             m.api.get("/v1/alertas?limite=30" + (categoria?.let { "&categoria=$it" } ?: ""))
@@ -108,14 +126,17 @@ fun AbaFeed(m: Modelo) {
                         if (p.ok && p.corpo != null) escolhidas = p.corpo.getJSONArray("categorias").textos().joinToString(", ") { rotulos[it] ?: it }
                     } catch (_: SemConexao) {}
                 }
-                Column(Modifier.fillMaxSize().padding(24.dp), Arrangement.spacedBy(12.dp)) {
-                    Text(motivo, style = MaterialTheme.typography.bodyLarge)
+                Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), Arrangement.spacedBy(12.dp), Alignment.CenterHorizontally) {
+                    // Decorativa: o texto abaixo explica o vazio.
+                    Image(painterResource(R.drawable.arte_vazio_feed), contentDescription = null, modifier = Modifier.size(120.dp))
+                    Text(motivo, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
                     escolhidas?.takeIf { it.isNotBlank() }?.let {
-                        Text("Categorias que você acompanha: $it.", style = MaterialTheme.typography.bodyMedium)
-                        Text("Se nenhuma delas tem oferta coletada agora, a lista fica vazia. Troque em Conta → Categorias e CEP.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Categorias que você acompanha: $it.", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                        Text("Se nenhuma delas tem oferta coletada agora, a lista fica vazia. Troque em Conta → Categorias e CEP.", style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                     }
-                    OutlinedButton(recarregar) { Text("Atualizar") }
-                    OutlinedButton({ m.ir(Tela.Preferencias) }) { Text("Mudar categorias e CEP") }
+                    Botao("Mudar categorias e CEP") { m.ir(Tela.Preferencias) }
+                    OutlinedButton(recarregar, Modifier.fillMaxWidth()) { Text("Atualizar") }
                 }
                 return@Carregar
             }
@@ -131,17 +152,23 @@ fun AbaFeed(m: Modelo) {
 fun CartaoAlerta(a: JSONObject, aoAbrir: () -> Unit) {
     val p = a.getJSONObject("produto")
     val loja = a.getJSONObject("loja")
-    Card(Modifier.fillMaxWidth().clickable(onClick = aoAbrir), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+    val queda = percentual(a.getDouble("queda"))
+    // Cartão das listas do KV: selos no topo, nome, loja, preço em verde e o de antes em cinza.
+    Cartao(aoTocar = aoAbrir) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            if (a.optBoolean("destaque")) Text("DESTAQUE", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
-            Text(p.getString("nome"), style = MaterialTheme.typography.titleMedium)
-            Text("${loja.getString("nome")} · ${embalagemTexto(p)}", style = MaterialTheme.typography.bodySmall)
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(reais(a.getInt("preco_centavos")), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                Text("antes ${reais(a.getInt("preco_referencia_centavos"))}", style = MaterialTheme.typography.bodySmall)
-                Text("-${percentual(a.getDouble("queda"))}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.tertiary)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (a.optBoolean("destaque")) Selo("DESTAQUE", TipoSelo.Destaque)
+                a.textoOuNulo("rotulo_condicao")?.let { Selo(it, tipoDoRotulo(it)) }
+                Spacer(Modifier.weight(1f))
+                Selo("-$queda", TipoSelo.Queda, descricao = "queda de $queda")
             }
-            a.textoOuNulo("rotulo_condicao")?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+            Text(p.getString("nome"), style = MaterialTheme.typography.titleSmall)
+            Text("${loja.getString("nome")} · ${embalagemTexto(p)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(reais(a.getInt("preco_centavos")), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.tertiary)
+                Text("antes ${reais(a.getInt("preco_referencia_centavos"))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 4.dp))
+            }
             if (a.getString("situacao") != "ativa") Text("Esta promoção já acabou ou está em revisão", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
     }
@@ -164,13 +191,14 @@ fun AbaBuscar(m: Modelo) {
             if (itens.isEmpty()) { Vazio("Nenhum produto encontrado para \"$consulta\"."); return@Carregar }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(itens, key = { it.getString("id") }) { p ->
-                    Card(Modifier.fillMaxWidth().clickable { m.ir(Tela.Produto(p.getString("id"))) }) {
-                        Column(Modifier.padding(12.dp)) {
+                    Cartao(aoTocar = { m.ir(Tela.Produto(p.getString("id"))) }) {
+                        Column(Modifier.padding(14.dp)) {
                             Text(p.getString("nome"), style = MaterialTheme.typography.titleSmall)
                             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                                Text(embalagemTexto(p), style = MaterialTheme.typography.bodySmall)
+                                Text(embalagemTexto(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 val menor = p.inteiroOuNulo("menor_preco_centavos")
-                                Text(if (menor != null) "a partir de ${reais(menor)}" else "sem oferta na sua região", style = MaterialTheme.typography.bodySmall)
+                                if (menor != null) Text("a partir de ${reais(menor)}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.tertiary)
+                                else Text("sem oferta na sua região", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             if (p.optBoolean("seguido")) Text("★ seguindo", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                         }
@@ -208,17 +236,18 @@ fun AbaAvisos(m: Modelo) {
                 items(itens, key = { it.getString("id") }) { a ->
                     val lido = !a.isNull("lido_em")
                     val alerta = a.textoOuNulo("alerta_id")
-                    Card(Modifier.fillMaxWidth().clickable {
+                    Cartao(aoTocar = {
                         escopo.launch {
                             try { m.api.post("/v1/avisos/leitura", JSONObject().put("ids", org.json.JSONArray(listOf(a.getString("id"))))); m.atualizarNaoLidos() } catch (_: SemConexao) {}
                         }
                         if (alerta != null) m.ir(Tela.Alerta(alerta, "central")) else m.ir(Tela.Produto(a.getJSONObject("produto").getString("id")))
                     }) {
-                        Column(Modifier.padding(12.dp)) {
+                        Column(Modifier.padding(14.dp)) {
                             Text(tituloDoAviso(a.getString("tipo")), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = if (lido) FontWeight.Normal else FontWeight.Bold)
                             Text(a.getJSONObject("produto").getString("nome"), style = MaterialTheme.typography.titleSmall)
                             val preco = a.inteiroOuNulo("preco_centavos")
-                            Text(listOfNotNull(a.optJSONObject("loja")?.getString("nome"), preco?.let { reais(it) }, dataHora(a.getString("criado_em"))).joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+                            Text(listOfNotNull(a.optJSONObject("loja")?.getString("nome"), preco?.let { reais(it) }, dataHora(a.getString("criado_em"))).joinToString(" · "),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -249,8 +278,8 @@ fun AbaConta(m: Modelo) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), Arrangement.spacedBy(6.dp)) {
         Text("Conta", style = MaterialTheme.typography.titleLarge)
         Text(u.getString("email"))
-        Text("Plano ${plano.getString("tipo")} · ${plano.getInt("ceps_permitidos")} CEP(s)", style = MaterialTheme.typography.bodySmall)
-        Text("Entrou por: ${u.getJSONArray("metodos_login").textos().joinToString(", ")}", style = MaterialTheme.typography.bodySmall)
+        Text("Plano ${plano.getString("tipo")} · ${plano.getInt("ceps_permitidos")} CEP(s)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Entrou por: ${u.getJSONArray("metodos_login").textos().joinToString(", ")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
         OutlinedButton({ m.ir(Tela.Preferencias) }, Modifier.fillMaxWidth()) { Text("Categorias e CEP") }
