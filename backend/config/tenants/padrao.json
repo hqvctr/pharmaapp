@@ -238,8 +238,10 @@
           { "categoria": "gestacao", "subcategoria": "cuidados", "termos": ["gestacao", "gravida*", "prenatal", "pre natal", "pre-natal", "anti estria*", "antiestria*", "teste de gravidez"] },
           { "categoria": "mamae", "subcategoria": "amamentacao", "termos": ["amamentacao", "tira leite", "bomba de leite", "protetor de seio", "protetor de mamilo", "protetores de mamilo", "protetor mamilar", "absorvente de seio", "conchas de amamentacao", "lanolina"] },
           { "categoria": "mamae", "subcategoria": "pos_parto", "termos": ["pos parto", "pos-parto", "puerperio", "cinta pos"] },
-          { "categoria": "bebe", "subcategoria": "roupas", "termos": ["bebe", "baby", "recem nascido", "body*", "macaquinho*"], "fonte": ["kids_clothing"] },
-          { "categoria": "infantil", "subcategoria": "calcados", "termos": ["calcado*", "tenis", "sandalia*", "sapatilha*", "chinelo*", "bota*"], "fonte": ["kids_clothing", "fashion_accessories"] },
+          { "categoria": "bebe", "subcategoria": "roupas", "termos": ["bebe", "bebes", "recem nascido"], "fonte": ["kids_clothing", "mens_clothing", "womens_clothing", "fashion_accessories", "bags_accessories"] },
+          { "categoria": "bebe", "subcategoria": "roupas", "termos": ["body*", "macaquinho*", "macacao*"], "fonte": ["kids_clothing"] },
+          { "categoria": "infantil", "subcategoria": "calcados", "termos": ["calcado*", "tenis", "sandalia*", "sapatilha*", "chinelo*", "bota", "botas"], "fonte": ["kids_clothing", "fashion_accessories"] },
+          { "categoria": "infantil", "subcategoria": "roupas", "termos": ["infantil", "infantis", "menino*", "menina*", "juvenil"], "fonte": ["kids_clothing", "mens_clothing", "womens_clothing", "fashion_accessories", "bags_accessories"] },
           { "categoria": "infantil", "subcategoria": "brinquedos", "termos": ["brinquedo*", "boneca*", "quebra cabeca*", "quebra-cabeca*", "lego", "pelucia*", "hot wheels", "barbie", "massinha", "blocos de montar", "carrinho de brinquedo"] }
         ],
         "porCategoriaFonte": {

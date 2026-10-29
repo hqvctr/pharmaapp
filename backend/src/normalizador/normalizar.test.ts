@@ -164,3 +164,33 @@ describe('categoria e subcategoria do app', () => {
     expect(r.tipo === 'ok' ? r.produto.categoria : r.tipo).not.toBe('bebe');
   });
 });
+
+describe('categorização com a config do tenant (títulos reais da UP Kids e da Toymania)', () => {
+  const cat = (titulo: string, categoriaFonte: string, lojaIdExterno = 'qualquer') => {
+    const r = normalizarOferta(oferta({ titulo, categoriaFonte, lojaIdExterno }), listas, config);
+    return r.tipo === 'ok' ? `${r.produto.categoria}/${r.produto.subcategoria}` : r.tipo;
+  };
+
+  it('bebê ganha da regra de infantil, e "Up Baby" (nome da marca) não faz roupa infantil virar de bebê', () => {
+    expect(cat('Conjunto para Bebê Menino em Moletom (Verde) Três e Já', 'kids_clothing')).toBe('bebe/roupas');
+    expect(cat('Body Manga Longa em Suedine Unissex para Bebê (Roxo) Up Baby', 'fashion_accessories')).toBe('bebe/roupas');
+    expect(cat('Conjunto Infantil Masculino com Bata Xadrez (Branco) Up Baby', 'mens_clothing')).toBe('infantil/roupas');
+    expect(cat('Conjunto com Regata e Short para Menina (Azul) Bee Loop', 'kids_clothing')).toBe('infantil/roupas');
+  });
+
+  it('roupa de adulto da mesma loja fica de fora', () => {
+    expect(cat('Camiseta Manga Curta Masculina (Branco) Just Basic', 'mens_clothing')).toBe('categoria_ignorada');
+    expect(cat('Vestido Regata Básico em Ribaninha (Preto) Just Basic', 'womens_clothing')).toBe('categoria_ignorada');
+  });
+
+  it('"botão" não é bota; "bota" é calçado', () => {
+    expect(cat('Camisa com botão de pressão', 'kids_clothing')).toBe('infantil/roupas');
+    expect(cat('Bota de chuva', 'kids_clothing')).toBe('infantil/calcados');
+  });
+
+  it('loja de brinquedos cai em brinquedos pelo padrão da marca, e pelo texto quando há', () => {
+    const toymania = 'd9a040f8-bb54-40d2-804b-150f007305d0';
+    expect(cat('Quebra-cabeça 100 peças', 'qualquer_coisa', toymania)).toBe('infantil/brinquedos');
+    expect(cat('Fralda de pano', 'qualquer_coisa', toymania)).toBe('bebe/fraldas');
+  });
+});
