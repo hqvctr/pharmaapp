@@ -1,5 +1,13 @@
 # Checkpoint
 
+## Painel do operador, versão final, com financeiro (2026-10-29, DECISIONS 98)
+
+Painel em `/operador/` refeito: menu lateral com contadores, Visão geral, Alertas, Triagem e Denúncias com abas e busca, Ofertas manuais com prévia do app,
+Produtos, **Lojas com cadastro de loja própria e área de entrega**, **Financeiro** (lançamentos, importação de CSV, gráficos de receita por mês e fonte,
+cliques e receita por clique), Fontes, Operadores (só leitura, D2) e Auditoria com filtros; claro/escuro e celular. API `admin.yaml` 1.1.0 (só acréscimos),
+migration 0012. 688 testes passam (inclusive 6 no Chromium, operando todas as telas). **Não testado no navegador do responsável nem com dados reais**;
+nenhuma receita está lançada (a da Lomadee precisa ser lançada ou importada do relatório dela). Passo a passo: `docs/operacao/area-do-operador.md`.
+
 ## Identidade visual do KV no app (2026-10-29, DECISIONS 90)
 
 App 0.2.0 com o visual do KV (`docs/design/kv/`, regras em `docs/design/identidade-visual.md`): tema Material 3 claro e escuro em `Tema.kt` (cores do KV com ajustes para WCAG AA, conferidos por `TemaTest`), fonte Inter embutida (OFL), cantos do KV, ícone adaptativo com versão monocromática, tela de abertura, onda e ilustração na entrada, artes nos estados vazios, selos novos (DESTAQUE, DEMONSTRAÇÃO, queda). Só visual: nenhuma chamada da API mudou; 560 testes do backend, 13 do app e 6 do conversor passam; mesma chave (SHA-1 `7C:1C:...:36:A6`) e pacote, então instala por cima. Conferido só no Chromium (`scripts/conferencia-visual.mjs`), **não num aparelho**. A dúvida de produto que o KV levanta (público mães/bebês × categorias de hoje) está no BACKLOG.

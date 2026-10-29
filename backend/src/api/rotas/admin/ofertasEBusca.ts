@@ -18,6 +18,7 @@ import { idDoCaminho, lerBooleano, lerDataHora, lerEnum, lerPagina } from './com
 const ACOES = [
   'operador_entrou', 'alerta_revisado', 'loja_status_definido', 'fonte_status_definido', 'fonte_credencial_gravada',
   'denuncia_resolvida', 'triagem_revisada', 'triagem_liberada', 'oferta_manual_criada', 'oferta_manual_encerrada',
+  'loja_criada', 'loja_editada', 'loja_areas_definidas', 'receita_lancada', 'receita_editada', 'receitas_importadas',
 ] as const;
 
 export function rotasAdminOfertasEBusca(app: FastifyInstance, d: DepsAuth): void {

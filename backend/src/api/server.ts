@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import pg from 'pg';
 import { Redis } from 'ioredis';
 import { loadEnv } from '../shared/env.js';
@@ -53,6 +55,14 @@ async function main(): Promise<void> {
     links,
     ...(chaveCredenciais !== undefined ? { chaveCredenciais } : {}),
     listasMedicamentos: provedorDeListas(process.env.DADOS ?? 'data'),
+    // O coletor grava o resultado de cada ciclo no mesmo volume (só leitura aqui); sem o arquivo, o resumo do painel mostra null.
+    ultimoCiclo: async () => {
+      try {
+        return JSON.parse(await readFile(path.join(process.env.DADOS ?? 'data', 'ultimo-ciclo.json'), 'utf8'));
+      } catch {
+        return null;
+      }
+    },
     limitador: new LimitadorRedis(redis),
     ...(auth !== undefined ? { auth } : {}),
     healthChecks: [
