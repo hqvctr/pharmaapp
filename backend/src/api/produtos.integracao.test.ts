@@ -229,6 +229,27 @@ executar('produtos (Postgres)', () => {
     });
   });
 
+  describe('GET /v1/seguidos (preço atual dos favoritos)', () => {
+    const AVISOS = { promocao_excepcional: true, queda_percentual: null, voltou_estoque: false, menor_preco_180d: false, promocao_acabando: false };
+
+    it('traz a foto e o menor preço atual de cada seguido, null sem oferta na área, e a exportação não ganha o campo', async () => {
+      const p = await t.pessoa();
+      const a = await comOferta({ nome: 'Favorito Com Preço', categoria: 'bebe', marca: 'fa', marcaChave: 'fa', preco: 7000, imagemUrl: 'https://img.exemplo.test/fav.jpg' });
+      const b = await t.loja({ nome: 'Mais barata' });
+      await t.oferta({ produto: a.produto, loja: b.loja, fonte: b.fonte, preco: 5500 });
+      const longe = await t.loja({ nome: 'Fora da área', faixa: ['80000000', '80000009', 3] });
+      await t.oferta({ produto: a.produto, loja: longe.loja, fonte: longe.fonte, preco: 100 });
+      const semOferta = await t.produto({ nome: 'Favorito Sem Oferta', categoria: 'bebe', marca: 'fb', marcaChave: 'fb' });
+      for (const id of [a.produto, semOferta]) expect((await t.chamar('PUT', `/v1/seguidos/${id}`, p.auth, { avisos: AVISOS })).statusCode).toBe(201);
+      const itens = (await t.chamar('GET', '/v1/seguidos', p.auth)).json().itens as Array<{ produto: { id: string; imagem_url: string | null }; menor_preco_centavos: number | null }>;
+      const por = new Map(itens.map((i) => [i.produto.id, i]));
+      expect(por.get(a.produto)).toMatchObject({ menor_preco_centavos: 5500, produto: { imagem_url: 'https://img.exemplo.test/fav.jpg' } });
+      expect(por.get(semOferta)!.menor_preco_centavos).toBeNull();
+      const exportacao = (await t.chamar('GET', '/v1/me/exportacao', p.auth)).json();
+      expect(JSON.stringify(exportacao)).not.toContain('menor_preco_centavos');
+    });
+  });
+
   describe('GET /v1/produtos/{id} (página)', () => {
     it('mostra as ofertas atuais, menor preço primeiro, com link rastreado, frete, cobertura e o alerta ativo', async () => {
       const p = await t.pessoa();

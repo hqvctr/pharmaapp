@@ -1861,6 +1861,11 @@ components:
         avisos: { $ref: '#/components/schemas/ConfigAvisosProduto' }
         criado_em: { type: string, format: date-time }
         atualizado_em: { type: string, format: date-time }
+        menor_preco_centavos:
+          description: >-
+            Acréscimo da 1.2.0, só em `GET /v1/seguidos` (não vai na exportação). Menor preço atual entre as ofertas que a pessoa
+            pode ver, como em `ProdutoBusca`; null se nenhuma loja entrega nos CEPs dela agora.
+          type: [integer, 'null']
     PaginaSeguidos:
       allOf:
         - $ref: '#/components/schemas/PaginaBase'

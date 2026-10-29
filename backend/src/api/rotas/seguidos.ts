@@ -6,6 +6,8 @@ import { corpoObjeto, falhaDeValidacao } from '../corpo.js';
 import { codificarCursor, lerCursor, lerLimite, UUID } from '../cursor.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
 import type { Db } from '../../pipeline/repositorio.js';
+import { ofertasAtuais } from '../ofertas.js';
+import { preferenciasDaPessoa } from '../pessoa.js';
 import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
@@ -37,7 +39,8 @@ export async function todosSeguidos(db: Db, tenantId: string, userId: string) {
 
 export function rotasSeguidos(app: FastifyInstance, d: DepsAuth): void {
   app.get('/v1/seguidos', async (req) => {
-    const ctx = await exigirSessao(req, d.db, d.tenants, d.agora());
+    const agora = d.agora();
+    const ctx = await exigirSessao(req, d.db, d.tenants, agora);
     const q = req.query as Record<string, unknown>;
     const l = lerLimite(q.limite);
     if ('erro' in l) throw falhaDeValidacao([{ campo: 'limite', mensagem: l.erro }]);
@@ -56,8 +59,13 @@ export function rotasSeguidos(app: FastifyInstance, d: DepsAuth): void {
     );
     const pagina = r.rows.slice(0, l.limite);
     const ultimo = pagina.at(-1);
+    // Menor preço atual de cada produto, com as mesmas regras da página do produto; null se nenhuma loja entrega nos CEPs da pessoa agora.
+    const { ceps } = await preferenciasDaPessoa(d.db, ctx.tenantId, ctx.userId, ctx.tenant.config.app, agora);
+    const ofertas = await ofertasAtuais(d.db, { tenantId: ctx.tenantId, userId: ctx.userId, config: ctx.tenant.config, agora, ceps, produtoIds: pagina.map((r: any) => r.product_id) });
+    const menor = new Map<string, number>();
+    for (const o of ofertas) menor.set(o.product_id, Math.min(menor.get(o.product_id) ?? Infinity, o.preco_centavos));
     return {
-      itens: pagina.map(paraSeguimento),
+      itens: pagina.map((r: any) => ({ ...paraSeguimento(r), menor_preco_centavos: menor.get(r.product_id) ?? null })),
       proximo_cursor: r.rows.length > l.limite && ultimo !== undefined ? codificarCursor({ criadoEm: ultimo.criado_em.toISOString(), id: ultimo.seguimento_id }) : null,
     };
   });
