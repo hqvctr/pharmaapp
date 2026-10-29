@@ -33,6 +33,8 @@ export interface ConfigApp {
   };
   planos: Array<{ plano: string; loja: string; produtoLojaId: string }>;
   feed: { coletaMaximaHoras: number };
+  /** Fileiras do Início (GET /v1/inicio). `porUnidade`: uma fileira "menor preço por unidade" por subcategoria comparável. */
+  inicio: { porUnidade: Array<{ categoria: string; subcategoria: string; unidade: 'un' | 'kg' | 'l'; quantidadeMinima: number; titulo: string }> };
   /** Regra de denúncia (PRODUTO.md): limite = max(minimo, ceil(percentual × pessoas que abriram ou clicaram nos últimos `janelaDias`)). */
   denuncia: { minimo: number; percentual: number; janelaDias: number };
   limitesTaxa: Record<string, { maximo: number; janelaSegundos: number }>;
@@ -131,6 +133,19 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
 
   const feed = { coletaMaximaHoras: inteiro(bruto.feed?.coletaMaximaHoras, 'feed.coletaMaximaHoras', 1, 168) };
 
+  const porUnidadeBruto = bruto.inicio?.porUnidade ?? [];
+  if (!Array.isArray(porUnidadeBruto)) inv('inicio.porUnidade');
+  const inicio: ConfigApp['inicio'] = {
+    porUnidade: (porUnidadeBruto as any[]).map((x, i) => {
+      const onde = `inicio.porUnidade[${i}]`;
+      const cat = categorias.find((c) => c.slug === x?.categoria);
+      if (cat === undefined) inv(`${onde}.categoria`);
+      if (!cat!.subcategorias.some((s) => s.slug === x?.subcategoria)) inv(`${onde}.subcategoria`);
+      if (!['un', 'kg', 'l'].includes(x?.unidade)) inv(`${onde}.unidade`);
+      return { categoria: x.categoria, subcategoria: x.subcategoria, unidade: x.unidade, quantidadeMinima: inteiro(x?.quantidadeMinima ?? 1, `${onde}.quantidadeMinima`, 1), titulo: texto(x?.titulo, `${onde}.titulo`) };
+    }),
+  };
+
   const dn = bruto.denuncia ?? {};
   if (typeof dn.percentual !== 'number' || !(dn.percentual > 0 && dn.percentual <= 1)) inv('denuncia.percentual');
   const denuncia = { minimo: inteiro(dn.minimo, 'denuncia.minimo', 1), percentual: dn.percentual as number, janelaDias: inteiro(dn.janelaDias, 'denuncia.janelaDias', 1, 90) };
@@ -161,6 +176,7 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     limites,
     planos,
     feed,
+    inicio,
     denuncia,
     limitesTaxa,
   };

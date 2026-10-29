@@ -323,6 +323,12 @@
     },
     "planos": [],
     "feed": { "coletaMaximaHoras": 6 },
+    "inicio": {
+      "porUnidade": [
+        {"categoria": "bebe", "subcategoria": "fraldas", "unidade": "un", "quantidadeMinima": 10, "titulo": "Fraldas: menor preço por fralda"},
+        {"categoria": "bebe", "subcategoria": "higiene", "unidade": "un", "quantidadeMinima": 10, "titulo": "Lenços e higiene: menor preço por unidade"}
+      ]
+    },
     "denuncia": { "minimo": 2, "percentual": 0.1, "janelaDias": 7 },
     "limitesTaxa": {
       "configuracao": { "maximo": 60, "janelaSegundos": 60 },

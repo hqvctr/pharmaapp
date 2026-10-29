@@ -1,8 +1,8 @@
 // /v1/produtos, /v1/produtos/{id} e /v1/produtos/{id}/historico (openapi.yaml, tag produtos). Exigem termos aceitos.
 import type { FastifyInstance } from 'fastify';
 import { agregarPorDia, diaLocal } from '../../avaliador/historico.js';
-import { normalizarTexto } from '../../normalizador/medicamentos.js';
 import { produtoResumo } from '../alertas.js';
+import { consultarProdutos, ORDENS, PODE_MOSTRAR, type Ordem } from '../catalogo.js';
 import { falhaDeValidacao } from '../corpo.js';
 import { lerLimite, UUID } from '../cursor.js';
 import { ErroApi, type CampoInvalido } from '../erros.js';
@@ -13,14 +13,12 @@ import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
 const CATEGORIA = /^[a-z0-9_]+$/;
-export const MAX_PALAVRAS = 6;
+const MARCA = /^[a-z0-9_-]{1,80}$/;
+export { escapar, MAX_PALAVRAS } from '../catalogo.js';
 
 export interface DepsProdutos extends DepsAuth {
   links: ProvedorLinkOferta;
 }
-
-/** Escapa os curingas do LIKE: o texto da pessoa nunca vira padrão. */
-export const escapar = (t: string): string => t.replace(/[\\%_]/g, (c) => `\\${c}`);
 
 export function cursorDeOffset(offset: number): string {
   return Buffer.from(JSON.stringify({ o: offset })).toString('base64url');
@@ -38,37 +36,64 @@ export function lerOffset(bruto: unknown): number {
   }
 }
 
+/** Os filtros de `GET /v1/produtos` (contrato 1.3.0) lidos da query; erros vão para `campos`. */
+export function lerFiltrosProdutos(q: Record<string, unknown>, campos: CampoInvalido[]) {
+  const slug = (campo: 'categoria' | 'subcategoria'): string | undefined => {
+    if (q[campo] === undefined) return undefined;
+    if (typeof q[campo] !== 'string' || !CATEGORIA.test(q[campo] as string)) {
+      campos.push({ campo, mensagem: campo === 'categoria' ? 'Categoria inválida.' : 'Subcategoria inválida.' });
+      return undefined;
+    }
+    return q[campo] as string;
+  };
+  const centavos = (campo: 'preco_min' | 'preco_max'): number | undefined => {
+    if (q[campo] === undefined) return undefined;
+    const n = Number(q[campo]);
+    if (typeof q[campo] !== 'string' || !Number.isInteger(n) || n < 0 || n > 100_000_000) {
+      campos.push({ campo, mensagem: 'Use centavos (número inteiro).' });
+      return undefined;
+    }
+    return n;
+  };
+  const booleano = (campo: 'com_queda' | 'menor_preco_180d' | 'facetas'): boolean | undefined => {
+    if (q[campo] === undefined) return undefined;
+    if (q[campo] !== 'true' && q[campo] !== 'false') {
+      campos.push({ campo, mensagem: 'Use true ou false.' });
+      return undefined;
+    }
+    return q[campo] === 'true';
+  };
+  const categoria = slug('categoria');
+  const subcategoria = slug('subcategoria');
+  if (subcategoria !== undefined && categoria === undefined && !campos.some((c) => c.campo === 'categoria')) campos.push({ campo: 'categoria', mensagem: 'Informe a categoria da subcategoria.' });
+  let ordem: Ordem = 'relevancia';
+  if (q.ordem !== undefined) {
+    if (typeof q.ordem !== 'string' || !(ORDENS as readonly string[]).includes(q.ordem)) campos.push({ campo: 'ordem', mensagem: `Use ${ORDENS.join(', ')}.` });
+    else ordem = q.ordem as Ordem;
+  }
+  let lojaId: string | undefined;
+  if (q.loja_id !== undefined) {
+    if (typeof q.loja_id !== 'string' || !UUID.test(q.loja_id)) campos.push({ campo: 'loja_id', mensagem: 'Use o id da loja.' });
+    else lojaId = q.loja_id;
+  }
+  let marca: string | undefined;
+  if (q.marca !== undefined) {
+    if (typeof q.marca !== 'string' || !MARCA.test(q.marca)) campos.push({ campo: 'marca', mensagem: 'Use a chave da marca.' });
+    else marca = q.marca;
+  }
+  let ids: string[] | undefined;
+  if (q.ids !== undefined) {
+    const lista = typeof q.ids === 'string' ? q.ids.split(',') : [];
+    if (lista.length < 1 || lista.length > 30 || !lista.every((i) => UUID.test(i))) campos.push({ campo: 'ids', mensagem: 'Use de 1 a 30 ids separados por vírgula.' });
+    else ids = [...new Set(lista)];
+  }
+  const precoMin = centavos('preco_min');
+  const precoMax = centavos('preco_max');
+  if (precoMin !== undefined && precoMax !== undefined && precoMin > precoMax) campos.push({ campo: 'preco_max', mensagem: 'O máximo é menor que o mínimo.' });
+  return { categoria, subcategoria, ordem, lojaId, marca, ids, precoMin, precoMax, comQueda: booleano('com_queda'), menorPreco180d: booleano('menor_preco_180d'), facetas: booleano('facetas') };
+}
+
 export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
-  /**
-   * Produto que o app pode mostrar à pessoa: categoria do app (sem medicamento), sem advertência legal (a página não tem onde
-   * pôr o texto da NBCAL; esses produtos só aparecem no feed, com o texto) e de marca não silenciada com "tudo".
-   */
-  const PODE_MOSTRAR = `p.tenant_id = $1 AND p.categoria = ANY($2::text[]) AND cardinality(p.advertencias) = 0
-        AND (p.marca_chave IS NULL OR NOT EXISTS (SELECT 1 FROM silenciamentos sm WHERE sm.tenant_id = p.tenant_id AND sm.user_id = $3 AND sm.alcance = 'tudo' AND sm.tipo = 'marca' AND sm.marca_chave = p.marca_chave))`;
-
-  /**
-   * Menor preço atual de cada produto entre as ofertas que a pessoa pode ver: as mesmas regras de `ofertasAtuais` (disponível, na
-   * validade, não escondida, coletada há pouco, marca da fonte liberada, loja não silenciada com "tudo", CEP coberto).
-   * Calculado uma vez para o tenant inteiro (agrupado por produto), e não produto a produto: com milhares de produtos a
-   * consulta correlacionada levava ~1 s por página. $1 tenant, $3 pessoa; os demais números vêm de `parametros`.
-   */
-  const PRECO_ATUAL = (o: { agora: number; coletaMinima: number; ceps: number; fontes: number; marcas: number }, juncao: 'JOIN' | 'LEFT JOIN') => `${juncao} (
-        SELECT o.product_id, min(o.preco_centavos) AS menor
-          FROM offers o
-          JOIN sources src ON src.tenant_id = o.tenant_id AND src.id = o.source_id
-          LEFT JOIN store_source_refs ref ON ref.tenant_id = o.tenant_id AND ref.source_id = o.source_id AND ref.store_id = o.store_id
-         WHERE o.tenant_id = $1
-           AND o.disponivel AND (o.valida_ate IS NULL OR o.valida_ate > $${o.agora}) AND o.escondida_em IS NULL AND (o.criada_por IS NOT NULL OR o.coletada_em >= $${o.coletaMinima})
-           AND (NOT (src.nome = ANY($${o.fontes}::text[])) OR ref.id_externo = ANY($${o.marcas}::text[]))
-           AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id)
-           AND o.store_id IN (SELECT sa.store_id FROM unnest($${o.ceps}::text[]) AS c(cep)
-                                JOIN store_service_areas sa ON sa.tenant_id = $1 AND c.cep BETWEEN sa.cep_inicio AND sa.cep_fim)
-         GROUP BY o.product_id
-      ) preco ON preco.product_id = p.id`;
-
-  const ORDENS = ['relevancia', 'menor_preco', 'maior_preco', 'nome'] as const;
-  type Ordem = (typeof ORDENS)[number];
-
   app.get('/v1/produtos', async (req) => {
     const agora = d.agora();
     const ctx = await exigirSessao(req, d.db, d.tenants, agora);
@@ -78,22 +103,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
     const pesquisa = q.q !== undefined;
     const texto = typeof q.q === 'string' ? q.q.trim() : '';
     if (pesquisa && (texto.length < 2 || texto.length > 100)) campos.push({ campo: 'q', mensagem: 'Digite de 2 a 100 caracteres.' });
-    const slug = (campo: 'categoria' | 'subcategoria'): string | undefined => {
-      if (q[campo] === undefined) return undefined;
-      if (typeof q[campo] !== 'string' || !CATEGORIA.test(q[campo] as string)) {
-        campos.push({ campo, mensagem: campo === 'categoria' ? 'Categoria inválida.' : 'Subcategoria inválida.' });
-        return undefined;
-      }
-      return q[campo] as string;
-    };
-    const categoria = slug('categoria');
-    const subcategoria = slug('subcategoria');
-    if (subcategoria !== undefined && categoria === undefined && !campos.some((c) => c.campo === 'categoria')) campos.push({ campo: 'categoria', mensagem: 'Informe a categoria da subcategoria.' });
-    let ordem: Ordem = 'relevancia';
-    if (q.ordem !== undefined) {
-      if (typeof q.ordem !== 'string' || !(ORDENS as readonly string[]).includes(q.ordem)) campos.push({ campo: 'ordem', mensagem: `Use ${ORDENS.join(', ')}.` });
-      else ordem = q.ordem as Ordem;
-    }
+    const filtros = lerFiltrosProdutos(q, campos);
     const l = lerLimite(q.limite);
     if ('erro' in l) campos.push({ campo: 'limite', mensagem: l.erro });
     if (campos.length > 0) throw falhaDeValidacao(campos);
@@ -106,65 +116,21 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
     if (espera !== null) throw new ErroApi('muitas_requisicoes', undefined, undefined, espera);
 
     const cfg = ctx.tenant.config.app;
-    const { ceps } = await preferenciasDaPessoa(d.db, ctx.tenantId, ctx.userId, cfg, agora);
-    const { fontes, marcas } = travasDeMarca(ctx.tenant.config);
-    const params: unknown[] = [ctx.tenantId, cfg.categorias.map((c) => c.slug), ctx.userId];
-    const par = (v: unknown): number => params.push(v);
-    const preco = PRECO_ATUAL({
-      agora: par(agora),
-      coletaMinima: par(new Date(agora.getTime() - cfg.feed.coletaMaximaHoras * 3600_000)),
-      ceps: par(ceps),
-      fontes: par(fontes),
-      marcas: par(marcas),
-    }, pesquisa ? 'LEFT JOIN' : 'JOIN');
-    const onde: string[] = [PODE_MOSTRAR];
-    let relevancia = 'p.nome, p.id';
-    if (pesquisa) {
-      const normal = normalizarTexto(texto);
-      const palavras = normal.split(' ').filter((w) => w.length > 0).slice(0, MAX_PALAVRAS);
-      const ehGtin = /^[0-9]{8,14}$/.test(texto);
-      const iGtin = par(ehGtin ? texto : null);
-      const iNormal = par(escapar(normal));
-      if (ehGtin) onde.push(`p.gtin = $${iGtin}`);
-      else {
-        onde.push(`$${iGtin}::text IS NULL`);
-        for (const w of palavras) onde.push(`f_unaccent(lower(p.nome || ' ' || coalesce(p.marca, ''))) LIKE $${par(`%${escapar(w)}%`)}`);
-      }
-      relevancia = `CASE WHEN p.gtin = $${iGtin} THEN 0
-                      WHEN f_unaccent(lower(p.nome)) LIKE $${iNormal} || '%' ESCAPE '\\' THEN 1
-                      WHEN f_unaccent(lower(p.nome)) LIKE '% ' || $${iNormal} || '%' ESCAPE '\\' THEN 2
-                      ELSE 3 END, p.nome, p.id`;
-      // Na pesquisa basta já ter sido coletado (o preço pode vir null fora da área de entrega), em loja que a pessoa não silenciou com "tudo".
-      onde.push(`EXISTS (SELECT 1 FROM offers o WHERE o.tenant_id = p.tenant_id AND o.product_id = p.id
-                          AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id))`);
-    } else {
-      // X
-      relevancia = 'p.criado_em DESC, p.id';
-    }
-    if (categoria !== undefined) onde.push(`p.categoria = $${par(categoria)}`);
-    if (subcategoria !== undefined) onde.push(`p.subcategoria = $${par(subcategoria)}`);
-    const ordenacao =
-      ordem === 'menor_preco' ? `preco.menor ASC NULLS LAST, ${relevancia}`
-      : ordem === 'maior_preco' ? `preco.menor DESC NULLS LAST, ${relevancia}`
-      : ordem === 'nome' ? 'p.nome, p.id'
-      : relevancia;
-    const iOffset = par(offset);
-    const iLimite = par(limite + 1);
-    const r = await d.db.query(
-      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
-              preco.menor AS menor_preco,
-              EXISTS (SELECT 1 FROM seguidos sg WHERE sg.tenant_id = p.tenant_id AND sg.user_id = $3 AND sg.product_id = p.id) AS seguido
-         FROM products p
-         ${preco}
-        WHERE ${onde.join('\n          AND ')}
-        ORDER BY ${ordenacao}
-        OFFSET $${iOffset} LIMIT $${iLimite}`,
-      params,
-    );
-    const pagina = r.rows.slice(0, limite);
+    const { ceps, categorias } = await preferenciasDaPessoa(d.db, ctx.tenantId, ctx.userId, cfg, agora);
+    const { facetas, ...resto } = filtros;
+    const r = await consultarProdutos(d.db, {
+      tenantId: ctx.tenantId, userId: ctx.userId, config: ctx.tenant.config, agora, ceps,
+      ...(pesquisa ? { texto } : {}),
+      // "Para você" sem categoria fica nas categorias que a pessoa escolheu (todas, se nenhuma).
+      ...(filtros.ordem === 'para_voce' && filtros.categoria === undefined && categorias.length > 0 ? { categorias } : {}),
+      ...Object.fromEntries(Object.entries(resto).filter(([, v]) => v !== undefined)),
+      ordem: filtros.ordem, offset, limite,
+      facetas: facetas === true && offset === 0,
+    });
     return {
-      itens: pagina.map((p: any) => ({ ...produtoResumo(p), menor_preco_centavos: p.menor_preco === null ? null : Number(p.menor_preco), seguido: p.seguido === true })),
-      proximo_cursor: r.rows.length > limite ? cursorDeOffset(offset + limite) : null,
+      itens: r.itens,
+      proximo_cursor: r.temMais ? cursorDeOffset(offset + limite) : null,
+      ...(r.facetas !== undefined ? { facetas: r.facetas } : {}),
     };
   });
 

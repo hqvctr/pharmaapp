@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: economae API (app)
-  version: 1.2.0
+  version: 1.3.0
   license:
     name: Proprietária
     identifier: LicenseRef-Proprietaria
@@ -692,7 +692,45 @@ paths:
           description: |
             Acréscimo da 1.2.0. `relevancia` (padrão: na pesquisa, a relevância; na navegação, o mais novo primeiro),
             `menor_preco`, `maior_preco` (produto sem preço vai para o fim) ou `nome`.
-          schema: { type: string, enum: [relevancia, menor_preco, maior_preco, nome], default: relevancia }
+
+            Acréscimos da 1.3.0: `maior_queda` (queda verificada da oferta mais barata; sem queda vai para o fim),
+            `menor_preco_unidade` (agrupa por unidade, `un`, `kg` e `l`, e ordena pelo preço por unidade dentro de cada uma),
+            `mais_novos` e `para_voce` (a grade do Início: quedas verificadas, depois menor preço em 180 dias, depois o resto,
+            alternando categorias; sem `categoria`, fica nas categorias que a pessoa escolheu). As três últimas ordens e qualquer
+            filtro de preço, loja, queda ou 180 dias tiram da pesquisa o produto sem preço na área.
+          schema: { type: string, enum: [relevancia, menor_preco, maior_preco, nome, maior_queda, menor_preco_unidade, mais_novos, para_voce], default: relevancia }
+        - name: loja_id
+          in: query
+          description: Acréscimo da 1.3.0. Só produtos com oferta nesta loja; o preço do cartão passa a ser o dela.
+          schema: { type: string, format: uuid }
+        - name: marca
+          in: query
+          description: Acréscimo da 1.3.0. Chave da marca (`marca.chave`).
+          schema: { type: string, pattern: '^[a-z0-9_-]{1,80}$' }
+        - name: preco_min
+          in: query
+          description: Acréscimo da 1.3.0. Menor preço atual mínimo, em centavos.
+          schema: { type: integer, minimum: 0 }
+        - name: preco_max
+          in: query
+          description: Acréscimo da 1.3.0. Menor preço atual máximo, em centavos. Menor que `preco_min` dá 422.
+          schema: { type: integer, minimum: 0 }
+        - name: com_queda
+          in: query
+          description: Acréscimo da 1.3.0. `true` = só produtos cuja oferta mais barata tem queda verificada (`queda` não nula).
+          schema: { type: boolean }
+        - name: menor_preco_180d
+          in: query
+          description: Acréscimo da 1.3.0. `true` = só produtos no menor preço dos últimos 180 dias (veja `ProdutoBusca.menor_preco_180d`).
+          schema: { type: boolean }
+        - name: ids
+          in: query
+          description: Acréscimo da 1.3.0. De 1 a 30 ids de produto separados por vírgula ("vistos recentemente" do app). A ordem da resposta segue `ordem`, não a da lista.
+          schema: { type: string }
+        - name: facetas
+          in: query
+          description: Acréscimo da 1.3.0. `true` na primeira página devolve `facetas` (lojas e marcas do resultado) para os filtros do app.
+          schema: { type: boolean }
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limite'
       responses:
@@ -703,6 +741,62 @@ paths:
               schema: { $ref: '#/components/schemas/PaginaProdutos' }
               examples:
                 shampoo: { $ref: '#/components/examples/PaginaProdutos' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '422': { $ref: '#/components/responses/R422' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/inicio:
+    get:
+      tags: [produtos]
+      operationId: obterInicio
+      summary: Fileiras da aba Início numa chamada só (acréscimo da 1.3.0)
+      description: |
+        Até 10 produtos por fileira, nesta ordem: `baixaram_de_preco` (queda verificada), `favoritos_mais_baratos` (seguidos
+        cujo menor preço atual é menor que o das 24 h antes de seguir; não depende das categorias escolhidas),
+        `menor_preco_180d`, uma `por_unidade_<categoria>_<subcategoria>` por item de `app.inicio.porUnidade` da config do tenant
+        (menor preço por unidade, só embalagens a partir de `quantidadeMinima`) e `novidades`. Fileira sem produto não vem.
+        As fileiras ficam nas categorias que a pessoa escolheu (todas, se nenhuma). `ver_todas` traz os parâmetros de
+        `GET /v1/produtos` que abrem a lista completa (null quando não há lista). Conta no limite da navegação.
+      responses:
+        '200':
+          description: Fileiras.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Inicio' }
+        '401': { $ref: '#/components/responses/R401' }
+        '403': { $ref: '#/components/responses/R403Termos' }
+        '429': { $ref: '#/components/responses/R429' }
+
+  /v1/categorias:
+    get:
+      tags: [produtos]
+      operationId: contarCategorias
+      summary: Quantos produtos dá para comprar agora em cada categoria (acréscimo da 1.3.0)
+      description: |
+        Mesmas regras da navegação de `GET /v1/produtos`. Com `cep`, conta para aquele CEP (o cadastro inicial pergunta antes
+        de salvar); sem, para os CEPs do plano da pessoa. Todas as categorias de `/v1/configuracao` vêm, na mesma ordem.
+      parameters:
+        - name: cep
+          in: query
+          schema: { type: string, pattern: '^[0-9]{8}$' }
+      responses:
+        '200':
+          description: Contagem por categoria.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [categorias]
+                properties:
+                  categorias:
+                    type: array
+                    items:
+                      type: object
+                      required: [slug, produtos]
+                      properties:
+                        slug: { type: string }
+                        produtos: { type: integer, minimum: 0 }
         '401': { $ref: '#/components/responses/R401' }
         '403': { $ref: '#/components/responses/R403Termos' }
         '422': { $ref: '#/components/responses/R422' }
@@ -1783,6 +1877,33 @@ components:
               type: [integer, 'null']
               description: Menor preço atual entre as ofertas cobertas; null se nenhuma.
             seguido: { type: boolean }
+            menor_preco_por_unidade_centavos:
+              type: [number, 'null']
+              description: Acréscimo da 1.3.0. Menor preço por unidade (`embalagem.unidade`) entre as ofertas cobertas; null sem preço.
+            lojas:
+              type: integer
+              minimum: 0
+              description: Acréscimo da 1.3.0. Lojas com oferta coberta agora (0 sem preço).
+            queda:
+              type: [number, 'null']
+              description: |
+                Acréscimo da 1.3.0. Queda verificada (0 a 1) do alerta ativo da oferta mais barata; null quando a oferta mais
+                barata não tem alerta (o "antes" nunca é de outra loja) e sempre em oferta manual.
+            preco_referencia_centavos:
+              type: [integer, 'null']
+              description: Acréscimo da 1.3.0. Preço de referência ("antes") da embalagem; null quando `queda` é null.
+            alerta_id:
+              type: [string, 'null']
+              format: uuid
+              description: Acréscimo da 1.3.0. Alerta da queda; null quando `queda` é null.
+            menor_preco_180d:
+              type: boolean
+              description: |
+                Acréscimo da 1.3.0. O preço por unidade de agora é o menor dos últimos 180 dias, a janela já teve um preço pelo
+                menos 2% maior e o histórico do produto tem pelo menos `curadoria.minObservacoes` dias.
+            preco_ao_seguir_centavos:
+              type: [integer, 'null']
+              description: Acréscimo da 1.3.0. Menor preço nas 24 h antes de a pessoa seguir o produto; só na fileira `favoritos_mais_baratos` vem preenchido com certeza.
     Produto:
       allOf:
         - $ref: '#/components/schemas/ProdutoResumo'
@@ -1813,6 +1934,49 @@ components:
             itens:
               type: array
               items: { $ref: '#/components/schemas/ProdutoBusca' }
+            facetas:
+              description: Acréscimo da 1.3.0. Só com `facetas=true` na primeira página. Até 30 de cada, os mais frequentes primeiro.
+              type: object
+              required: [lojas, marcas]
+              properties:
+                lojas:
+                  type: array
+                  items:
+                    type: object
+                    required: [id, nome, quantidade]
+                    properties:
+                      id: { type: string, format: uuid }
+                      nome: { type: string }
+                      quantidade: { type: integer }
+                marcas:
+                  type: array
+                  items:
+                    type: object
+                    required: [chave, nome, quantidade]
+                    properties:
+                      chave: { type: string }
+                      nome: { type: string }
+                      quantidade: { type: integer }
+    Inicio:
+      type: object
+      required: [cep, fileiras]
+      properties:
+        cep: { type: [string, 'null'], description: Primeiro CEP do plano da pessoa (o "Entregando em" do topo). }
+        fileiras:
+          type: array
+          items:
+            type: object
+            required: [id, titulo, itens, ver_todas]
+            properties:
+              id: { type: string }
+              titulo: { type: string }
+              itens:
+                type: array
+                items: { $ref: '#/components/schemas/ProdutoBusca' }
+              ver_todas:
+                type: [object, 'null']
+                description: Parâmetros de `GET /v1/produtos` (`categoria`, `subcategoria`, `ordem`, `com_queda`, `menor_preco_180d`).
+                additionalProperties: true
     PontoHistorico:
       type: object
       required: [dia, preco_por_unidade_centavos, preco_embalagem_centavos]

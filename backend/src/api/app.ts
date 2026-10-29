@@ -12,6 +12,7 @@ import { rotasPainel } from './rotas/painel.js';
 import { rotasExportacao } from './rotas/exportacao.js';
 import { rotasDispositivo } from './rotas/dispositivo.js';
 import { rotasAvisos } from './rotas/avisos.js';
+import { rotaInicio } from './rotas/inicio.js';
 import { rotasProdutos } from './rotas/produtos.js';
 import { rotasSeguidos } from './rotas/seguidos.js';
 import { rotasSilenciamentos } from './rotas/silenciamentos.js';
@@ -99,6 +100,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
       rotasAvisos(app, d);
       rotasDispositivo(app, d);
       rotasExportacao(app, d);
+      rotaInicio(app, d);
       rotasPainel(app);
       rotasAdmin(app, {
         ...d,
