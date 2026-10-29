@@ -63,6 +63,12 @@ executar('produtos (Postgres)', () => {
       expect(ok).toBeDefined();
     });
 
+    it('acha produto sem marca (a Lomadee não manda marca: a coluna vem nula)', async () => {
+      const p = await t.pessoa();
+      const { produto } = await comOferta({ nome: 'Lenço Umedecido Sem Marca 48 un', marca: null, marcaChave: null });
+      for (const q of ['lenco', 'umedecido sem marca']) expect((await buscar(p.auth, q)).json().itens.map((i: { id: string }) => i.id), q).toContain(produto);
+    });
+
     it('loja silenciada com "tudo" tira o produto da pesquisa quando era a única; sem cobertura o preço sai null mas o produto aparece', async () => {
       const p = await t.pessoa();
       const unica = await comOferta({ nome: 'Wax Loja Única', marca: 'Wax', marcaChave: 'wax' });

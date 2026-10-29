@@ -118,6 +118,12 @@ executar('admin: ofertas manuais, produtos e auditoria (Postgres)', () => {
       expect(ids(await t.chamar('GET', '/v1/admin/produtos?q=7891234567895', op.auth))).toEqual([shampoo]);
     });
 
+    it('acha produto sem marca (a Lomadee não manda marca: a coluna vem nula)', async () => {
+      const op = await t.operador();
+      const semMarca = await t.produto({ nome: 'Body Bebê Sem Marca', marca: null, marcaChave: null });
+      expect(ids(await t.chamar('GET', '/v1/admin/produtos?q=body%20bebe', op.auth))).toContain(semMarca);
+    });
+
     it('não vira padrão com curingas, pagina por deslocamento e valida', async () => {
       const op = await t.operador();
       const a = await t.produto({ nome: 'Item 100% algodão' });

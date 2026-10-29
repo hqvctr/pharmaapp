@@ -118,7 +118,7 @@ export function rotasAdminOfertasEBusca(app: FastifyInstance, d: DepsAuth): void
       onde.push('$3::text IS NULL');
       for (const w of palavras) {
         params.push(`%${escapar(w)}%`);
-        onde.push(`f_unaccent(lower(p.nome || ' ' || p.marca)) LIKE $${params.length}`);
+        onde.push(`f_unaccent(lower(p.nome || ' ' || coalesce(p.marca, ''))) LIKE $${params.length}`);
       }
     }
     params.push(offset, limite + 1);

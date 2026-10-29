@@ -128,7 +128,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
       if (ehGtin) onde.push(`p.gtin = $${iGtin}`);
       else {
         onde.push(`$${iGtin}::text IS NULL`);
-        for (const w of palavras) onde.push(`f_unaccent(lower(p.nome || ' ' || p.marca)) LIKE $${par(`%${escapar(w)}%`)}`);
+        for (const w of palavras) onde.push(`f_unaccent(lower(p.nome || ' ' || coalesce(p.marca, ''))) LIKE $${par(`%${escapar(w)}%`)}`);
       }
       relevancia = `CASE WHEN p.gtin = $${iGtin} THEN 0
                       WHEN f_unaccent(lower(p.nome)) LIKE $${iNormal} || '%' ESCAPE '\\' THEN 1
