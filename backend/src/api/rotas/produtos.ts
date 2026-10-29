@@ -58,7 +58,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
           JOIN sources src ON src.tenant_id = o.tenant_id AND src.id = o.source_id
           LEFT JOIN store_source_refs ref ON ref.tenant_id = o.tenant_id AND ref.source_id = o.source_id AND ref.store_id = o.store_id
          WHERE o.tenant_id = $1
-           AND o.disponivel AND (o.valida_ate IS NULL OR o.valida_ate > $${o.agora}) AND o.escondida_em IS NULL AND o.coletada_em >= $${o.coletaMinima}
+           AND o.disponivel AND (o.valida_ate IS NULL OR o.valida_ate > $${o.agora}) AND o.escondida_em IS NULL AND (o.criada_por IS NOT NULL OR o.coletada_em >= $${o.coletaMinima})
            AND (NOT (src.nome = ANY($${o.fontes}::text[])) OR ref.id_externo = ANY($${o.marcas}::text[]))
            AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id)
            AND o.store_id IN (SELECT sa.store_id FROM unnest($${o.ceps}::text[]) AS c(cep)

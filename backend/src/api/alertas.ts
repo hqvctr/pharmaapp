@@ -24,7 +24,9 @@ const CODIGOS_CONHECIDOS = Object.keys(TEXTOS_ADVERTENCIA);
 export function situacaoSql(): string {
   return `CASE WHEN o.escondida_em IS NOT NULL THEN 'em_revisao'
                WHEN NOT o.disponivel OR (o.valida_ate IS NOT NULL AND o.valida_ate <= $2)
-                    OR o.preco_centavos <> a.preco_centavos OR o.coletada_em < $3 THEN 'encerrada'
+                    OR o.preco_centavos <> a.preco_centavos
+                    -- Oferta manual não é recoletada: vale até valida_ate, não pela idade da coleta.
+                    OR (o.criada_por IS NULL AND o.coletada_em < $3) THEN 'encerrada'
                ELSE 'ativa' END`;
 }
 

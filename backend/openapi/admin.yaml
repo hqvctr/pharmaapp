@@ -519,7 +519,12 @@ paths:
         de novo); mesma chave com corpo diferente dá 409 `idempotencia_conflito`. Passa pela triagem de
         medicamento (DECISIONS 24) e pela da NBCAL (D30) como qualquer produto; item barrado dá 422
         `bloqueado_pela_triagem` e vai para `/v1/admin/triagem`. Produto existente por `produto_id` ou novo por `produto_novo` (um dos
-        dois). Implementação na fase 5.
+        dois).
+
+        Entra no feed como `somente_feed` ("sem histórico verificado": a referência é o próprio preço, queda 0) e nunca notifica. Não é
+        recoletada: vale até `valida_ate` (ou o prazo padrão do tenant), sem a regra de coleta recente das ofertas coletadas. Fica sob a
+        fonte `manual` (tipo E, inativa). Loja de marca da Lomadee é recusada (422 em `loja_id`): o link dela tem de ser o rastreado
+        pela plataforma. Sem a lista de medicamentos no servidor (vem da primeira coleta), responde 503: sem triagem, nada entra.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -541,6 +546,15 @@ paths:
         '401': { $ref: '#/components/responses/R401' }
         '404': { $ref: '#/components/responses/R404' }
         '409': { $ref: '#/components/responses/R409Idempotencia' }
+        '503':
+          description: A lista de medicamentos ainda não está disponível neste servidor. Tente de novo (Retry-After).
+          headers:
+            Retry-After: { schema: { type: integer } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErroAdmin' }
+              examples:
+                servico_indisponivel: { $ref: '#/components/examples/ErroServicoIndisponivel' }
         '422':
           description: Corpo inválido ou produto barrado pela triagem (medicamento ou NBCAL).
           content:
@@ -1108,6 +1122,9 @@ components:
         nome: { type: string, maxLength: 300 }
         marca: { type: [string, 'null'], maxLength: 100 }
         categoria: { $ref: './openapi.yaml#/components/schemas/Slug' }
+        subcategoria:
+          type: [string, 'null']
+          description: Opcional. Uma das subcategorias da categoria em `/v1/configuracao`.
         gtin: { type: [string, 'null'], pattern: '^[0-9]{8,14}$' }
         embalagem: { $ref: './openapi.yaml#/components/schemas/Embalagem' }
     PedidoOfertaManual:

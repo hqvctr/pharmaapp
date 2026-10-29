@@ -15,6 +15,7 @@ import { rotasProdutos } from './rotas/produtos.js';
 import { rotasSeguidos } from './rotas/seguidos.js';
 import { rotasSilenciamentos } from './rotas/silenciamentos.js';
 import type { ChaveCredenciais } from '../shared/cifra.js';
+import type { ListasMedicamentos } from '../normalizador/medicamentos.js';
 import type { RegistroTenants } from './tenants.js';
 
 // Cada dependência externa entra por interface para que o teste use uma implementação falsa.
@@ -35,6 +36,8 @@ export interface AppDeps {
   links?: ProvedorLinkOferta;
   /** Chave das credenciais de fonte (CREDENTIALS_KEY): sem ela o operador não grava credencial pela API (503). */
   chaveCredenciais?: ChaveCredenciais;
+  /** Lista de medicamentos para o cadastro manual de oferta (operador). Sem isto o cadastro responde 503. */
+  listasMedicamentos?: () => Promise<ListasMedicamentos>;
   /** true atrás de proxy confiável (Cloudflare Tunnel): sem isso `req.ip` é o do proxy e o limite por IP some. */
   trustProxy?: boolean;
 }
@@ -93,7 +96,11 @@ export function buildApp(deps: AppDeps): FastifyInstance {
       rotasAvisos(app, d);
       rotasDispositivo(app, d);
       rotasExportacao(app, d);
-      rotasAdmin(app, { ...d, ...(deps.chaveCredenciais !== undefined ? { chaveCredenciais: deps.chaveCredenciais } : {}) });
+      rotasAdmin(app, {
+        ...d,
+        ...(deps.chaveCredenciais !== undefined ? { chaveCredenciais: deps.chaveCredenciais } : {}),
+        ...(deps.listasMedicamentos !== undefined ? { listasMedicamentos: deps.listasMedicamentos } : {}),
+      });
       if (deps.links !== undefined) {
         rotasAlertas(app, { ...d, links: deps.links });
         rotasProdutos(app, { ...d, links: deps.links });

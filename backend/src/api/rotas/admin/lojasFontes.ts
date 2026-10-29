@@ -9,6 +9,7 @@ import { corpoObjeto, falhaDeValidacao } from '../../corpo.js';
 import { codificarCursor } from '../../cursor.js';
 import { ErroApi, type CampoInvalido } from '../../erros.js';
 import { exigirOperador } from '../../sessaoOperador.js';
+import type { ListasMedicamentos } from '../../../normalizador/medicamentos.js';
 import type { DepsAuth } from '../auth.js';
 import { lojaAdminJson } from './alertas.js';
 import { idDoCaminho, lerEnum, lerObservacao, lerPagina, resumoOperador, STATUS_CONFIANCA } from './comum.js';
@@ -16,6 +17,8 @@ import { idDoCaminho, lerEnum, lerObservacao, lerPagina, resumoOperador, STATUS_
 export interface DepsAdmin extends DepsAuth {
   /** Chave das credenciais de fonte (CREDENTIALS_KEY). Ausente: gravar credencial responde 503. */
   chaveCredenciais?: ChaveCredenciais;
+  /** Lista de medicamentos (CMED etc.) para a triagem do cadastro manual. Ausente ou falhando: o cadastro responde 503 (falha fechada). */
+  listasMedicamentos?: () => Promise<ListasMedicamentos>;
 }
 
 const COLUNAS_LOJA = `s.id, s.rede, s.nome, s.cnpj, s.tipo, s.status, s.reputacao, s.autorizacao_sanitaria, s.criado_em`;

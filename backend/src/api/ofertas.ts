@@ -67,7 +67,7 @@ export async function ofertasAtuais(
           ORDER BY sa.prazo_dias, c.cep LIMIT 1
        ) cob ON true
       WHERE o.tenant_id = $1 AND o.product_id = ANY($5::uuid[])
-        AND o.disponivel AND (o.valida_ate IS NULL OR o.valida_ate > $2) AND o.escondida_em IS NULL AND o.coletada_em >= $3
+        AND o.disponivel AND (o.valida_ate IS NULL OR o.valida_ate > $2) AND o.escondida_em IS NULL AND (o.criada_por IS NOT NULL OR o.coletada_em >= $3)
         AND (NOT (src.nome = ANY($6::text[])) OR ref.id_externo = ANY($7::text[]))
         AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $8 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id)
       ORDER BY o.preco_centavos, o.id`,

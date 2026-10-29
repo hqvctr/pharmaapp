@@ -11,6 +11,7 @@ import { CodigosRedis } from '../auth/codigos.js';
 import { VerificadorGoogleJwks } from '../auth/google.js';
 import { EnviadorBrevo, EnviadorConsole, type EnviadorEmail } from '../auth/enviador.js';
 import { iguais } from '../auth/tokens.js';
+import { provedorDeListas } from './listasMedicamentos.js';
 
 async function main(): Promise<void> {
   const env = loadEnv();
@@ -51,6 +52,7 @@ async function main(): Promise<void> {
     tenants,
     links,
     ...(chaveCredenciais !== undefined ? { chaveCredenciais } : {}),
+    listasMedicamentos: provedorDeListas(process.env.DADOS ?? 'data'),
     limitador: new LimitadorRedis(redis),
     ...(auth !== undefined ? { auth } : {}),
     healthChecks: [

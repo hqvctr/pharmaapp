@@ -33,7 +33,6 @@ const PENDENTES: Record<string, string> = {
   'POST /v1/assinatura/comprovantes': 'validação do comprovante nas lojas de apps (depende de conta de desenvolvedor)',
   'POST /v1/webhooks/{tenant}/google-play': 'webhook da loja de apps',
   'POST /v1/webhooks/{tenant}/app-store': 'webhook da loja de apps',
-  'POST /v1/admin/ofertas-manuais': 'fase 5: precisa das listas de medicamentos na API e do prazo padrão (D21)',
 };
 
 describe('rotas x contrato', () => {

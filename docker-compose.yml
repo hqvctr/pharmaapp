@@ -56,6 +56,9 @@ services:
       CREDENTIALS_KEY: ${CREDENTIALS_KEY:-}
       CREDENTIALS_KEY_VERSION: ${CREDENTIALS_KEY_VERSION:-v1}
       LOMADEE_PELO_PROXY: ${LOMADEE_PELO_PROXY:-}
+    # Lista de medicamentos que o coletor baixa: o cadastro manual de oferta (painel do operador) usa a mesma triagem. Só leitura.
+    volumes:
+      - dados:/app/data:ro
     restart: unless-stopped
     ports:
       - "${API_BIND:-127.0.0.1}:${API_PORT:-3000}:3000"

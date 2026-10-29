@@ -39,15 +39,25 @@ O token do app não vale aqui e o do operador não vale no app. O código de ope
 | Aprovar/ativar fonte e gravar a credencial dela (só escrita) | `GET /v1/admin/fontes`, `PUT .../{id}/status`, `PUT .../{id}/credencial` (precisa de `CREDENTIALS_KEY` na API) |
 | Restaurar ou manter escondida a oferta denunciada | `GET /v1/admin/denuncias`, `PUT .../{id}/resolucao` |
 | Revisar o que a triagem barrou (e liberar falso positivo de texto ou cautela) | `GET /v1/admin/triagem`, `PUT .../{id}/revisao` |
-| Ver e encerrar ofertas manuais | `GET /v1/admin/ofertas-manuais`, `DELETE .../{id}` |
+| Cadastrar, ver e encerrar ofertas manuais | `POST` e `GET /v1/admin/ofertas-manuais`, `DELETE .../{id}` |
 | Procurar produto | `GET /v1/admin/produtos?q=` |
 | Ver quem fez o quê | `GET /v1/admin/auditoria` |
 
 Toda ação que muda algo grava quem, quando e o que mudou (antes e depois) na auditoria. **Valor de credencial nunca entra na auditoria nem
 em resposta.**
 
+## Oferta manual
+
+`POST /v1/admin/ofertas-manuais` (precisa de `Idempotency-Key`, um UUID novo a cada oferta): produto que já existe (`produto_id`) ou novo
+(`produto_novo`), loja, preço em centavos, condição, frete, validade e link. Regras:
+
+- Passa pela **mesma triagem** de medicamento e de NBCAL das ofertas coletadas. Barrada: 422 `bloqueado_pela_triagem` e o item aparece na fila
+  de triagem. A triagem usa a lista de medicamentos que o **coletor** baixa; no servidor novo, **só funciona depois da primeira coleta** (503 antes).
+- Entra no feed como "sem histórico verificado" (queda 0) e **nunca notifica**.
+- Vale até `valida_ate`; sem data, 7 dias (`app.ofertaManual.validadePadraoDias`). Diferente da oferta coletada, **não some depois de 6 horas**.
+- **Marca da Lomadee não entra por aqui** (o link tem de ser o rastreado pela plataforma): o preço dela vem da coleta.
+- A loja precisa de área de entrega (`vinculos/`) para aparecer no feed de alguém.
+
 ## Ainda não existe
 
-- **Cadastro de oferta manual** (`POST /v1/admin/ofertas-manuais`): fase 5. Precisa das listas de medicamentos (CMED) carregadas na API e
-  do prazo padrão da validade (decisão D21, valor a escolher).
-- A tela do painel.
+- A tela do painel (a API está pronta).

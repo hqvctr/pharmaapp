@@ -13,6 +13,8 @@ import type { ProvedorLinkOferta } from './linkOferta.js';
 import { LimitadorMemoria } from './limiteTaxa.js';
 import type { ChaveCredenciais } from '../shared/cifra.js';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
+import { carregarListasMedicamentos } from '../normalizador/listas.js';
+import type { ListasMedicamentos } from '../normalizador/medicamentos.js';
 import { RegistroTenantsBanco } from './tenants.js';
 
 export const URL_BASE = process.env.PG_TESTE_URL;
@@ -20,7 +22,7 @@ export const VIGENTE = '2026-10-28';
 export const DROGASMIL = 'd855f505-7e26-4961-a182-c2139aeadd2c'; // marca liberada em fontes.lomadee.marcasPermitidasParaLink
 export const INICIO = new Date('2026-11-01T12:00:00Z');
 
-export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorGoogle; clientIdsGoogle?: string[]; chaveCredenciais?: ChaveCredenciais } = {}) {
+export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorGoogle; clientIdsGoogle?: string[]; chaveCredenciais?: ChaveCredenciais; listasMedicamentos?: (() => Promise<ListasMedicamentos>) | null } = {}) {
   const nomeBanco = `${prefixo}_${process.pid}_${Date.now()}`;
   const e = {
     pool: undefined as unknown as pg.Pool,
@@ -68,6 +70,8 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
       }),
       limitador: new LimitadorMemoria(relogio),
       links,
+      // As listas de teste (fixtures) por padrão; `null` simula o servidor sem a lista da primeira coleta.
+      ...(opcoes.listasMedicamentos === null ? {} : { listasMedicamentos: opcoes.listasMedicamentos ?? (() => carregarListasMedicamentos('fixtures/medicamentos/listas_teste.json')) }),
       ...(opcoes.chaveCredenciais ? { chaveCredenciais: opcoes.chaveCredenciais } : {}),
       auth: { db: e.pool, codigos: new CodigosMemoria(iguais, relogio), enviador: { enviarCodigo: async (para, codigo, nomeApp) => { e.enviados.push({ para, codigo, nomeApp }); } }, ...(opcoes.google ? { google: opcoes.google } : {}), chaveHmac: Buffer.alloc(32, 9), agora: () => e.agora },
     });
