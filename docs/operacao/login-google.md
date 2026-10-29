@@ -26,6 +26,8 @@ Relatório do Cowork: `docs/juridico/fontes/google-login-2026-10-28.md`.
 - Tela de consentimento: "economae", Externo, **Testando**, escopos `openid`, `email` e `profile`, 1 usuário de teste (a conta do responsável).
 - Sem cliente OAuth na lista `clientIds`, o servidor responde 403 `metodo_login_indisponivel` e `/v1/configuracao` não oferece o Google.
 
+**Testado no aparelho em 29/10/2026:** o responsável entrou com Google no APK de prévia (conta de teste), contra o servidor no computador dele.
+
 ## Como a conta é encontrada (DECISIONS 40 e 82)
 
 1. Pelo `sub` do Google (identificador estável). Entra mesmo que o e-mail do token tenha mudado ou não esteja verificado.
