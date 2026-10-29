@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Teste do app no celular aprovado e Shopee ativa (2026-10-29)
+
+O responsável testou no celular o app 0.3.2 (o que veio das DECISIONS 91 a 97: catálogo e categorias do KV, navegação por categoria e subcategoria, Início, Favoritos, galeria e visor de fotos com zoom, oferta manual sem "-0%") e informou que **tudo funciona**. A inscrição de afiliado da **Shopee foi aprovada** (conta ativa). Próximo passo, combinado com o responsável: **Shopee primeiro** (o Cowork lê a Open API com a conta logada e devolve `shopee-open-api-2026-10-29.md`; depois vem o adaptador em `backend/src/fontes/`). A forma do feed e o cadastro voltam em seguida.
+
 ## Painel do operador, versão final, com financeiro (2026-10-29, DECISIONS 98)
 
 Painel em `/operador/` refeito: menu lateral com contadores, Visão geral, Alertas, Triagem e Denúncias com abas e busca, Ofertas manuais com prévia do app,
