@@ -42,3 +42,19 @@ fun freteTexto(f: JSONObject): String = when (f.getString("status")) {
     "nao_se_aplica" -> "Sem frete"
     else -> "Frete a confirmar"
 }
+
+/**
+ * Preço por unidade do cartão a partir de `menor_preco_por_unidade_centavos` (centavos por un, por kg ou por l):
+ * "R$ 0,45/un"; peso e volume por 100 g e 100 ml, que é como a gôndola mostra. Null quando não ajuda: sem preço ou item avulso.
+ */
+fun precoPorUnidadeTexto(p: JSONObject): String? {
+    if (p.isNull("menor_preco_por_unidade_centavos") || !p.has("menor_preco_por_unidade_centavos")) return null
+    val v = p.getDouble("menor_preco_por_unidade_centavos")
+    val e = p.getJSONObject("embalagem")
+    return when (e.getString("unidade")) {
+        "un" -> if (e.getDouble("quantidade") > 1.0) "${reais(v)}/un" else null
+        "kg" -> "${reais(v / 10.0)}/100 g"
+        "l" -> "${reais(v / 10.0)}/100 ml"
+        else -> null
+    }
+}

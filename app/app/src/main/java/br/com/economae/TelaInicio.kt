@@ -4,66 +4,107 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import org.json.JSONObject
 
+/** Uma fileira do Início já pronta para desenhar. */
+class FileiraInicio(val id: String, val titulo: String, val itens: List<JSONObject>, val verTodas: VerTodas?)
+
 /**
- * Aba Início (02 do KV): busca, faixa de boas-vindas, "Explore por categoria" e a vitrine "Ofertas em destaque".
- * A vitrine mostra os alertas de queda quando há (o motor só gera depois de 14 dias de histórico); senão, produtos do catálogo
- * que dá para comprar agora, um pouco de cada categoria.
+ * Aba Início, no modelo das lojas (Shopee, Mercado Livre, Amazon): topo com o CEP de entrega e a busca, atalhos de categoria, as
+ * fileiras de GET /v1/inicio (fileira sem produto não vem), "Vistos recentemente" (guardado no aparelho) e, no fim, a grade
+ * "Para você", que não acaba: quedas verificadas primeiro, depois menor preço em 180 dias, depois o resto, alternando categorias.
  */
 @Composable
 fun AbaInicio(m: Modelo) {
-    val cats = m.categorias
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Logotipo(modifier = Modifier.padding(horizontal = 16.dp))
-        CampoBuscaFalso("Buscar produtos, marcas ou categorias…", Modifier.padding(horizontal = 16.dp)) { m.ir(Tela.Busca()) }
-        Faixa("Cuidado em cada fase", "Ofertas para você e para quem você ama.", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer,
-            Modifier.padding(horizontal = 16.dp), botao = "Ver ofertas" to { m.raiz(Tela.Principal(Abas.CATEGORIAS)) })
-
-        Text("Explore por categoria", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
-        Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), Arrangement.SpaceEvenly) {
-            cats.forEach { c -> CirculoDeCategoria(c) { m.ir(Tela.Categoria(c.getString("slug"))) } }
-        }
-
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-            Text("Ofertas em destaque", style = MaterialTheme.typography.titleMedium)
-            TextButton({ m.ir(Tela.Feed) }) { Text("Ver todas →") }
-        }
-        Carregar(listOf("destaques", cats.size), { buscarDestaques(m, cats) }) { destaques, recarregar ->
-            if (destaques.isEmpty()) {
-                Text("Ainda não há ofertas para mostrar. Toque numa categoria para ver o que as lojas têm.", style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp))
-            } else {
-                LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(destaques) { d -> CartaoDestaque(d, Modifier.width(170.dp)) { m.ir(d.tela) } }
+    var cep by remember { mutableStateOf<String?>(null) }
+    var fileiras by remember { mutableStateOf<List<FileiraInicio>>(emptyList()) }
+    var vistos by remember { mutableStateOf<List<JSONObject>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        try {
+            val r = m.api.get("/v1/inicio")
+            val c = r.corpo
+            if (r.ok && c != null) {
+                cep = c.textoOuNulo("cep")
+                fileiras = c.lista("fileiras").map { f ->
+                    FileiraInicio(f.getString("id"), f.getString("titulo"), f.lista("itens"), f.optJSONObject("ver_todas")?.let(::verTodasDe))
                 }
             }
+        } catch (_: SemConexao) {} // sem as fileiras, a grade "Para você" ainda mostra o erro e o "tentar de novo"
+        val ids = m.arm.vistos
+        if (ids.isNotEmpty()) try {
+            val r = m.api.get("/v1/produtos?limite=30&ids=" + ids.take(30).joinToString(","))
+            if (r.ok && r.corpo != null) vistos = naOrdemDosVistos(ids, r.corpo.lista("itens"))
+        } catch (_: SemConexao) {}
+    }
+    val todas = comVistos(fileiras, vistos)
+
+    ListaProdutos(m, consultaProdutos(ordem = Ordem.ParaVoce), "Ainda não há ofertas nas lojas que entregam no seu CEP, nas categorias que você escolheu.", grade = true,
+        rodapeVazio = {
+            linhaInteira("mudar") { OutlinedButton({ m.ir(Tela.Preferencias) }, Modifier.fillMaxWidth()) { Text("Mudar categorias e CEP") } }
+        }) {
+        linhaInteira("topo") {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Logotipo()
+                EntregandoEm(cep) { m.ir(Tela.Preferencias) }
+                CampoBuscaFalso("Buscar produtos, marcas ou categorias…") { m.ir(Tela.Busca()) }
+            }
         }
+        linhaInteira("categorias") {
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceEvenly) {
+                m.categorias.forEach { c -> CirculoDeCategoria(c) { m.ir(Tela.Categoria(c.getString("slug"))) } }
+            }
+        }
+        todas.forEach { f ->
+            fileira(m, f.titulo, f.itens, f.id, f.verTodas?.let { v -> { m.ir(Tela.Lista(f.titulo, v)) } })
+        }
+        // O feed de alertas continua: é o único lugar dos produtos com aviso legal (NBCAL), que não entram nas listas.
+        linhaInteira("promocoes") {
+            TextButton({ m.ir(Tela.Feed) }, Modifier.fillMaxWidth()) { Text("Todas as promoções verificadas →") }
+        }
+        linhaInteira("para-voce") { Text("Para você", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp)) }
+    }
+}
+
+/** "Vistos recentemente" entra depois das fileiras de queda e de favoritos (o que mudou de preço vem antes do que a pessoa já viu). */
+fun comVistos(fileiras: List<FileiraInicio>, vistos: List<JSONObject>): List<FileiraInicio> {
+    if (vistos.isEmpty()) return fileiras
+    val depois = fileiras.indexOfLast { it.id == "baixaram_de_preco" || it.id == "favoritos_mais_baratos" } + 1
+    return fileiras.take(depois) + FileiraInicio("vistos", "Vistos recentemente", vistos, null) + fileiras.drop(depois)
+}
+
+/** "Entregando em 14020-260 ›": o CEP muda tudo o que aparece, então fica à vista; tocar leva às preferências. */
+@Composable
+fun EntregandoEm(cep: String?, aoTocar: () -> Unit) {
+    Row(Modifier.clickable(role = Role.Button, onClick = aoTocar).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Icon(Icons.Rounded.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+        Text(if (cep != null) "Entregando em ${cepBonito(cep)}" else "Informe seu CEP", style = MaterialTheme.typography.bodyMedium)
+        Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(18.dp))
     }
 }
 
@@ -77,15 +118,4 @@ fun CirculoDeCategoria(c: JSONObject, aoAbrir: () -> Unit) {
         }
         Text(c.getString("rotulo"), style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center)
     }
-}
-
-/** Alertas de queda (até 10) ou, sem nenhum, até 12 produtos intercalados entre as categorias. Falha de uma categoria não derruba as outras. */
-suspend fun buscarDestaques(m: Modelo, cats: List<JSONObject>): List<Destaque> = coroutineScope {
-    // Tudo em paralelo: alertas e uma página de cada categoria (em série, o Início esperava a soma das respostas).
-    val alertas = async { m.api.get("/v1/alertas?limite=10") }
-    val porCategoria = cats.map { c -> async { m.api.get(consultaProdutos(categoria = c.getString("slug"), limite = 4)) } }
-    val a = alertas.await()
-    val deAlertas = if (a.ok) a.corpo?.lista("itens")?.map(::destaqueDeAlerta) ?: emptyList() else emptyList()
-    if (deAlertas.isNotEmpty()) return@coroutineScope deAlertas
-    intercalar(porCategoria.map { r -> val x = r.await(); if (x.ok) x.corpo?.lista("itens")?.map(::destaqueDeProduto) ?: emptyList() else emptyList() }, 12)
 }

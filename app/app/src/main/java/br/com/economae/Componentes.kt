@@ -216,10 +216,18 @@ fun LinhaProduto(m: Modelo, p: JSONObject, aoAbrir: () -> Unit, aoMudarSeguido: 
         Row(Modifier.padding(10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             FotoProduto(p.textoOuNulo("imagem_url"), Modifier.size(88.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    quedaDoCartao(p)?.let { q -> Selo("-$q", TipoSelo.Destaque, descricao = "queda de $q") }
+                    if (p.optBoolean("menor_preco_180d")) Selo("Menor preço em 180 dias", TipoSelo.Condicao)
+                }
                 Text(p.getString("nome"), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(embalagemTexto(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (preco != null) Text(reais(preco), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
-                else Text("sem oferta na sua região", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // Favoritos (GET /v1/seguidos) não traz os campos do cartão: aí fica a embalagem e o preço, como antes.
+                if (p.has("lojas")) PrecoDoCartao(p)
+                else {
+                    Text(embalagemTexto(p), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (preco != null) Text(reais(preco), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+                    else Text("sem oferta na sua região", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 erro?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
             }
             IconButton({
@@ -233,22 +241,6 @@ fun LinhaProduto(m: Modelo, p: JSONObject, aoAbrir: () -> Unit, aoMudarSeguido: 
                 Icon(if (seguido) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, tint = MaterialTheme.colorScheme.primary,
                     contentDescription = if (seguido) "Deixar de seguir ${p.getString("nome")}" else "Seguir ${p.getString("nome")}")
             }
-        }
-    }
-}
-
-/** Cartão da vitrine "Ofertas em destaque" do Início: selo de queda, foto, nome, preço e o botão "Ver oferta". */
-@Composable
-fun CartaoDestaque(d: Destaque, modifier: Modifier = Modifier, aoAbrir: () -> Unit) {
-    Cartao(modifier = modifier, aoTocar = aoAbrir) {
-        Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Box {
-                FotoProduto(d.imagem, Modifier.fillMaxWidth().aspectRatio(1f))
-                d.queda?.let { Selo(it, TipoSelo.Destaque, descricao = "queda de ${it.removePrefix("-")}", modifier = Modifier.align(Alignment.TopStart).padding(4.dp)) }
-            }
-            Text(d.nome, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.heightIn(min = 40.dp))
-            if (d.precoCentavos != null) Text(reais(d.precoCentavos), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
-            Button(aoAbrir, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth()) { Text("Ver oferta") }
         }
     }
 }

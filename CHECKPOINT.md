@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Início no modelo das lojas, API 1.3.0 e app 0.4.0 (2026-10-29, DECISIONS 99)
+
+Forma do feed definida com o responsável (Shopee, Mercado Livre, Amazon como base). API: consulta única dos cartões (`backend/src/api/catalogo.ts`), ordens e filtros novos em `GET /v1/produtos`, `GET /v1/inicio` (fileiras) e `GET /v1/categorias` (contagem por CEP para o cadastro), contrato 1.3.0 (lint ok), migration 0013 (índice do histórico por produto); 698 testes do backend passam. App 0.4.0: Início com CEP, fileiras, vistos recentemente e grade "Para você"; cartão com queda, "antes", preço por unidade, lojas e selo de 180 dias; categoria e pesquisa com ordenar e filtrar; cadastro com CEP primeiro e contagem por categoria; 44 testes do app passam (inclusive o que desenha as telas na JVM). Mesma chave (SHA-1 `7C:1C:...:36:A6`). **Não testado no celular**; para funcionar, o computador precisa da API nova (`atualizar.bat`). Shopee: aguardando o acesso à Open API (pedido pelo formulário).
+
 ## Shopee: Open API lida, acesso pendente (2026-10-29)
 
 O Cowork leu a documentação da Open API com a conta logada (`docs/juridico/fontes/shopee-open-api-2026-10-29.md`; resumo em `docs/operacao/redes-afiliados.md`; linha nova em `SOURCES.md`). A documentação abre, mas **a conta não tem acesso à API** (AppID e Secret vazios). O pedido de acesso é pelo formulário de contato da Shopee e fica com o responsável, via Cowork. GraphQL num único endpoint; assinatura `sha256(AppId + Timestamp + corpo + Secret)`, **conferida com o exemplo da documentação**; limite de 8.000 chamadas por hora; feed diário FULL/DELTA. **Não há GTIN, marca, estoque, frete nem região**, e há uma foto só. A conta aparece como "Empresarial", sem CNPJ, a conferir. Nenhum código de adaptador ainda.

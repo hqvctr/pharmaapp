@@ -56,6 +56,8 @@ fun TelaProduto(m: Modelo, id: String) {
             val p = r.corpo
             if (!r.ok || p == null) { Erro(if (r.status == 404) "Produto não encontrado." else r.mensagem, recarregar); return@Carregar }
             val ofertas = p.lista("ofertas")
+            // "Vistos recentemente" do Início: só produto que abriu de verdade.
+            LaunchedEffect(id) { m.arm.vistos = registrarVisto(m.arm.vistos, id) }
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), Arrangement.spacedBy(6.dp)) {
                 // Foto grande com o coração de seguir no canto, como no detalhe do KV (04).
                 Box(Modifier.fillMaxWidth()) {

@@ -21,37 +21,12 @@ class ConsultasTest {
         assertEquals("/v1/produtos?limite=20&q=teste&categoria=mamae", consultaProdutos(q = "teste", categoria = "mamae"))
     }
 
-    @Test fun `intercalar pega um de cada lista por rodada e respeita o maximo`() {
-        assertEquals(listOf(1, 10, 100, 2, 20, 3), intercalar(listOf(listOf(1, 2, 3), listOf(10, 20), listOf(100)), 6))
-        assertEquals(listOf(1, 10, 100, 2), intercalar(listOf(listOf(1, 2, 3), listOf(10, 20), listOf(100)), 4))
-        assertEquals(emptyList<Int>(), intercalar(listOf(emptyList(), emptyList<Int>()), 5))
-        assertEquals(emptyList<Int>(), intercalar(listOf(listOf(1)), 0))
-    }
-
     @Test fun `resumo das subcategorias`() {
         assertEquals("", resumoDeSubcategorias(emptyList()))
         assertEquals("Fraldas", resumoDeSubcategorias(listOf("Fraldas")))
         assertEquals("Fraldas e Higiene", resumoDeSubcategorias(listOf("Fraldas", "Higiene")))
         assertEquals("Fraldas, Higiene e Quarto", resumoDeSubcategorias(listOf("Fraldas", "Higiene", "Quarto")))
         assertEquals("Fraldas, Higiene, Quarto e mais", resumoDeSubcategorias(listOf("Fraldas", "Higiene", "Quarto", "Passeio", "Roupas")))
-    }
-
-    @Test fun `destaque de alerta mostra a queda e abre o alerta`() {
-        val a = JSONObject("""{"id":"a1","preco_centavos":5990,"queda":0.32,"produto":{"nome":"Fralda M","imagem_url":"https://l.test/f.jpg"}}""")
-        val d = destaqueDeAlerta(a)
-        assertEquals(Tela.Alerta("a1"), d.tela)
-        assertEquals("-32%", d.queda)
-        assertEquals(5990, d.precoCentavos)
-        assertEquals("https://l.test/f.jpg", d.imagem)
-    }
-
-    @Test fun `destaque de produto nao tem selo e aceita foto e preco ausentes`() {
-        val p = JSONObject("""{"id":"p1","nome":"Berço","imagem_url":null,"menor_preco_centavos":null}""")
-        val d = destaqueDeProduto(p)
-        assertEquals(Tela.Produto("p1"), d.tela)
-        assertNull(d.queda)
-        assertNull(d.imagem)
-        assertNull(d.precoCentavos)
     }
 
     @Test fun `economia so existe com mais de uma loja e precos diferentes`() {
@@ -71,9 +46,46 @@ class ConsultasTest {
         assertTrue(sem.isNull("menor_preco_centavos"))
     }
 
-    @Test fun `ordens da lista tem rotulo e a padrao nao manda parametro`() {
-        assertNull(Ordem.Novidades.parametro)
-        assertEquals(listOf("Mais novos", "Menor preço", "Maior preço", "A a Z"), Ordem.entries.map { it.rotulo })
+    @Test fun `ordens da lista tem rotulo e so a relevancia nao manda parametro`() {
+        assertNull(Ordem.Relevancia.parametro)
+        assertEquals("mais_novos", Ordem.Novidades.parametro)
+        assertEquals(listOf("Mais novos", "Maior queda", "Menor preço", "Menor preço por unidade", "Maior preço", "A a Z"), Ordem.daCategoria.map { it.rotulo })
+        assertEquals(Ordem.Relevancia, Ordem.daPesquisa.first())
+        assertEquals(Ordem.MenorPrecoUnidade, Ordem.doParametro("menor_preco_unidade"))
+        assertEquals(Ordem.Novidades, Ordem.doParametro("desconhecida"))
+    }
+
+    @Test fun `filtros entram na consulta e contam os ligados`() {
+        val f = Filtros(comQueda = true, menorPreco180d = true, precoMin = 1000, precoMax = 5000, lojaId = "l-1", lojaNome = "Loja", marca = "pampers", marcaNome = "Pampers")
+        assertEquals("/v1/produtos?limite=20&categoria=bebe&ordem=maior_queda&com_queda=true&menor_preco_180d=true&preco_min=1000&preco_max=5000&loja_id=l-1&marca=pampers&facetas=true",
+            consultaProdutos(categoria = "bebe", ordem = Ordem.MaiorQueda, filtros = f, facetas = true))
+        assertEquals(5, f.ativos)
+        assertEquals(1, Filtros(precoMax = 100).ativos)
+        assertEquals(0, Filtros().ativos)
+        assertEquals("/v1/produtos?limite=20&ordem=para_voce", consultaProdutos(ordem = Ordem.ParaVoce))
+    }
+
+    @Test fun `ver todas da fileira vira categoria, ordem e filtros`() {
+        assertEquals(VerTodas("bebe", "fraldas", Ordem.MenorPrecoUnidade, Filtros()), verTodasDe(JSONObject("""{"categoria":"bebe","subcategoria":"fraldas","ordem":"menor_preco_unidade"}""")))
+        assertEquals(VerTodas(null, null, Ordem.MaiorQueda, Filtros(comQueda = true)), verTodasDe(JSONObject("""{"ordem":"maior_queda","com_queda":true}""")))
+        assertEquals(VerTodas(null, null, Ordem.MaiorQueda, Filtros(menorPreco180d = true)), verTodasDe(JSONObject("""{"ordem":"maior_queda","menor_preco_180d":true}""")))
+    }
+
+    @Test fun `vistos recentemente vao para a frente sem repetir e respeitam o maximo`() {
+        assertEquals(listOf("c", "a", "b"), registrarVisto(listOf("a", "b", "c"), "c"))
+        assertEquals(listOf("d", "a", "b"), registrarVisto(listOf("a", "b", "c"), "d", max = 3))
+        assertEquals(listOf("x"), registrarVisto(emptyList(), "x"))
+        val itens = listOf(JSONObject().put("id", "b"), JSONObject().put("id", "a"))
+        assertEquals(listOf("a", "b"), naOrdemDosVistos(listOf("a", "sumiu", "b"), itens).map { it.getString("id") })
+    }
+
+    @Test fun `vistos entram depois das fileiras de queda e de favoritos`() {
+        val f = { id: String -> FileiraInicio(id, id, emptyList(), null) }
+        val vistos = listOf(JSONObject().put("id", "p"))
+        assertEquals(listOf("baixaram_de_preco", "favoritos_mais_baratos", "vistos", "novidades"),
+            comVistos(listOf(f("baixaram_de_preco"), f("favoritos_mais_baratos"), f("novidades")), vistos).map { it.id })
+        assertEquals(listOf("vistos", "novidades"), comVistos(listOf(f("novidades")), vistos).map { it.id })
+        assertEquals(listOf("novidades"), comVistos(listOf(f("novidades")), emptyList()).map { it.id })
     }
 
     @Test fun `abas ficam na ordem do KV`() {
@@ -90,7 +102,6 @@ class ConsultasTest {
     @Test fun `oferta manual vem com queda zero e nao ganha selo`() {
         val manual = JSONObject("""{"id":"a2","preco_centavos":4990,"queda":0,"sem_historico_verificado":true,"produto":{"nome":"Fralda","imagem_url":null}}""")
         assertTrue(!temQueda(manual))
-        assertNull(destaqueDeAlerta(manual).queda)
         val real = JSONObject("""{"id":"a3","preco_centavos":4990,"queda":0.0001,"produto":{"nome":"Fralda"}}""")
         assertTrue(temQueda(real))
         assertTrue(!temQueda(JSONObject("""{"id":"x"}""")))

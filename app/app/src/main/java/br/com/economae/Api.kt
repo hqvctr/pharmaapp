@@ -43,6 +43,10 @@ class Armazenamento(contexto: Context) {
         get() = p.getString("refresh", null)
         set(v) = p.edit().putString("refresh", v).apply()
     fun limparSessao() = p.edit().remove("access").remove("refresh").apply()
+    /** Produtos abertos por último (ids, o mais recente primeiro): a fileira "Vistos recentemente" do Início. Fica só no aparelho. */
+    var vistos: List<String>
+        get() = (p.getString("vistos", "") ?: "").split(',').filter { it.isNotBlank() }
+        set(v) = p.edit().putString("vistos", v.joinToString(",")).apply()
 }
 
 class Api(private val arm: Armazenamento) {

@@ -46,5 +46,6 @@ fun Raiz() {
         is Tela.Categoria -> TelaCategoria(m, t.slug, t.sub)
         is Tela.Busca -> TelaBusca(m, t.categoria)
         is Tela.Feed -> TelaFeed(m)
+        is Tela.Lista -> TelaLista(m, t.titulo, t.v)
     }
 }

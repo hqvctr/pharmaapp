@@ -66,4 +66,30 @@ class FormatoTest {
         assertNull(o.inteiroOuNulo("a"))
         assertEquals(3, o.inteiroOuNulo("c"))
     }
+
+    @Test fun `preco por unidade do cartao`() {
+        val p = { q: Double, u: String, v: Any -> JSONObject().put("embalagem", JSONObject().put("quantidade", q).put("unidade", u)).put("menor_preco_por_unidade_centavos", v) }
+        assertEquals("R$ 0,45/un", limpo(precoPorUnidadeTexto(p(80.0, "un", 45.4))!!))
+        assertNull(precoPorUnidadeTexto(p(1.0, "un", 5990)))
+        assertEquals("R$ 4,99/100 ml", limpo(precoPorUnidadeTexto(p(0.4, "l", 4990))!!))
+        assertEquals("R$ 2,50/100 g", limpo(precoPorUnidadeTexto(p(0.9, "kg", 2500))!!))
+        assertNull(precoPorUnidadeTexto(p(80.0, "un", JSONObject.NULL)))
+    }
+
+    @Test fun `queda do cartao so com queda verificada`() {
+        assertEquals("33%", quedaDoCartao(JSONObject().put("queda", 0.3333)))
+        assertNull(quedaDoCartao(JSONObject().put("queda", JSONObject.NULL)))
+        assertNull(quedaDoCartao(JSONObject().put("queda", 0)))
+        assertNull(quedaDoCartao(JSONObject()))
+    }
+
+    @Test fun `faixa de preco digitada vira centavos`() {
+        assertEquals(5990, centavosDoTexto("59,90"))
+        assertEquals(5900, centavosDoTexto("59"))
+        assertEquals(123400, centavosDoTexto("1.234"))
+        assertNull(centavosDoTexto(""))
+        assertNull(centavosDoTexto("abc"))
+        assertEquals("Até R$ 50,00", limpo(faixaDePrecoTexto(null, 5000)))
+        assertEquals("R$ 10,00 a R$ 50,00", limpo(faixaDePrecoTexto(1000, 5000)))
+    }
 }

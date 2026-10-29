@@ -18,8 +18,10 @@ sealed interface Tela {
     data class Categoria(val slug: String, val sub: String? = null) : Tela
     /** Pesquisa de produto; com `categoria`, só dentro dela. */
     data class Busca(val categoria: String? = null) : Tela
-    /** Todas as promoções (o feed de alertas), de "Ver todas" no Início. */
+    /** Todas as promoções verificadas (o feed de alertas, que também mostra os produtos com aviso legal). */
     data object Feed : Tela
+    /** "Ver todas" de uma fileira do Início: a lista completa, com ordenar e filtrar. */
+    data class Lista(val titulo: String, val v: VerTodas) : Tela
 }
 
 /** Abas da barra de baixo, na ordem do KV (Cupons ficou de fora: não há dado). */

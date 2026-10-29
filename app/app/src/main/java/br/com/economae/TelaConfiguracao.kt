@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,22 +84,48 @@ fun TelaPreferencias(m: Modelo, aoSalvar: () -> Unit) {
         val ceps = remember { mutableStateListOf<String>().also { l -> l.addAll(p.getJSONArray("ceps").textos()); if (l.isEmpty()) l.add("") } }
         var ocupado by remember { mutableStateOf(false) }
         var erro by remember { mutableStateOf<String?>(null) }
+        // Quantos produtos cada categoria tem para os CEPs digitados (o maior entre eles). Null = ainda não sabe: tudo fica liberado.
+        var contagem by remember { mutableStateOf<Map<String, Int>?>(null) }
+        val cepsProntos = ceps.filter { it.length == 8 }.distinct()
+        LaunchedEffect(cepsProntos) {
+            contagem = null
+            if (cepsProntos.isEmpty()) return@LaunchedEffect
+            contagem = try {
+                val porCep = cepsProntos.map { cep -> m.api.get("/v1/categorias?cep=$cep") }
+                if (porCep.any { !it.ok || it.corpo == null }) null
+                else porCep.flatMap { it.corpo!!.lista("categorias") }.groupBy { it.getString("slug") }.mapValues { (_, l) -> l.maxOf { it.getInt("produtos") } }
+            } catch (e: SemConexao) { null }
+        }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), Arrangement.spacedBy(8.dp)) {
-            Text("O que você quer acompanhar", style = MaterialTheme.typography.headlineSmall)
-            cfg.getJSONArray("categorias").objetos().forEach { c ->
-                val slug = c.getString("slug")
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(slug in escolhidas, { if (it) escolhidas.add(slug) else escolhidas.remove(slug) })
-                    Text(c.getString("rotulo"))
-                }
-            }
-            Titulo("Onde você recebe")
+            Text("Onde você recebe", style = MaterialTheme.typography.headlineSmall)
             Text(if (limiteCeps == 1) "No plano gratuito vale 1 CEP (só números, 8 dígitos)." else "Até $limiteCeps CEPs (só números, 8 dígitos).", style = MaterialTheme.typography.bodyMedium)
             ceps.forEachIndexed { i, c ->
                 OutlinedTextField(c, { ceps[i] = it.filter(Char::isDigit).take(8) }, label = { Text("CEP ${i + 1}") }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
             }
             if (ceps.size < limiteCeps) OutlinedButton({ ceps.add("") }) { Text("Adicionar CEP") }
+            Titulo("O que você quer acompanhar")
+            val c = contagem
+            val semNenhuma = c != null && c.values.all { it == 0 }
+            if (semNenhuma) Text("Ainda não há lojas que entregam nesse CEP. Escolha o que quiser acompanhar: avisamos quando houver ofertas.",
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            cfg.getJSONArray("categorias").objetos().forEach { cat ->
+                val slug = cat.getString("slug")
+                val n = c?.get(slug)
+                // Categoria sem oferta no CEP fica apagada (dá para desmarcar, não para marcar), a não ser que nenhuma tenha oferta.
+                val liberada = n == null || n > 0 || semNenhuma || slug in escolhidas
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(slug in escolhidas, { if (it) escolhidas.add(slug) else escolhidas.remove(slug) }, enabled = liberada)
+                    Column {
+                        Text(cat.getString("rotulo"), color = if (liberada) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
+                        when {
+                            n == null -> {}
+                            n > 0 -> Text(if (n == 1) "1 produto na sua região" else "$n produtos na sua região", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            else -> Text("ainda sem ofertas na sua região", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
             Botao("Salvar", !ocupado && escolhidas.isNotEmpty() && ceps.all { it.length == 8 }) {
                 escopo.launch {
                     ocupado = true; erro = null
