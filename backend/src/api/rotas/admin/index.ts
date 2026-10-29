@@ -2,6 +2,8 @@
 import type { FastifyInstance } from 'fastify';
 import { rotasAdminAlertas } from './alertas.js';
 import { rotasAdminAuth } from './auth.js';
+import { rotasAdminFinanceiro } from './financeiro.js';
+import { rotasAdminGestao } from './gestao.js';
 import { rotasAdminOfertasEBusca } from './ofertasEBusca.js';
 import { rotaAdminOfertaManual } from './ofertaManual.js';
 import { rotasAdminModeracao } from './moderacao.js';
@@ -16,4 +18,6 @@ export function rotasAdmin(app: FastifyInstance, d: DepsAdmin): void {
   rotasAdminModeracao(app, d);
   rotasAdminOfertasEBusca(app, d);
   rotaAdminOfertaManual(app, d);
+  rotasAdminGestao(app, d);
+  rotasAdminFinanceiro(app, d);
 }

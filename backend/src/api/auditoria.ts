@@ -3,9 +3,10 @@ import type { Db } from '../pipeline/repositorio.js';
 
 export type AcaoAuditoria =
   | 'operador_entrou' | 'alerta_revisado' | 'loja_status_definido' | 'fonte_status_definido' | 'fonte_credencial_gravada'
-  | 'denuncia_resolvida' | 'triagem_revisada' | 'triagem_liberada' | 'oferta_manual_criada' | 'oferta_manual_encerrada';
+  | 'denuncia_resolvida' | 'triagem_revisada' | 'triagem_liberada' | 'oferta_manual_criada' | 'oferta_manual_encerrada'
+  | 'loja_criada' | 'loja_editada' | 'loja_areas_definidas' | 'receita_lancada' | 'receita_editada' | 'receitas_importadas';
 
-export type AlvoAuditoria = 'operador' | 'alerta' | 'loja' | 'fonte' | 'caso_denuncia' | 'triagem' | 'oferta';
+export type AlvoAuditoria = 'operador' | 'alerta' | 'loja' | 'fonte' | 'caso_denuncia' | 'triagem' | 'oferta' | 'receita';
 
 export async function registrarAuditoria(
   db: Db,

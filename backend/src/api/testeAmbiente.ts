@@ -165,7 +165,7 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
     async historico(produto: string, loja: string, observadoEm: string, precoPorUnidade: number, precoEmbalagem = 5990) {
       await e.pool.query(`INSERT INTO price_history (tenant_id, product_id, store_id, preco_centavos, preco_por_unidade_centavos, observado_em) VALUES ($1,$2,$3,$4,$5,$6)`, [e.tenantId, produto, loja, precoEmbalagem, precoPorUnidade, observadoEm]);
     },
-    chamar(method: 'GET' | 'PUT' | 'POST' | 'DELETE', url: string, auth: Record<string, string>, payload?: unknown, extra: Record<string, string> = {}, ip?: string) {
+    chamar(method: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE', url: string, auth: Record<string, string>, payload?: unknown, extra: Record<string, string> = {}, ip?: string) {
       return e.app.inject({ method, url, headers: { ...auth, ...extra }, ...(payload !== undefined ? { payload: payload as never } : {}), ...(ip !== undefined ? { remoteAddress: ip } : {}) });
     },
   };

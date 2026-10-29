@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: economae API (operadores)
-  version: 1.0.0
+  version: 1.1.0
   license:
     name: Proprietária
     identifier: LicenseRef-Proprietaria
@@ -21,6 +21,14 @@ info:
       credencial nunca entra na auditoria, em log ou em resposta.
     - O operador vê os campos estruturados do alerta; `alerts.motivo` e o score continuam fora da API
       (decisão D16).
+
+    ## 1.1.0 (2026-10-29, só acréscimos; DECISIONS 98)
+    Painel web, versão final: `GET /v1/admin/resumo` (tela inicial), loja própria (`POST /v1/admin/lojas`,
+    `GET`/`PATCH /v1/admin/lojas/{id}`, `PUT /v1/admin/lojas/{id}/areas`), `GET /v1/admin/operadores` (só leitura;
+    cadastro segue por linha de comando, D2), painel financeiro (`/v1/admin/receitas*` e `GET /v1/admin/financeiro`),
+    `imagem_url` opcional em `ProdutoNovo`, `propria` e `areas_entrega_total` nos itens de `GET /v1/admin/lojas` e as
+    ações de auditoria `loja_criada`, `loja_editada`, `loja_areas_definidas`, `receita_lancada`, `receita_editada` e
+    `receitas_importadas` (alvo `receita`). Receita nunca é estimada: só entra lançada ou importada pelo operador.
 servers:
   - url: http://127.0.0.1:3000
     description: desenvolvimento
@@ -45,6 +53,10 @@ tags:
     description: Busca de produto para a oferta manual.
   - name: auditoria
     description: Registro de toda ação administrativa.
+  - name: painel
+    description: Resumo da tela inicial do painel (1.1.0).
+  - name: financeiro
+    description: Receitas lançadas ou importadas pelo operador e métricas medidas pelo sistema (1.1.0).
 
 security:
   - operador: []
@@ -271,6 +283,26 @@ paths:
               schema: { $ref: '#/components/schemas/PaginaLojasAdmin' }
               examples:
                 uma: { $ref: '#/components/examples/PaginaLojasAdmin' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+    post:
+      tags: [lojas]
+      operationId: adminCadastrarLojaPropria
+      summary: Cadastra uma loja própria (online, sob a fonte `manual`) com as faixas de CEP que ela atende (1.1.0)
+      description: Serve à oferta manual. Começa aprovada ou em observação. Nome igual ao de outra loja do tenant dá 422 em `nome`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoLojaPropria' }
+            example: { nome: Mercado do Bairro, cnpj: null, status: em_observacao, reputacao: 0.5, areas_entrega: [{ cep_inicio: '14000000', cep_fim: '14999999', prazo_dias: 2 }] }
+      responses:
+        '201':
+          description: Loja criada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LojaAdminDetalhe' }
+        '400': { $ref: '#/components/responses/R400' }
         '401': { $ref: '#/components/responses/R401' }
         '422': { $ref: '#/components/responses/R422' }
 
@@ -633,6 +665,223 @@ paths:
         '401': { $ref: '#/components/responses/R401' }
         '422': { $ref: '#/components/responses/R422' }
 
+  # ---------------------------------------------------------------- 1.1.0: painel, lojas próprias, operadores, financeiro
+  /v1/admin/resumo:
+    get:
+      tags: [painel]
+      operationId: adminObterResumo
+      summary: Números da tela inicial (pendências, lojas, coleta, alertas da semana)
+      description: '`coleta.dias_historico` fica em cache por 5 minutos. `coleta.ultimo_ciclo` é null quando o servidor não enxerga o arquivo do coletor.'
+      responses:
+        '200':
+          description: Resumo.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResumoPainel' }
+        '401': { $ref: '#/components/responses/R401' }
+
+  /v1/admin/lojas/{id}:
+    get:
+      tags: [lojas]
+      operationId: adminObterLoja
+      summary: Detalhe da loja com as faixas de CEP atendidas
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Loja.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LojaAdminDetalhe' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+    patch:
+      tags: [lojas]
+      operationId: adminEditarLoja
+      summary: Corrige nome, rede, CNPJ, autorização sanitária ou reputação (só os campos enviados)
+      description: Vale para qualquer loja (inclusive as da coleta). Nome repetido de outra loja dá 422 em `nome`. Repetir os valores atuais devolve 200 sem auditoria nova.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoEdicaoLoja' }
+            example: { nome: Mercado do Bairro (online), reputacao: 0.7, observacao: Nome corrigido. }
+      responses:
+        '200':
+          description: Loja atualizada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LojaAdminDetalhe' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/lojas/{id}/areas:
+    put:
+      tags: [lojas]
+      operationId: adminDefinirAreasLoja
+      summary: Substitui as faixas de CEP atendidas pela loja (idempotente)
+      description: Lista vazia é aceita (a loja some do feed de todo mundo, porque não entrega em nenhum CEP).
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoAreasLoja' }
+            example: { areas_entrega: [{ cep_inicio: '14000000', cep_fim: '14999999', prazo_dias: 2 }], observacao: null }
+      responses:
+        '200':
+          description: Loja com as faixas novas.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LojaAdminDetalhe' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/operadores:
+    get:
+      tags: [operador]
+      operationId: adminListarOperadores
+      summary: Operadores do tenant (só leitura; cadastro e desativação por linha de comando, D2)
+      responses:
+        '200':
+          description: Operadores, ativos primeiro.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListaOperadores' }
+        '401': { $ref: '#/components/responses/R401' }
+
+  /v1/admin/receitas:
+    get:
+      tags: [financeiro]
+      operationId: adminListarReceitas
+      summary: Lançamentos de receita (mais recentes primeiro, por competência)
+      parameters:
+        - { name: fonte, in: query, schema: { $ref: '#/components/schemas/FonteReceita' } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/StatusReceita' } }
+        - { name: desde, in: query, schema: { type: string, format: date } }
+        - { name: ate, in: query, schema: { type: string, format: date } }
+        - $ref: './openapi.yaml#/components/parameters/Cursor'
+        - $ref: './openapi.yaml#/components/parameters/Limite'
+      responses:
+        '200':
+          description: Página de lançamentos.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginaReceitas' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+    post:
+      tags: [financeiro]
+      operationId: adminLancarReceita
+      summary: Lança uma receita
+      description: Mesma `fonte` e `referencia` de um lançamento que já existe dá 422 em `referencia`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoReceita' }
+            example: { fonte: afiliado_lomadee, competencia: '2026-10-31', valor_centavos: 15890, status: confirmada, descricao: Comissões de outubro, referencia: null }
+      responses:
+        '201':
+          description: Lançada.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receita' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/receitas/{id}:
+    patch:
+      tags: [financeiro]
+      operationId: adminEditarReceita
+      summary: Corrige ou muda a situação do lançamento (só os campos enviados; cancelar = status cancelada)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PedidoEdicaoReceita' }
+            example: { status: recebida }
+      responses:
+        '200':
+          description: Lançamento atualizado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Receita' }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '404': { $ref: '#/components/responses/R404' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/receitas/importacao:
+    post:
+      tags: [financeiro]
+      operationId: adminImportarReceitas
+      summary: Importa até 1000 lançamentos de uma vez (relatório em CSV lido pelo painel)
+      description: |
+        Valida tudo antes (qualquer linha errada dá 422 com `itens[N].campo` e nada entra; até 50 erros). Linha com `fonte` e
+        `referencia` de um lançamento que já existe é pulada e contada em `repetidas`, então importar o mesmo relatório de novo não
+        duplica. Linha sem `referencia` sempre entra.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [itens]
+              properties:
+                itens:
+                  type: array
+                  minItems: 1
+                  maxItems: 1000
+                  items: { $ref: '#/components/schemas/PedidoReceita' }
+      responses:
+        '200':
+          description: Resultado da importação.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, criadas, repetidas]
+                properties:
+                  total: { type: integer }
+                  criadas: { type: integer }
+                  repetidas: { type: integer }
+        '400': { $ref: '#/components/responses/R400' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
+  /v1/admin/financeiro:
+    get:
+      tags: [financeiro]
+      operationId: adminObterFinanceiro
+      summary: Receita por mês, fonte e situação; cliques e assinaturas medidos pelo sistema
+      description: |
+        Meses no fuso do tenant. Lançamento cancelado entra em `por_status.cancelada` mas não soma em `total_centavos` nem em
+        `por_fonte`. `cliques` são os toques no botão da oferta nos últimos 30 dias (`alert_events` do tipo `clicado`);
+        `cliques_afiliado` são os que levaram a link de afiliado. `receita_afiliado_por_clique_centavos` = receita de afiliado não
+        cancelada com competência nos últimos 30 dias ÷ cliques de afiliado no mesmo período (null sem os dois).
+      parameters:
+        - { name: meses, in: query, schema: { type: integer, minimum: 1, maximum: 36, default: 12 } }
+        - { name: ate, in: query, description: 'Último mês (AAAA-MM); padrão = mês atual.', schema: { type: string, pattern: '^\d{4}-\d{2}$' } }
+      responses:
+        '200':
+          description: Resumo financeiro.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResumoFinanceiro' }
+        '401': { $ref: '#/components/responses/R401' }
+        '422': { $ref: '#/components/responses/R422' }
+
 components:
   securitySchemes:
     operador:
@@ -931,7 +1180,7 @@ components:
           properties:
             itens:
               type: array
-              items: { $ref: '#/components/schemas/LojaAdmin' }
+              items: { $ref: '#/components/schemas/LojaAdminItem' }
     PedidoStatusLoja:
       type: object
       required: [status]
@@ -1127,6 +1376,7 @@ components:
           description: Opcional. Uma das subcategorias da categoria em `/v1/configuracao`.
         gtin: { type: [string, 'null'], pattern: '^[0-9]{8,14}$' }
         embalagem: { $ref: './openapi.yaml#/components/schemas/Embalagem' }
+        imagem_url: { type: [string, 'null'], format: uri, maxLength: 2048, description: 'Opcional (1.1.0). Foto do produto (https). Produto que já existe mantém a foto que tinha.' }
     PedidoOfertaManual:
       type: object
       required: [loja_id, preco_centavos, condicao, frete, valida_de, link, link_afiliado]
@@ -1206,6 +1456,12 @@ components:
         - triagem_liberada
         - oferta_manual_criada
         - oferta_manual_encerrada
+        - loja_criada
+        - loja_editada
+        - loja_areas_definidas
+        - receita_lancada
+        - receita_editada
+        - receitas_importadas
     RegistroAuditoria:
       type: object
       required: [id, em, operador, acao, alvo_tipo, alvo_id, detalhe]
@@ -1214,7 +1470,7 @@ components:
         em: { type: string, format: date-time }
         operador: { $ref: '#/components/schemas/OperadorResumo' }
         acao: { $ref: '#/components/schemas/AcaoAuditoria' }
-        alvo_tipo: { type: string, enum: [operador, alerta, loja, fonte, caso_denuncia, triagem, oferta] }
+        alvo_tipo: { type: string, enum: [operador, alerta, loja, fonte, caso_denuncia, triagem, oferta, receita] }
         alvo_id: { type: string, format: uuid }
         detalhe:
           type: object
@@ -1228,6 +1484,246 @@ components:
             itens:
               type: array
               items: { $ref: '#/components/schemas/RegistroAuditoria' }
+
+    # ------------------------------------------------------------ 1.1.0
+    LojaAdminItem:
+      allOf:
+        - $ref: '#/components/schemas/LojaAdmin'
+        - type: object
+          required: [propria, areas_entrega_total]
+          properties:
+            propria: { type: boolean, description: Loja cadastrada pelo operador (fonte `manual`). }
+            areas_entrega_total: { type: integer, minimum: 0, description: Faixas de CEP atendidas; 0 = não aparece no feed de ninguém. }
+    AreaEntrega:
+      type: object
+      required: [cep_inicio, cep_fim, prazo_dias]
+      properties:
+        cep_inicio: { type: string, pattern: '^[0-9]{8}$' }
+        cep_fim: { type: string, pattern: '^[0-9]{8}$' }
+        prazo_dias: { type: integer, minimum: 0, maximum: 90 }
+    LojaAdminDetalhe:
+      allOf:
+        - $ref: '#/components/schemas/LojaAdmin'
+        - type: object
+          required: [propria, fontes, aceita_oferta_manual, areas_entrega, ofertas_disponiveis]
+          properties:
+            propria: { type: boolean }
+            fontes: { type: array, items: { type: string }, description: Nomes das fontes ligadas à loja. }
+            aceita_oferta_manual: { type: boolean, description: false em loja de marca com trava de link (Lomadee, D67). }
+            areas_entrega: { type: array, items: { $ref: '#/components/schemas/AreaEntrega' } }
+            ofertas_disponiveis: { type: integer, minimum: 0 }
+    PedidoLojaPropria:
+      type: object
+      required: [nome, areas_entrega]
+      properties:
+        nome: { type: string, maxLength: 120 }
+        rede: { type: [string, 'null'], maxLength: 120, description: Ausente ou null = o nome. }
+        cnpj: { type: [string, 'null'], description: 14 dígitos (pontos, barra e traço são ignorados). }
+        autorizacao_sanitaria: { type: [string, 'null'], maxLength: 120 }
+        status: { type: string, enum: [aprovada, em_observacao], default: em_observacao }
+        reputacao: { type: number, minimum: 0, maximum: 1, default: 0.5 }
+        areas_entrega: { type: array, minItems: 1, maxItems: 100, items: { $ref: '#/components/schemas/AreaEntrega' } }
+    PedidoEdicaoLoja:
+      type: object
+      minProperties: 1
+      properties:
+        nome: { type: string, maxLength: 120 }
+        rede: { type: string, maxLength: 120 }
+        cnpj: { type: [string, 'null'] }
+        autorizacao_sanitaria: { type: [string, 'null'], maxLength: 120 }
+        reputacao: { type: number, minimum: 0, maximum: 1 }
+        observacao: { $ref: '#/components/schemas/Observacao' }
+    PedidoAreasLoja:
+      type: object
+      required: [areas_entrega]
+      properties:
+        areas_entrega: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/AreaEntrega' } }
+        observacao: { $ref: '#/components/schemas/Observacao' }
+    OperadorGestao:
+      type: object
+      required: [id, email, nome, ativo, criado_em, ultimo_acesso_em, voce]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        nome: { type: string }
+        ativo: { type: boolean }
+        criado_em: { type: string, format: date-time }
+        ultimo_acesso_em: { type: [string, 'null'], format: date-time, description: Último login ou renovação de sessão. }
+        voce: { type: boolean, description: true para o operador logado. }
+    ListaOperadores:
+      type: object
+      required: [itens]
+      properties:
+        itens: { type: array, items: { $ref: '#/components/schemas/OperadorGestao' } }
+    ResumoPainel:
+      type: object
+      required: [gerado_em, pendencias, ofertas_manuais_ativas, lojas, fontes, catalogo, coleta, alertas_7_dias]
+      properties:
+        gerado_em: { type: string, format: date-time }
+        pendencias:
+          type: object
+          required: [alertas, triagem, denuncias]
+          properties:
+            alertas: { type: integer, description: Alertas aguardando aprovação. }
+            triagem: { type: integer, description: Bloqueios ainda não revisados. }
+            denuncias: { type: integer, description: Ofertas escondidas aguardando decisão. }
+        ofertas_manuais_ativas: { type: integer }
+        lojas:
+          type: object
+          required: [aprovada, em_observacao, bloqueada, sem_area_entrega]
+          properties:
+            aprovada: { type: integer }
+            em_observacao: { type: integer }
+            bloqueada: { type: integer }
+            sem_area_entrega: { type: integer, description: Lojas não bloqueadas sem nenhuma faixa de CEP. }
+        fontes:
+          type: object
+          required: [ativas, total]
+          properties: { ativas: { type: integer }, total: { type: integer } }
+        catalogo:
+          type: object
+          required: [produtos, ofertas_disponiveis]
+          properties: { produtos: { type: integer }, ofertas_disponiveis: { type: integer } }
+        coleta:
+          type: object
+          required: [ultima_coleta_em, dias_historico, dias_para_alertas, ultimo_ciclo]
+          properties:
+            ultima_coleta_em: { type: [string, 'null'], format: date-time, description: Oferta coletada mais recente (não conta a manual). }
+            dias_historico: { type: integer, description: Dias já fechados com preço guardado. }
+            dias_para_alertas: { type: integer, description: Dias de histórico que o motor exige. }
+            ultimo_ciclo:
+              oneOf:
+                - type: object
+                  required: [fim, falhou, erro]
+                  properties:
+                    fim: { type: string, format: date-time }
+                    falhou: { type: boolean }
+                    erro: { type: [string, 'null'] }
+                - type: 'null'
+        alertas_7_dias:
+          type: object
+          required: [criados, aprovados, rejeitados, notificados]
+          description: Alertas do motor (ofertas coletadas) criados nos últimos 7 dias.
+          properties:
+            criados: { type: integer }
+            aprovados: { type: integer }
+            rejeitados: { type: integer }
+            notificados: { type: integer }
+    FonteReceita:
+      type: string
+      enum: [afiliado_lomadee, afiliado_outros, assinatura_google_play, assinatura_app_store, anuncios, outros]
+    StatusReceita:
+      type: string
+      description: '`prevista` = comissão pendente na rede; `confirmada` = aprovada, a receber; `recebida` = paga; `cancelada` = não conta.'
+      enum: [prevista, confirmada, recebida, cancelada]
+    PedidoReceita:
+      type: object
+      required: [fonte, competencia, valor_centavos, status]
+      properties:
+        fonte: { $ref: '#/components/schemas/FonteReceita' }
+        competencia: { type: string, format: date, description: Dia da venda ou do mês a que a receita se refere. }
+        valor_centavos: { type: integer, minimum: 1, maximum: 1000000000 }
+        status: { $ref: '#/components/schemas/StatusReceita' }
+        descricao: { type: [string, 'null'], maxLength: 300 }
+        referencia: { type: [string, 'null'], maxLength: 120, description: Id no relatório de origem; único por fonte. }
+    PedidoEdicaoReceita:
+      type: object
+      minProperties: 1
+      properties:
+        fonte: { $ref: '#/components/schemas/FonteReceita' }
+        competencia: { type: string, format: date }
+        valor_centavos: { type: integer, minimum: 1, maximum: 1000000000 }
+        status: { $ref: '#/components/schemas/StatusReceita' }
+        descricao: { type: [string, 'null'], maxLength: 300 }
+        referencia: { type: [string, 'null'], maxLength: 120 }
+    Receita:
+      type: object
+      required: [id, fonte, competencia, valor_centavos, status, descricao, referencia, criada_por, criada_em, atualizada_por, atualizada_em]
+      properties:
+        id: { type: string, format: uuid }
+        fonte: { $ref: '#/components/schemas/FonteReceita' }
+        competencia: { type: string, format: date }
+        valor_centavos: { type: integer }
+        status: { $ref: '#/components/schemas/StatusReceita' }
+        descricao: { type: [string, 'null'] }
+        referencia: { type: [string, 'null'] }
+        criada_por: { $ref: '#/components/schemas/OperadorResumo' }
+        criada_em: { type: string, format: date-time }
+        atualizada_por:
+          oneOf:
+            - $ref: '#/components/schemas/OperadorResumo'
+            - type: 'null'
+        atualizada_em: { type: [string, 'null'], format: date-time }
+    PaginaReceitas:
+      allOf:
+        - $ref: '#/components/schemas/PaginaBase'
+        - type: object
+          required: [itens]
+          properties:
+            itens: { type: array, items: { $ref: '#/components/schemas/Receita' } }
+    ValoresPorFonte:
+      type: object
+      description: Centavos por `FonteReceita` (todas as chaves sempre presentes).
+      additionalProperties: { type: integer }
+    ValoresPorStatus:
+      type: object
+      description: Centavos por `StatusReceita` (todas as chaves sempre presentes).
+      additionalProperties: { type: integer }
+    ReceitaDoPeriodo:
+      type: object
+      required: [total_centavos, por_fonte, por_status, lancamentos]
+      properties:
+        total_centavos: { type: integer, description: Sem as canceladas. }
+        por_fonte: { $ref: '#/components/schemas/ValoresPorFonte' }
+        por_status: { $ref: '#/components/schemas/ValoresPorStatus' }
+        lancamentos: { type: integer }
+    ResumoFinanceiro:
+      type: object
+      required: [gerado_em, periodo, meses, totais, mes_atual, cliques, assinaturas, receita_afiliado_por_clique_centavos]
+      properties:
+        gerado_em: { type: string, format: date-time }
+        periodo:
+          type: object
+          required: [de, ate]
+          properties: { de: { type: string }, ate: { type: string } }
+        meses:
+          type: array
+          description: Do mais antigo ao mais novo; mês sem lançamento vem zerado.
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ReceitaDoPeriodo'
+              - type: object
+                required: [mes]
+                properties: { mes: { type: string, pattern: '^\d{4}-\d{2}$' } }
+        totais: { $ref: '#/components/schemas/ReceitaDoPeriodo' }
+        mes_atual:
+          type: object
+          required: [mes, total_centavos, recebido_centavos, a_receber_centavos, variacao]
+          properties:
+            mes: { type: string }
+            total_centavos: { type: integer }
+            recebido_centavos: { type: integer }
+            a_receber_centavos: { type: integer, description: Prevista + confirmada. }
+            variacao: { type: [number, 'null'], description: Fração sobre o mês anterior (0.2 = +20%); null se o anterior foi zero. }
+        cliques:
+          type: object
+          required: [dias, total, afiliado]
+          properties:
+            dias:
+              type: array
+              items:
+                type: object
+                required: [dia, cliques, cliques_afiliado]
+                properties: { dia: { type: string, format: date }, cliques: { type: integer }, cliques_afiliado: { type: integer } }
+            total: { type: integer }
+            afiliado: { type: integer }
+        assinaturas:
+          type: object
+          required: [ativas, por_plano]
+          properties:
+            ativas: { type: integer }
+            por_plano: { type: object, additionalProperties: { type: integer } }
+        receita_afiliado_por_clique_centavos: { type: [integer, 'null'] }
 
   examples:
     # ------------------------------------------------------------ erros

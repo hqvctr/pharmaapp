@@ -169,7 +169,7 @@ executar('admin: alertas, lojas e fontes (Postgres)', () => {
       expect(todas.itens.map((l: { id: string }) => l.id)).not.toContain(outra.loja);
       expect(todas.itens.find((l: { id: string }) => l.id === b.loja)).toEqual({
         id: b.loja, rede: 'LojaB', nome: 'LojaB (online)', cnpj: '12345678000199', tipo: 'online', status: 'bloqueada', reputacao: 0.75,
-        autorizacao_sanitaria: 'AFE 123', criado_em: expect.any(String),
+        autorizacao_sanitaria: 'AFE 123', criado_em: expect.any(String), propria: false, areas_entrega_total: 1,
       });
       expect(ids(await t.chamar('GET', '/v1/admin/lojas?status=bloqueada', op.auth))).toContain(b.loja);
       expect(ids(await t.chamar('GET', '/v1/admin/lojas?status=bloqueada', op.auth))).not.toContain(a.loja);

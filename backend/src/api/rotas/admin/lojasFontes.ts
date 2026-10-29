@@ -12,6 +12,7 @@ import { exigirOperador } from '../../sessaoOperador.js';
 import type { ListasMedicamentos } from '../../../normalizador/medicamentos.js';
 import type { DepsAuth } from '../auth.js';
 import { lojaAdminJson } from './alertas.js';
+import { NOME_FONTE_MANUAL } from './ofertaManual.js';
 import { idDoCaminho, lerEnum, lerObservacao, lerPagina, resumoOperador, STATUS_CONFIANCA } from './comum.js';
 
 export interface DepsAdmin extends DepsAuth {
@@ -19,6 +20,8 @@ export interface DepsAdmin extends DepsAuth {
   chaveCredenciais?: ChaveCredenciais;
   /** Lista de medicamentos (CMED etc.) para a triagem do cadastro manual. Ausente ou falhando: o cadastro responde 503 (falha fechada). */
   listasMedicamentos?: () => Promise<ListasMedicamentos>;
+  /** Resultado do último ciclo do coletor (`<DADOS>/ultimo-ciclo.json`), para o resumo do painel. Ausente: o resumo devolve null. */
+  ultimoCiclo?: () => Promise<{ fim: string; falhou: boolean; erro?: string } | null>;
 }
 
 const COLUNAS_LOJA = `s.id, s.rede, s.nome, s.cnpj, s.tipo, s.status, s.reputacao, s.autorizacao_sanitaria, s.criado_em`;
@@ -41,11 +44,19 @@ export function rotasAdminLojasFontes(app: FastifyInstance, d: DepsAdmin): void 
       onde.push(`(s.criado_em, s.id) < ($${params.length - 1}::timestamptz, $${params.length}::uuid)`);
     }
     params.push(limite + 1);
-    const r = await d.db.query(`SELECT ${COLUNAS_LOJA} FROM stores s WHERE ${onde.join(' AND ')} ORDER BY s.criado_em DESC, s.id DESC LIMIT $${params.length}`, params);
+    const r = await d.db.query(
+      `SELECT ${COLUNAS_LOJA},
+              EXISTS (SELECT 1 FROM store_source_refs r JOIN sources src ON src.tenant_id = r.tenant_id AND src.id = r.source_id
+                       WHERE r.tenant_id = s.tenant_id AND r.store_id = s.id AND src.nome = '${NOME_FONTE_MANUAL}') AS propria,
+              (SELECT count(*) FROM store_service_areas a WHERE a.tenant_id = s.tenant_id AND a.store_id = s.id)::int AS areas
+         FROM stores s WHERE ${onde.join(' AND ')} ORDER BY s.criado_em DESC, s.id DESC LIMIT $${params.length}`,
+      params,
+    );
     const pagina = r.rows.slice(0, limite);
     const ultimo = pagina.at(-1);
     return {
-      itens: pagina.map((l) => lojaAdminJson(l)),
+      // `propria` e `areas_entrega_total` são acréscimos da 1.1.0 (painel): loja cadastrada no painel e quantas faixas de CEP ela atende.
+      itens: pagina.map((l) => ({ ...lojaAdminJson(l), propria: l.propria, areas_entrega_total: l.areas })),
       proximo_cursor: r.rows.length > limite && ultimo !== undefined ? codificarCursor({ criadoEm: ultimo.criado_em.toISOString(), id: ultimo.id }) : null,
     };
   });

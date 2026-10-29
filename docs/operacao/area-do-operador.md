@@ -4,10 +4,43 @@ Contrato: `backend/openapi/admin.yaml`. Código: `backend/src/api/rotas/admin/`.
 
 ## Painel web (o jeito normal de operar)
 
-O servidor serve o painel em **`/operador/`** (no seu computador: `http://localhost:3000/operador/`; `scripts\windows\painel.bat` abre). Telas:
-**Ofertas manuais** (cadastrar e encerrar), **Alertas** (aprovar ou rejeitar os que aguardam), **Triagem** (o que foi barrado; liberar falso positivo),
-**Denúncias** (restaurar ou manter escondida), **Lojas** e **Fontes** (status) e **Auditoria**. Não tem tela para digitar chave de fonte: a da Lomadee
-fica no servidor.
+O servidor serve o painel em **`/operador/`** (no seu computador: `http://localhost:3000/operador/`; `scripts\windows\painel.bat` abre). Funciona no
+computador e no celular, em tema claro ou escuro (botão no rodapé do menu). Menu lateral, com o número de pendências ao lado de cada fila (atualiza sozinho a
+cada minuto):
+
+| Tela | O que se faz nela |
+|---|---|
+| **Visão geral** | Pendências (alertas, triagem, denúncias), saúde da coleta (última coleta, último ciclo, dias de histórico), catálogo, alertas da semana, atalhos e atividade recente. |
+| **Alertas** | Aprovar ou rejeitar os que aguardam (com observação); ver aprovados e rejeitados; tirar do feed um alerta já aprovado. |
+| **Triagem** | O que a triagem de medicamento e NBCAL barrou: bloqueio correto, falso positivo ou liberar (só o que pode ser liberado); ver os já revisados. |
+| **Denúncias** | Restaurar a oferta ou manter escondida; ver as já decididas. |
+| **Ofertas manuais** | Cadastrar (produto do catálogo ou novo, com foto opcional; loja, preço, condição, frete, validade, link), com a **prévia de como aparece no app**; listar ativas e encerradas; encerrar. |
+| **Produtos** | Buscar no que o app monitora e começar uma oferta manual do produto. |
+| **Lojas** | Filtrar por status ou origem e buscar; **cadastrar loja própria** com as faixas de CEP em que entrega (há atalhos: Brasil, SP, capital, RJ, MG); abrir uma loja para mudar o status, corrigir nome/rede/CNPJ/reputação e a área de entrega. |
+| **Financeiro** | Receita do mês, recebido, a receber, receita no período, cliques em link de afiliado, receita por clique, assinaturas ativas; gráficos de receita por mês e fonte, participação por fonte e cliques por dia (cada gráfico tem "Ver tabela"); lançar, editar, marcar como recebida e cancelar lançamentos; **importar CSV**. |
+| **Fontes de preço** | Confiança (aprovada, em observação, bloqueada) e ligar/desligar a coleta. |
+| **Operadores** | Quem tem acesso, se está ativo e o último acesso. Incluir e desativar continuam pela linha de comando (abaixo, decisão D2). |
+| **Auditoria** | Tudo que mudou algo, em frases ("status: em observação → aprovada"), com filtro por operador, ação e período. |
+
+Atalhos do teclado: `/` busca na tela, `g` e depois `i`/`a`/`t`/`d`/`o`/`l`/`f`/`p` vai para Visão geral, Alertas, Triagem, Denúncias, Ofertas, Lojas,
+Financeiro e Produtos; `?` mostra a lista. Não tem tela para digitar chave de fonte: a da Lomadee fica no servidor.
+
+### Financeiro: de onde vem cada número
+
+- **Receita** só existe aqui quando alguém lança ou importa: a comissão da Lomadee fica no painel da Lomadee, a assinatura nas lojas de apps, e o
+  painel **nunca estima** receita. Situação: *prevista* (pendente na rede), *confirmada* (aprovada, a receber), *recebida* (paga) e *cancelada* (fica
+  no histórico, não soma).
+- **Importar CSV**: primeira linha com os nomes das colunas, separadas por `;` ou `,`. Obrigatórias `data` e `valor`; opcionais `fonte`, `status`,
+  `descricao` e `referencia` (aceita sinônimos como `comissao`, `situacao`, `transacao`, e situações como `pendente`, `aprovada`, `paga`). Exemplo:
+  ```
+  data;fonte;valor;status;descricao;referencia
+  31/10/2026;lomadee;158,90;aprovada;Comissões de outubro;LMD-2026-10
+  ```
+  O painel mostra a prévia e as linhas com problema antes de mandar; nada entra se houver linha errada. Linha com a mesma fonte e referência de
+  um lançamento que já existe é pulada (importar o mesmo relatório duas vezes não duplica).
+- **Cliques** são os toques em "Ver oferta" no app (últimos 30 dias); **receita por clique** = receita de afiliado não cancelada com data nos
+  últimos 30 dias ÷ cliques em link de afiliado no mesmo período.
+- **Assinaturas ativas** contam a tabela de assinaturas; enquanto a validação nas lojas de apps não existir, fica em zero.
 
 Primeira vez no Windows:
 
@@ -60,6 +93,10 @@ O token do app não vale aqui e o do operador não vale no app. O código de ope
 | Cadastrar, ver e encerrar ofertas manuais | `POST` e `GET /v1/admin/ofertas-manuais`, `DELETE .../{id}` |
 | Procurar produto | `GET /v1/admin/produtos?q=` |
 | Ver quem fez o quê | `GET /v1/admin/auditoria` |
+| Resumo da tela inicial | `GET /v1/admin/resumo` |
+| Cadastrar loja própria, ver, corrigir dados e área de entrega | `POST /v1/admin/lojas`, `GET`/`PATCH /v1/admin/lojas/{id}`, `PUT .../{id}/areas` |
+| Ver os operadores | `GET /v1/admin/operadores` |
+| Lançar, listar, corrigir e importar receitas; resumo financeiro | `POST`/`GET /v1/admin/receitas`, `PATCH .../{id}`, `POST .../importacao`, `GET /v1/admin/financeiro` |
 
 Toda ação que muda algo grava quem, quando e o que mudou (antes e depois) na auditoria. **Valor de credencial nunca entra na auditoria nem
 em resposta.**
@@ -78,23 +115,9 @@ em resposta.**
 
 ### Cadastrar uma loja para as ofertas manuais
 
-Hoje todas as lojas do servidor vêm da Lomadee (e a oferta manual não vale para elas). Para cadastrar oferta à mão é preciso antes ter uma loja
-**sua**, que ainda se declara no arquivo `backend/config/vinculos/padrao.json` (a tela de cadastro de loja ainda não existe; BACKLOG). Acrescente a fonte
-`manual` e a loja, com a área de CEP em que ela entrega, e rode `atualizar.bat` (o `provisionar` cria sem duplicar):
+Hoje todas as lojas da coleta vêm da Lomadee (e a oferta manual não vale para as de marca dela). Para cadastrar oferta à mão é preciso antes ter uma loja
+**sua**: no painel, **Lojas → Nova loja**, com nome, status inicial (em observação ou aprovada), reputação e as faixas de CEP em que ela entrega. Ela
+fica sob a fonte `manual` e já aparece na escolha de loja da oferta manual. Loja `em_observacao` aparece no feed e nunca notifica; só `aprovada` pode
+notificar (e oferta manual nunca notifica de qualquer forma). Sem faixa de CEP a loja não aparece no feed de ninguém (a Visão geral avisa).
 
-```json
-{
-  "fontes": [
-    { "nome": "manual", "tipo": "E", "frequenciaMinutos": 1440, "regiao": "SP", "statusConfianca": "aprovada", "confiabilidade": "alta",
-      "baseLegal": "Cadastro manual por operador", "ativa": false }
-  ],
-  "lojas": [
-    { "fonte": "manual", "idExterno": "mercado-do-bairro", "rede": "Mercado do Bairro", "nome": "Mercado do Bairro (online)", "tipo": "online",
-      "status": "em_observacao", "reputacao": 0.5, "faixasCep": [{ "inicio": "14000000", "fim": "14999999", "prazoDias": 2 }] }
-  ]
-}
-```
-
-(Acrescente esses itens às listas `fontes` e `lojas` que já existem no arquivo; não substitua as da Lomadee.) Loja `em_observacao` aparece no feed e nunca
-notifica; só `aprovada` pode notificar (e oferta manual nunca notifica de qualquer forma).
-
+Ainda dá para declarar a loja em `backend/config/vinculos/padrao.json` (o `provisionar` cria sem duplicar), mas o painel é o caminho normal.

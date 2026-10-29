@@ -30,7 +30,7 @@ export const NOME_FONTE_MANUAL = 'manual';
 
 interface ProdutoDoPedido {
   existente: { id: string } | null;
-  novo: { nome: string; marca: string | null; categoria: string; subcategoria: string | null; gtin: string | null; embalagem: Embalagem } | null;
+  novo: { nome: string; marca: string | null; categoria: string; subcategoria: string | null; gtin: string | null; embalagem: Embalagem; imagemUrl: string | null } | null;
 }
 
 interface PedidoValido {
@@ -126,8 +126,12 @@ export function lerPedido(b: Record<string, unknown>, categorias: ReadonlyMap<st
       const q = e?.quantidade;
       const embalagemOk = e !== undefined && e !== null && typeof q === 'number' && Number.isFinite(q) && q > 0 && q <= 1_000_000 && (e.unidade === 'kg' || e.unidade === 'l' || e.unidade === 'un');
       if (!embalagemOk) campos.push({ campo: 'produto_novo.embalagem', mensagem: 'Informe a quantidade (maior que zero) e a unidade (kg, l ou un).' });
+      // Foto opcional (1.1.0): endereço https da imagem na loja; o app carrega direto de lá, como as fotos coletadas (D91).
+      const im = n.imagem_url;
+      const imagemUrl = im === undefined || im === null || im === '' ? null : typeof im === 'string' && im.length <= 2048 && /^https:\/\/[^\s]+$/.test(im) ? im : undefined;
+      if (imagemUrl === undefined) campos.push({ campo: 'produto_novo.imagem_url', mensagem: 'Use o endereço https da foto (até 2048 caracteres) ou null.' });
       if (campos.length === 0 || !campos.some((c) => c.campo.startsWith('produto_novo'))) {
-        produto.novo = { nome, marca: marca ?? null, categoria, subcategoria: sub ?? null, gtin: gtin ?? null, embalagem: { quantidade: q as number, unidade: (e as { unidade: Embalagem['unidade'] }).unidade } };
+        produto.novo = { nome, marca: marca ?? null, categoria, subcategoria: sub ?? null, gtin: gtin ?? null, embalagem: { quantidade: q as number, unidade: (e as { unidade: Embalagem['unidade'] }).unidade }, imagemUrl: imagemUrl ?? null };
       }
     }
   }
@@ -257,11 +261,11 @@ export function rotaAdminOfertaManual(app: FastifyInstance, d: DepsAdmin): void 
         const chaveProduto = n.gtin !== null ? `gtin:${n.gtin}` : `${familia}|${n.embalagem.quantidade}${n.embalagem.unidade}`;
         produtoId = (
           await c.query(
-            `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, marca_chave, nome, categoria, subcategoria, quantidade, unidade, advertencias)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::text[])
-             ON CONFLICT (tenant_id, chave_hash) DO UPDATE SET advertencias = EXCLUDED.advertencias
+            `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, marca_chave, nome, categoria, subcategoria, quantidade, unidade, advertencias, imagem_url)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::text[], $13)
+             ON CONFLICT (tenant_id, chave_hash) DO UPDATE SET advertencias = EXCLUDED.advertencias, imagem_url = coalesce(products.imagem_url, EXCLUDED.imagem_url)
              RETURNING id`,
-            [ctx.tenantId, n.gtin, sha256(chaveProduto), sha256(familia), n.marca, chaveDaMarca(n.marca), n.nome, n.categoria, n.subcategoria, n.embalagem.quantidade, n.embalagem.unidade, triagem.produto.advertencias],
+            [ctx.tenantId, n.gtin, sha256(chaveProduto), sha256(familia), n.marca, chaveDaMarca(n.marca), n.nome, n.categoria, n.subcategoria, n.embalagem.quantidade, n.embalagem.unidade, triagem.produto.advertencias, n.imagemUrl],
           )
         ).rows[0].id as string;
       }

@@ -39,6 +39,8 @@ export interface AppDeps {
   chaveCredenciais?: ChaveCredenciais;
   /** Lista de medicamentos para o cadastro manual de oferta (operador). Sem isto o cadastro responde 503. */
   listasMedicamentos?: () => Promise<ListasMedicamentos>;
+  /** Último ciclo do coletor, para o resumo do painel do operador. */
+  ultimoCiclo?: () => Promise<{ fim: string; falhou: boolean; erro?: string } | null>;
   /** true atrás de proxy confiável (Cloudflare Tunnel): sem isso `req.ip` é o do proxy e o limite por IP some. */
   trustProxy?: boolean;
 }
@@ -102,6 +104,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
         ...d,
         ...(deps.chaveCredenciais !== undefined ? { chaveCredenciais: deps.chaveCredenciais } : {}),
         ...(deps.listasMedicamentos !== undefined ? { listasMedicamentos: deps.listasMedicamentos } : {}),
+        ...(deps.ultimoCiclo !== undefined ? { ultimoCiclo: deps.ultimoCiclo } : {}),
       });
       if (deps.links !== undefined) {
         rotasAlertas(app, { ...d, links: deps.links });
