@@ -75,6 +75,7 @@ executar('alertas de demonstração (Postgres)', () => {
     const real = await t.alerta({ oferta, loja, decisao: 'notificar' });
     const r = await criarDemonstracao(e.pool, e.tenantId, config, e.agora, 4);
     expect(r.criados).toBe(4);
+    expect(r.porCategoria).toEqual({ higiene_bebe: 2, cuidados_pessoais: 2 });
     const cats = (await e.pool.query(`SELECT p.categoria FROM alerts a JOIN offers o ON o.id = a.offer_id JOIN products p ON p.id = o.product_id WHERE a.motivo LIKE 'DEMO:%' AND o.store_id = $1`, [loja])).rows.map((x) => x.categoria).sort();
     expect(cats).toEqual(['cuidados_pessoais', 'cuidados_pessoais', 'higiene_bebe', 'higiene_bebe']);
     expect((await e.pool.query(`SELECT count(*)::int AS n FROM alerts a JOIN offers o ON o.id = a.offer_id WHERE a.motivo LIKE 'DEMO:%' AND o.store_id = $1`, [semArea.loja])).rows[0].n).toBe(0);
@@ -100,6 +101,6 @@ executar('alertas de demonstração (Postgres)', () => {
     const config = await carregarConfigTenant('padrao');
     await e.pool.query(`UPDATE offers SET coletada_em = now() - interval '30 days'`);
     const r = await criarDemonstracao(e.pool, e.tenantId, config, e.agora, 8);
-    expect(r).toEqual({ criados: 0, semOfertaElegivel: true });
+    expect(r).toEqual({ criados: 0, semOfertaElegivel: true, porCategoria: {} });
   });
 });

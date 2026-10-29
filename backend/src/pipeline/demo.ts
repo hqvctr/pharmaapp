@@ -18,6 +18,8 @@ const QUEDAS = [0.35, 0.28, 0.22, 0.31, 0.19, 0.4, 0.25, 0.3];
 export interface ResumoDemo {
   criados: number;
   semOfertaElegivel: boolean;
+  /** Quantos alertas saíram em cada categoria: o feed da pessoa só mostra as categorias que ela marcou. */
+  porCategoria: Record<string, number>;
 }
 
 /** Cria até `quantidade` alertas de demonstração em ofertas coletadas há pouco, no feed de quem tem CEP na área da loja. */
@@ -52,7 +54,9 @@ export async function criarDemonstracao(db: repo.Db, tenantId: string, config: C
     if (!achou) break;
   }
   let n = 0;
+  const porCat: Record<string, number> = {};
   for (const o of escolhidas) {
+    porCat[o.categoria] = (porCat[o.categoria] ?? 0) + 1;
     const queda = QUEDAS[n % QUEDAS.length]!;
     const efetivo = Number(o.preco_por_unidade_centavos);
     const preco = o.preco_centavos as number;
@@ -66,7 +70,7 @@ export async function criarDemonstracao(db: repo.Db, tenantId: string, config: C
     });
     n += 1;
   }
-  return { criados: n, semOfertaElegivel: r.rowCount === 0 };
+  return { criados: n, semOfertaElegivel: r.rowCount === 0, porCategoria: porCat };
 }
 
 /** Apaga os alertas de demonstração e tudo que dependia deles (eventos, avaliações, denúncias, avisos). Devolve quantos alertas saíram. */
@@ -105,7 +109,12 @@ async function main(): Promise<void> {
           : 'Nenhum alerta novo: as ofertas elegíveis já têm alerta.',
       );
       process.exitCode = 1;
-    } else console.log(`Alertas de demonstração criados: ${r.criados}. Abra o app e atualize a aba Promoções. Para apagar: demo-feed-remover.bat.`);
+    } else {
+      const cats = Object.entries(r.porCategoria).map(([c, q]) => `${config.app.categorias.find((x) => x.slug === c)?.rotulo ?? c}: ${q}`).join(', ');
+      console.log(`Alertas de demonstração criados: ${r.criados} (${cats}).`);
+      console.log('O feed só mostra as categorias que VOCÊ marcou no app (Conta > Categorias e CEP). Marque as de cima, abra Promoções e toque em Atualizar.');
+      console.log('Para apagar: demo-feed-remover.bat.');
+    }
   } finally {
     await pool.end();
   }

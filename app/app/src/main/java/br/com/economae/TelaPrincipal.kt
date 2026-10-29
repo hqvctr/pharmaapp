@@ -96,11 +96,27 @@ fun AbaFeed(m: Modelo) {
             val itens = corpo.lista("itens")
             if (itens.isEmpty()) {
                 val motivo = when (corpo.textoOuNulo("vazio_por")) {
-                    "sem_ceps" -> "Você ainda não cadastrou um CEP. Vá em Conta → Preferências."
-                    "sem_categorias" -> "Você ainda não escolheu categorias. Vá em Conta → Preferências."
-                    else -> "Nenhuma promoção ativa agora. O feed só mostra ofertas coletadas nas últimas horas."
+                    "sem_ceps" -> "Você ainda não cadastrou um CEP. Vá em Conta → Categorias e CEP."
+                    "sem_categorias" -> "Você ainda não escolheu categorias. Vá em Conta → Categorias e CEP."
+                    else -> "Nenhuma promoção ativa agora. O feed só mostra ofertas coletadas nas últimas horas, das categorias que você marcou."
                 }
-                Column(Modifier.fillMaxSize()) { Vazio(motivo); OutlinedButton(recarregar, Modifier.padding(16.dp)) { Text("Atualizar") } }
+                var escolhidas by remember { mutableStateOf<String?>(null) }
+                LaunchedEffect(m.versao) {
+                    try {
+                        val p = m.api.get("/v1/preferencias")
+                        val rotulos = m.config?.optJSONArray("categorias")?.objetos()?.associate { it.getString("slug") to it.getString("rotulo") } ?: emptyMap()
+                        if (p.ok && p.corpo != null) escolhidas = p.corpo.getJSONArray("categorias").textos().joinToString(", ") { rotulos[it] ?: it }
+                    } catch (_: SemConexao) {}
+                }
+                Column(Modifier.fillMaxSize().padding(24.dp), Arrangement.spacedBy(12.dp)) {
+                    Text(motivo, style = MaterialTheme.typography.bodyLarge)
+                    escolhidas?.takeIf { it.isNotBlank() }?.let {
+                        Text("Categorias que você acompanha: $it.", style = MaterialTheme.typography.bodyMedium)
+                        Text("Se nenhuma delas tem oferta coletada agora, a lista fica vazia. Troque em Conta → Categorias e CEP.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    OutlinedButton(recarregar) { Text("Atualizar") }
+                    OutlinedButton({ m.ir(Tela.Preferencias) }) { Text("Mudar categorias e CEP") }
+                }
                 return@Carregar
             }
             LazyColumn(contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
