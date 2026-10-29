@@ -1,0 +1,20 @@
+ECONOMAE — Telas em SVG editável
+
+Conteúdo:
+- 01-boas-vindas.svg
+- 02-inicio.svg
+- 03-categoria-bebe.svg
+- 04-detalhe-produto.svg
+- 05-busca.svg
+- 06-gestacao.svg
+- 07-infantil.svg
+- 08-favoritos.svg
+
+Formato: SVG vetorial, viewBox 390 x 844. Pode abrir em Figma, Inkscape, Illustrator ou editor de texto.
+As telas são protótipos estáticos de interface (não são um aplicativo funcional). Produtos, preços e avaliações são exemplos ilustrativos.
+Paleta principal:
+- Rosa: #F65B91
+- Lilás: #9575CD
+- Verde-água: #58C9BE
+- Fundo creme: #FFF9F7
+- Texto: #302849
