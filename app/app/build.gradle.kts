@@ -12,8 +12,8 @@ android {
         applicationId = "br.com.economae"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.1-previa"
+        versionCode = 3
+        versionName = "0.2.0-previa"
         // ID de cliente OAuth Web do servidor (público): o app pede o ID token do Google para ele.
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com\"")
         buildConfigField("String", "TENANT", "\"padrao\"")
@@ -52,6 +52,8 @@ dependencies {
     val bom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(bom)
     implementation("androidx.activity:activity-compose:1.9.3")
+    // Tela de abertura igual em todas as versões do Android (a única dependência da identidade visual).
+    implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")

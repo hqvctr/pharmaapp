@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fundo da janela e da tela de abertura: creme do KV (o mesmo de CoresClaras.background em Tema.kt). -->
+    <color name="fundo">#FFF9F7</color>
+</resources>

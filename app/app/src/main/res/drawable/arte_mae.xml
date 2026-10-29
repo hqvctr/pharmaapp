@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerado por scripts/svg-para-vector.mjs a partir de docs/design/kv/01-boas-vindas.svg (recorte 100,350,190,245). Não edite à mão: rode o script de novo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="152dp" android:height="196dp" android:viewportWidth="190" android:viewportHeight="245">
+    <group android:translateX="-100" android:translateY="-350" android:scaleX="1" android:scaleY="1">
+        <path android:fillColor="#FFF8D6E2" android:pathData="M129,420A66,66 0 1 1 261,420A66,66 0 1 1 129,420Z" />
+        <path android:fillColor="#FF6B4C78" android:pathData="M135,394A31,31 0 1 1 197,394A31,31 0 1 1 135,394Z" />
+        <path android:fillColor="#FF6B4C78" android:pathData="M191,394A31,31 0 1 1 253,394A31,31 0 1 1 191,394Z" />
+        <path android:fillColor="#FFF3B99F" android:pathData="M151,410A44,44 0 1 1 239,410A44,44 0 1 1 151,410Z" />
+        <path android:fillColor="#FF302849" android:pathData="M178,405A3,3 0 1 1 184,405A3,3 0 1 1 178,405Z" />
+        <path android:fillColor="#FF302849" android:pathData="M205,405A3,3 0 1 1 211,405A3,3 0 1 1 205,405Z" />
+        <path android:strokeColor="#FFB65C77" android:strokeWidth="3" android:strokeLineCap="round" android:pathData="M 182 423 Q 195 438 208 423" />
+        <path android:fillColor="#FFF65B91" android:pathData="M125 500 Q195 455 265 500 L285 590 L105 590 Z" />
+        <path android:fillColor="#FFFBE3D9" android:pathData="M170,528A25,25 0 1 1 220,528A25,25 0 1 1 170,528Z" />
+    </group>
+</vector>

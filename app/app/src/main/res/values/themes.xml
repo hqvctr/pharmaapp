@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Economae" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Economae" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/fundo</item>
+    </style>
+
+    <!-- Tela de abertura (androidx.core:core-splashscreen): coração do KV sobre o fundo creme; no Android 12+ é a do sistema. -->
+    <style name="Theme.Economae.Abertura" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/fundo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_frente</item>
+        <item name="postSplashScreenTheme">@style/Theme.Economae</item>
+    </style>
 </resources>

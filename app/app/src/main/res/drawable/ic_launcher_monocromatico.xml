@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerado por scripts/svg-para-vector.mjs a partir de docs/design/kv/01-boas-vindas.svg (recorte 166,141,58,47). Não edite à mão: rode o script de novo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateX="-107.379" android:translateY="-82.138" android:scaleX="0.828" android:scaleY="0.828">
+        <path android:fillColor="#FF000000" android:pathData="M 195 187.0 C 166.2 165.4, 175.8 141.4, 195 158.2 C 214.2 141.4, 223.8 165.4, 195 187.0 Z" />
+    </group>
+</vector>

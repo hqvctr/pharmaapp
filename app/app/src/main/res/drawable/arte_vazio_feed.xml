@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerado por scripts/svg-para-vector.mjs a partir de docs/design/kv/02-inicio.svg (recorte 155,481,76,76). Não edite à mão: rode o script de novo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp" android:height="120dp" android:viewportWidth="76" android:viewportHeight="76">
+    <group android:translateX="-155" android:translateY="-481" android:scaleX="1" android:scaleY="1">
+        <path android:fillColor="#FFE5F8F5" android:pathData="M169,481H217A14,14 0 0 1 231,495V543A14,14 0 0 1 217,557H169A14,14 0 0 1 155,543V495A14,14 0 0 1 169,481Z" />
+        <path android:fillColor="#FFFFFFFF" android:strokeColor="#FF9DD9D4" android:strokeWidth="2" android:pathData="M190,506H198A7,7 0 0 1 205,513V535A7,7 0 0 1 198,542H190A7,7 0 0 1 183,535V513A7,7 0 0 1 190,506Z" />
+        <path android:fillColor="#FFF6C7D8" android:pathData="M190,498H198A3,3 0 0 1 201,501V505A3,3 0 0 1 198,508H190A3,3 0 0 1 187,505V501A3,3 0 0 1 190,498Z" />
+        <path android:fillColor="#FF9575CD" android:pathData="M191,493H197A3,3 0 0 1 200,496V497A3,3 0 0 1 197,500H191A3,3 0 0 1 188,497V496A3,3 0 0 1 191,493Z" />
+        <path android:strokeColor="#FF9DD9D4" android:strokeWidth="2" android:pathData="M187,524L201,524" />
+    </group>
+</vector>

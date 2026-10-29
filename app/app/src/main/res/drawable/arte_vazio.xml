@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gerado por scripts/svg-para-vector.mjs a partir de docs/design/kv/02-inicio.svg (recorte 273,481,76,76). Não edite à mão: rode o script de novo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp" android:height="120dp" android:viewportWidth="76" android:viewportHeight="76">
+    <group android:translateX="-273" android:translateY="-481" android:scaleX="1" android:scaleY="1">
+        <path android:fillColor="#FFE5F8F5" android:pathData="M287,481H335A14,14 0 0 1 349,495V543A14,14 0 0 1 335,557H287A14,14 0 0 1 273,543V495A14,14 0 0 1 287,481Z" />
+        <path android:fillColor="#FF9575CD" android:pathData="M291,538A6,6 0 1 1 303,538A6,6 0 1 1 291,538Z" />
+        <path android:fillColor="#FF9575CD" android:pathData="M320,538A6,6 0 1 1 332,538A6,6 0 1 1 320,538Z" />
+        <path android:fillColor="#FFF65B91" android:pathData="M 290 499 L 329 499 L 321 524 L 300 524 Z" />
+        <path android:strokeColor="#FF6D6281" android:strokeWidth="3" android:pathData="M300,524L297,536" />
+        <path android:strokeColor="#FF6D6281" android:strokeWidth="3" android:pathData="M321,524L326,536" />
+    </group>
+</vector>
