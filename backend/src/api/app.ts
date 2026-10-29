@@ -8,6 +8,7 @@ import { rotasConta } from './rotas/conta.js';
 import type { ProvedorLinkOferta } from './linkOferta.js';
 import { rotasPreferencias } from './rotas/preferencias.js';
 import { rotasAdmin } from './rotas/admin/index.js';
+import { rotasPainel } from './rotas/painel.js';
 import { rotasExportacao } from './rotas/exportacao.js';
 import { rotasDispositivo } from './rotas/dispositivo.js';
 import { rotasAvisos } from './rotas/avisos.js';
@@ -96,6 +97,7 @@ export function buildApp(deps: AppDeps): FastifyInstance {
       rotasAvisos(app, d);
       rotasDispositivo(app, d);
       rotasExportacao(app, d);
+      rotasPainel(app);
       rotasAdmin(app, {
         ...d,
         ...(deps.chaveCredenciais !== undefined ? { chaveCredenciais: deps.chaveCredenciais } : {}),

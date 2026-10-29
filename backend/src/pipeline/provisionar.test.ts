@@ -34,3 +34,14 @@ describe('vínculos de fontes e lojas', () => {
     expect(() => validarVinculos(bruto)).toThrow(/Vínculos inválidos/);
   });
 });
+
+describe('exemplo de loja manual da documentação (docs/operacao/area-do-operador.md)', () => {
+  it('passa na validação: fonte manual (tipo E, inativa) e uma loja com área de CEP', () => {
+    const v = validarVinculos({
+      fontes: [{ nome: 'manual', tipo: 'E', frequenciaMinutos: 1440, regiao: 'SP', statusConfianca: 'aprovada', confiabilidade: 'alta', baseLegal: 'Cadastro manual por operador', ativa: false }],
+      lojas: [{ fonte: 'manual', idExterno: 'mercado-do-bairro', rede: 'Mercado do Bairro', nome: 'Mercado do Bairro (online)', tipo: 'online', status: 'em_observacao', reputacao: 0.5, faixasCep: [{ inicio: '14000000', fim: '14999999', prazoDias: 2 }] }],
+    });
+    expect(v.fontes[0]).toMatchObject({ nome: 'manual', tipo: 'E', ativa: false });
+    expect(v.lojas[0]).toMatchObject({ fonte: 'manual', tipo: 'online' });
+  });
+});

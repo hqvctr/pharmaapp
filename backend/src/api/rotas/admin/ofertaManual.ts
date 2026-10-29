@@ -11,7 +11,7 @@ import { removerEmbalagem } from '../../../normalizador/embalagem.js';
 import type { ListasMedicamentos } from '../../../normalizador/medicamentos.js';
 import { normalizarTexto } from '../../../normalizador/medicamentos.js';
 import { normalizarOferta } from '../../../normalizador/normalizar.js';
-import { chaveDaMarca, registrarBloqueio, type Db } from '../../../pipeline/repositorio.js';
+import { bloqueiosLiberados, chaveDaMarca, registrarBloqueio, type Db } from '../../../pipeline/repositorio.js';
 import { produtoResumo } from '../../alertas.js';
 import { registrarAuditoria } from '../../auditoria.js';
 import { corpoObjeto, falhaDeValidacao } from '../../corpo.js';
@@ -225,9 +225,13 @@ export function rotaAdminOfertaManual(app: FastifyInstance, d: DepsAdmin): void 
       ).rows[0].id as string;
 
       // Mesma triagem do pipeline. A categoria é a que o operador escolheu (ou a do produto), então o mapa da "fonte" a devolve.
+      // A fila de triagem identifica o item por (fonte, id): aqui o id sai do próprio produto (nome, marca, GTIN), então o operador que
+      // liberar um falso positivo na triagem libera também o próximo cadastro do mesmo produto. A oferta ganha um id próprio.
       const idExterno = `manual:${randomUUID()}`;
+      const idTriagem = `manual:${sha256(`${normalizarTexto(base.nome)}|${normalizarTexto(base.marca ?? '')}|${base.gtin ?? ''}`).slice(0, 32)}`;
+      const liberados = (await bloqueiosLiberados(c as unknown as Db, ctx.tenantId, fonteId)).get(idTriagem);
       const bruta: OfertaBruta = {
-        idExterno, titulo: base.nome, descricao: null, gtin: base.gtin, marca: base.marca, precoCentavos: pedido.precoCentavos, condicao: pedido.condicao,
+        idExterno: idTriagem, titulo: base.nome, descricao: null, gtin: base.gtin, marca: base.marca, precoCentavos: pedido.precoCentavos, condicao: pedido.condicao,
         categoriaFonte: 'manual', lojaIdExterno: 'manual', link: pedido.link, linkAfiliado: pedido.linkAfiliado, disponivel: true,
         validaDe: pedido.validaDe, validaAte: pedido.validaAte, frete: pedido.frete,
       };
@@ -237,6 +241,7 @@ export function rotaAdminOfertaManual(app: FastifyInstance, d: DepsAdmin): void 
         modoMedicamentos: cfg.medicamentos.modo,
         triagemPorNome: cfg.medicamentos.triagemPorNome,
         nbcal: cfg.nbcal,
+        ...(liberados !== undefined ? { liberados } : {}),
       });
       if (triagem.tipo === 'bloqueado') {
         await registrarBloqueio(c as unknown as Db, ctx.tenantId, fonteId, bruta, { codigo: triagem.codigo, detalhe: triagem.detalhe, revisaoHumana: triagem.revisaoHumana }, agora);

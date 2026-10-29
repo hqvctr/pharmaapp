@@ -1,7 +1,25 @@
 # Área do operador (API `/v1/admin`)
 
-Contrato: `backend/openapi/admin.yaml`. Código: `backend/src/api/rotas/admin/`. **Hoje existe a API, não existe tela**: o painel web
-do operador ainda não foi feito (BACKLOG). Dá para operar por qualquer cliente HTTP (curl, Insomnia), com o login abaixo.
+Contrato: `backend/openapi/admin.yaml`. Código: `backend/src/api/rotas/admin/`. A tela é o painel web (abaixo); dá também para operar por qualquer cliente HTTP (curl, Insomnia), com o login mais abaixo.
+
+## Painel web (o jeito normal de operar)
+
+O servidor serve o painel em **`/operador/`** (no seu computador: `http://localhost:3000/operador/`; `scripts\windows\painel.bat` abre). Telas:
+**Ofertas manuais** (cadastrar e encerrar), **Alertas** (aprovar ou rejeitar os que aguardam), **Triagem** (o que foi barrado; liberar falso positivo),
+**Denúncias** (restaurar ou manter escondida), **Lojas** e **Fontes** (status) e **Auditoria**. Não tem tela para digitar chave de fonte: a da Lomadee
+fica no servidor.
+
+Primeira vez no Windows:
+
+1. `scripts\windows\operador.bat` pergunta e-mail e nome e cadastra o operador (rode na pasta instalada).
+2. `scripts\windows\painel.bat` abre o painel. Digite o e-mail e toque em "Enviar código".
+3. `scripts\windows\ver-codigo.bat` mostra o código de 6 dígitos (modo de teste: o código vai para o log, não para o e-mail). Digite no painel.
+
+A sessão fica só na aba do navegador (fechou, saiu) e dura 1 hora, renovada sozinha por até 7 dias. O painel só fala com `/v1/admin`. Atrás de um túnel
+público (`tunel.bat`), o painel fica acessível pelo mesmo endereço: **não deixe o túnel ligado se não precisa dele**, porque o login do operador é só e-mail
+e código.
+
+## Pela API (sem a tela)
 
 ## Cadastrar um operador (linha de comando, sem rota)
 
@@ -58,6 +76,25 @@ em resposta.**
 - **Marca da Lomadee não entra por aqui** (o link tem de ser o rastreado pela plataforma): o preço dela vem da coleta.
 - A loja precisa de área de entrega (`vinculos/`) para aparecer no feed de alguém.
 
-## Ainda não existe
+### Cadastrar uma loja para as ofertas manuais
 
-- A tela do painel (a API está pronta).
+Hoje todas as lojas do servidor vêm da Lomadee (e a oferta manual não vale para elas). Para cadastrar oferta à mão é preciso antes ter uma loja
+**sua**, que ainda se declara no arquivo `backend/config/vinculos/padrao.json` (a tela de cadastro de loja ainda não existe; BACKLOG). Acrescente a fonte
+`manual` e a loja, com a área de CEP em que ela entrega, e rode `atualizar.bat` (o `provisionar` cria sem duplicar):
+
+```json
+{
+  "fontes": [
+    { "nome": "manual", "tipo": "E", "frequenciaMinutos": 1440, "regiao": "SP", "statusConfianca": "aprovada", "confiabilidade": "alta",
+      "baseLegal": "Cadastro manual por operador", "ativa": false }
+  ],
+  "lojas": [
+    { "fonte": "manual", "idExterno": "mercado-do-bairro", "rede": "Mercado do Bairro", "nome": "Mercado do Bairro (online)", "tipo": "online",
+      "status": "em_observacao", "reputacao": 0.5, "faixasCep": [{ "inicio": "14000000", "fim": "14999999", "prazoDias": 2 }] }
+  ]
+}
+```
+
+(Acrescente esses itens às listas `fontes` e `lojas` que já existem no arquivo; não substitua as da Lomadee.) Loja `em_observacao` aparece no feed e nunca
+notifica; só `aprovada` pode notificar (e oferta manual nunca notifica de qualquer forma).
+

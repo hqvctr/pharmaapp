@@ -165,6 +165,28 @@ executar('admin: cadastro de oferta manual (Postgres)', () => {
     expect(ok.statusCode).toBe(201);
   });
 
+  it('item barrado e liberado pelo operador na triagem passa no cadastro seguinte do mesmo produto (e só dele)', async () => {
+    const { op, base } = await cenario();
+    const produto = () => base({ produto_novo: novoProduto({ nome: 'Protetor de Mamilo Silicone 2 un', marca: 'Lactar', categoria: 'mamae', subcategoria: 'amamentacao' }) });
+    const primeira = await postar(op.auth, produto());
+    expect(primeira.statusCode).toBe(422);
+    const fila = (await t.chamar('GET', '/v1/admin/triagem', op.auth)).json().itens as Array<{ id: string; titulo: string; liberavel: boolean; codigo: string }>;
+    const item = fila.find((i) => i.titulo === 'Protetor de Mamilo Silicone 2 un');
+    expect(item).toMatchObject({ liberavel: true, codigo: 'NBCAL_CAUTELA' });
+    // Antes da liberação, repetir continua barrado e não duplica o item da fila.
+    expect((await postar(op.auth, produto())).statusCode).toBe(422);
+    expect(await contar(`SELECT count(*)::int AS n FROM triagem_bloqueios WHERE titulo = 'Protetor de Mamilo Silicone 2 un'`)).toBe(1);
+    expect((await t.chamar('PUT', `/v1/admin/triagem/${item!.id}/revisao`, op.auth, { resultado: 'liberado', observacao: 'conferido' })).statusCode).toBe(200);
+    const liberada = await postar(op.auth, produto());
+    expect(liberada.statusCode).toBe(201);
+    expect(liberada.json().produto.nome).toBe('Protetor de Mamilo Silicone 2 un');
+    // Outro produto com a mesma cautela continua barrado: a liberação é por produto.
+    const outro = await postar(op.auth, base({ produto_novo: novoProduto({ nome: 'Protetor de Mamilo Silicone 4 un', marca: 'Lactar', categoria: 'mamae', subcategoria: 'amamentacao' }) }));
+    expect(outro.statusCode).toBe(422);
+    const outraMarca = await postar(op.auth, base({ produto_novo: novoProduto({ nome: 'Protetor de Mamilo Silicone 2 un', marca: 'Outra Marca', categoria: 'mamae', subcategoria: 'amamentacao' }) }));
+    expect(outraMarca.statusCode).toBe(422);
+  });
+
   it('medicamento por GTIN da referência também é barrado, e produto com advertência da NBCAL entra com a advertência gravada', async () => {
     const { op, base } = await cenario();
     const gtin = await postar(op.auth, base({ produto_novo: novoProduto({ nome: 'Produto qualquer 10 un', gtin: '7891000000011' }) }));

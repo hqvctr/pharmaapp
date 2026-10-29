@@ -14,6 +14,8 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY migrations ./migrations
 COPY config ./config
+# Painel web do operador (arquivos estáticos servidos em /operador/).
+COPY painel ./painel
 # Pasta de dados do coletor (lista da CMED, estado do último ciclo); fica num volume.
 RUN mkdir -p /app/data && chown node:node /app/data
 ENV DADOS=/app/data
