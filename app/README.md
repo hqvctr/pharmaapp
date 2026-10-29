@@ -10,6 +10,13 @@ detalhe da promoção (prova de preço, entrega, frete, advertência legal, link
 busca de produto, página do produto com ofertas e histórico · central de avisos · conta (notificações, silenciados, seguidos,
 exportar dados, sair, excluir conta).
 
+## Visual
+
+Identidade do KV: `docs/design/identidade-visual.md`. Cores, fonte e formas só em `Tema.kt` (claro e escuro, segue o sistema);
+componentes visuais em `Componentes.kt`. As artes (`res/drawable/ic_launcher_*`, `arte_*`, `marca_coracao`) saem do KV por
+`scripts/gerar-arte-kv.sh` e as fontes (`res/font/inter_*`) por `scripts/fonte-inter.py`: não edite à mão.
+Conferência sem aparelho: `node scripts/conferencia-visual.mjs <pasta>`.
+
 ## Como gerar o APK
 
 ```bash

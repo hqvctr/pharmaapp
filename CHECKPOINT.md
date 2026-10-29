@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Identidade visual do KV no app (2026-10-29, DECISIONS 90)
+
+App 0.2.0 com o visual do KV (`docs/design/kv/`, regras em `docs/design/identidade-visual.md`): tema Material 3 claro e escuro em `Tema.kt` (cores do KV com ajustes para WCAG AA, conferidos por `TemaTest`), fonte Inter embutida (OFL), cantos do KV, ícone adaptativo com versão monocromática, tela de abertura, onda e ilustração na entrada, artes nos estados vazios, selos novos (DESTAQUE, DEMONSTRAÇÃO, queda). Só visual: nenhuma chamada da API mudou; 560 testes do backend, 13 do app e 6 do conversor passam; mesma chave (SHA-1 `7C:1C:...:36:A6`) e pacote, então instala por cima. Conferido só no Chromium (`scripts/conferencia-visual.mjs`), **não num aparelho**. A dúvida de produto que o KV levanta (público mães/bebês × categorias de hoje) está no BACKLOG.
+
 ## App Android de prévia (2026-10-28, DECISIONS 86)
 
 `app/` (Kotlin + Compose) compila (`scripts/gerar-apk.sh`), passa em 8 testes unitários e no lint, e o fluxo inteiro dele está coberto por `appPrevia.integracao.test.ts` contra a API real. **Nunca rodou num aparelho** (este ambiente não tem emulador): o primeiro teste de verdade é o seu. APK assinado com a chave de prévia; para o login com Google funcionar falta o cliente Android com o SHA-1 dela (prompt do Cowork). Para o celular alcançar a API: `docs/operacao/testar-no-celular.md` (Wi-Fi ou túnel `tunel.bat`, ambos escritos sem poder rodar o Docker do Windows).
