@@ -46,17 +46,52 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
   const PODE_MOSTRAR = `p.tenant_id = $1 AND p.categoria = ANY($2::text[]) AND cardinality(p.advertencias) = 0
         AND (p.marca_chave IS NULL OR NOT EXISTS (SELECT 1 FROM silenciamentos sm WHERE sm.tenant_id = p.tenant_id AND sm.user_id = $3 AND sm.alcance = 'tudo' AND sm.tipo = 'marca' AND sm.marca_chave = p.marca_chave))`;
 
+  /**
+   * Menor preço atual do produto entre as ofertas que a pessoa pode ver: as mesmas regras de `ofertasAtuais` (disponível, na
+   * validade, não escondida, coletada há pouco, marca da fonte liberada, loja não silenciada com "tudo", CEP coberto).
+   * $1 tenant, $3 pessoa; os demais números vêm de `parametros`.
+   */
+  const PRECO_ATUAL = (o: { agora: number; coletaMinima: number; ceps: number; fontes: number; marcas: number }) => `LEFT JOIN LATERAL (
+        SELECT min(o.preco_centavos) AS menor
+          FROM offers o
+          JOIN stores s ON s.tenant_id = o.tenant_id AND s.id = o.store_id
+          JOIN sources src ON src.tenant_id = o.tenant_id AND src.id = o.source_id
+          LEFT JOIN store_source_refs ref ON ref.tenant_id = o.tenant_id AND ref.source_id = o.source_id AND ref.store_id = o.store_id
+         WHERE o.tenant_id = p.tenant_id AND o.product_id = p.id
+           AND o.disponivel AND (o.valida_ate IS NULL OR o.valida_ate > $${o.agora}) AND o.escondida_em IS NULL AND o.coletada_em >= $${o.coletaMinima}
+           AND (NOT (src.nome = ANY($${o.fontes}::text[])) OR ref.id_externo = ANY($${o.marcas}::text[]))
+           AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id)
+           AND EXISTS (SELECT 1 FROM unnest($${o.ceps}::text[]) AS c(cep)
+                         JOIN store_service_areas sa ON sa.tenant_id = o.tenant_id AND sa.store_id = o.store_id AND c.cep BETWEEN sa.cep_inicio AND sa.cep_fim)
+      ) preco ON true`;
+
+  const ORDENS = ['relevancia', 'menor_preco', 'maior_preco', 'nome'] as const;
+  type Ordem = (typeof ORDENS)[number];
+
   app.get('/v1/produtos', async (req) => {
     const agora = d.agora();
     const ctx = await exigirSessao(req, d.db, d.tenants, agora);
     const q = req.query as Record<string, unknown>;
     const campos: CampoInvalido[] = [];
+    // Sem `q` é navegação por categoria; com `q` é pesquisa.
+    const pesquisa = q.q !== undefined;
     const texto = typeof q.q === 'string' ? q.q.trim() : '';
-    if (texto.length < 2 || texto.length > 100) campos.push({ campo: 'q', mensagem: 'Digite de 2 a 100 caracteres.' });
-    let categoria: string | undefined;
-    if (q.categoria !== undefined) {
-      if (typeof q.categoria !== 'string' || !CATEGORIA.test(q.categoria)) campos.push({ campo: 'categoria', mensagem: 'Categoria inválida.' });
-      else categoria = q.categoria;
+    if (pesquisa && (texto.length < 2 || texto.length > 100)) campos.push({ campo: 'q', mensagem: 'Digite de 2 a 100 caracteres.' });
+    const slug = (campo: 'categoria' | 'subcategoria'): string | undefined => {
+      if (q[campo] === undefined) return undefined;
+      if (typeof q[campo] !== 'string' || !CATEGORIA.test(q[campo] as string)) {
+        campos.push({ campo, mensagem: campo === 'categoria' ? 'Categoria inválida.' : 'Subcategoria inválida.' });
+        return undefined;
+      }
+      return q[campo] as string;
+    };
+    const categoria = slug('categoria');
+    const subcategoria = slug('subcategoria');
+    if (subcategoria !== undefined && categoria === undefined && !campos.some((c) => c.campo === 'categoria')) campos.push({ campo: 'categoria', mensagem: 'Informe a categoria da subcategoria.' });
+    let ordem: Ordem = 'relevancia';
+    if (q.ordem !== undefined) {
+      if (typeof q.ordem !== 'string' || !(ORDENS as readonly string[]).includes(q.ordem)) campos.push({ campo: 'ordem', mensagem: `Use ${ORDENS.join(', ')}.` });
+      else ordem = q.ordem as Ordem;
     }
     const l = lerLimite(q.limite);
     if ('erro' in l) campos.push({ campo: 'limite', mensagem: l.erro });
@@ -64,52 +99,71 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
     const offset = lerOffset(q.cursor);
     const limite = (l as { limite: number }).limite;
 
-    const { maximo, janelaSegundos } = ctx.tenant.config.app.limitesTaxa.buscaPorConta ?? { maximo: 30, janelaSegundos: 60 };
-    const espera = await d.limitador.usar(`buscaPorConta:${ctx.userId}`, maximo, janelaSegundos).catch(() => null);
+    const chave = pesquisa ? 'buscaPorConta' : 'navegacaoPorConta';
+    const { maximo, janelaSegundos } = ctx.tenant.config.app.limitesTaxa[chave] ?? (pesquisa ? { maximo: 30, janelaSegundos: 60 } : { maximo: 120, janelaSegundos: 60 });
+    const espera = await d.limitador.usar(`${chave}:${ctx.userId}`, maximo, janelaSegundos).catch(() => null);
     if (espera !== null) throw new ErroApi('muitas_requisicoes', undefined, undefined, espera);
 
     const cfg = ctx.tenant.config.app;
-    const normal = normalizarTexto(texto);
-    const palavras = normal.split(' ').filter((p) => p.length > 0).slice(0, MAX_PALAVRAS);
-    const ehGtin = /^[0-9]{8,14}$/.test(texto);
-    const params: unknown[] = [ctx.tenantId, cfg.categorias.map((c) => c.slug), ctx.userId, ehGtin ? texto : null, escapar(normal)];
+    const { ceps } = await preferenciasDaPessoa(d.db, ctx.tenantId, ctx.userId, cfg, agora);
+    const { fontes, marcas } = travasDeMarca(ctx.tenant.config);
+    const params: unknown[] = [ctx.tenantId, cfg.categorias.map((c) => c.slug), ctx.userId];
+    const par = (v: unknown): number => params.push(v);
+    const preco = PRECO_ATUAL({
+      agora: par(agora),
+      coletaMinima: par(new Date(agora.getTime() - cfg.feed.coletaMaximaHoras * 3600_000)),
+      ceps: par(ceps),
+      fontes: par(fontes),
+      marcas: par(marcas),
+    });
     const onde: string[] = [PODE_MOSTRAR];
-    if (ehGtin) onde.push(`p.gtin = $4`);
-    else {
-      onde.push(`$4::text IS NULL`);
-      for (const w of palavras) {
-        params.push(`%${escapar(w)}%`);
-        onde.push(`f_unaccent(lower(p.nome || ' ' || p.marca)) LIKE $${params.length}`);
+    let relevancia = 'p.nome, p.id';
+    if (pesquisa) {
+      const normal = normalizarTexto(texto);
+      const palavras = normal.split(' ').filter((w) => w.length > 0).slice(0, MAX_PALAVRAS);
+      const ehGtin = /^[0-9]{8,14}$/.test(texto);
+      const iGtin = par(ehGtin ? texto : null);
+      const iNormal = par(escapar(normal));
+      if (ehGtin) onde.push(`p.gtin = $${iGtin}`);
+      else {
+        onde.push(`$${iGtin}::text IS NULL`);
+        for (const w of palavras) onde.push(`f_unaccent(lower(p.nome || ' ' || p.marca)) LIKE $${par(`%${escapar(w)}%`)}`);
       }
+      relevancia = `CASE WHEN p.gtin = $${iGtin} THEN 0
+                      WHEN f_unaccent(lower(p.nome)) LIKE $${iNormal} || '%' ESCAPE '\\' THEN 1
+                      WHEN f_unaccent(lower(p.nome)) LIKE '% ' || $${iNormal} || '%' ESCAPE '\\' THEN 2
+                      ELSE 3 END, p.nome, p.id`;
+      // Na pesquisa basta já ter sido coletado (o preço pode vir null fora da área de entrega), em loja que a pessoa não silenciou com "tudo".
+      onde.push(`EXISTS (SELECT 1 FROM offers o WHERE o.tenant_id = p.tenant_id AND o.product_id = p.id
+                          AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id))`);
+    } else {
+      // Navegação mostra só o que a pessoa consegue comprar agora: tem de haver preço atual na área de entrega dela.
+      onde.push('preco.menor IS NOT NULL');
+      relevancia = 'p.criado_em DESC, p.id';
     }
-    if (categoria !== undefined) {
-      params.push(categoria);
-      onde.push(`p.categoria = $${params.length}`);
-    }
-    // Só produto com oferta já coletada neste tenant, em loja que a pessoa não silenciou com "tudo".
-    onde.push(`EXISTS (SELECT 1 FROM offers o WHERE o.tenant_id = p.tenant_id AND o.product_id = p.id
-                        AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id))`);
-    params.push(offset, limite + 1);
+    if (categoria !== undefined) onde.push(`p.categoria = $${par(categoria)}`);
+    if (subcategoria !== undefined) onde.push(`p.subcategoria = $${par(subcategoria)}`);
+    const ordenacao =
+      ordem === 'menor_preco' ? `preco.menor ASC NULLS LAST, ${relevancia}`
+      : ordem === 'maior_preco' ? `preco.menor DESC NULLS LAST, ${relevancia}`
+      : ordem === 'nome' ? 'p.nome, p.id'
+      : relevancia;
+    const iOffset = par(offset);
+    const iLimite = par(limite + 1);
     const r = await d.db.query(
       `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
+              preco.menor AS menor_preco,
               EXISTS (SELECT 1 FROM seguidos sg WHERE sg.tenant_id = p.tenant_id AND sg.user_id = $3 AND sg.product_id = p.id) AS seguido
          FROM products p
+         ${preco}
         WHERE ${onde.join('\n          AND ')}
-        ORDER BY CASE WHEN p.gtin = $4 THEN 0
-                      WHEN f_unaccent(lower(p.nome)) LIKE $5 || '%' ESCAPE '\\' THEN 1
-                      WHEN f_unaccent(lower(p.nome)) LIKE '% ' || $5 || '%' ESCAPE '\\' THEN 2
-                      ELSE 3 END, p.nome, p.id
-        OFFSET $${params.length - 1} LIMIT $${params.length}`,
+        ORDER BY ${ordenacao}
+        OFFSET $${iOffset} LIMIT $${iLimite}`,
       params,
     );
     const pagina = r.rows.slice(0, limite);
-    // Menor preço atual entre as ofertas cobertas para a pessoa.
-    const { ceps } = await preferenciasDaPessoa(d.db, ctx.tenantId, ctx.userId, cfg, agora);
-    const ofertas = await ofertasAtuais(d.db, { tenantId: ctx.tenantId, userId: ctx.userId, config: ctx.tenant.config, agora, ceps, produtoIds: pagina.map((p: any) => p.product_id) });
-    const menor = new Map<string, number>();
-    for (const o of ofertas) menor.set(o.product_id, Math.min(menor.get(o.product_id) ?? Infinity, o.preco_centavos));
     return {
-      itens: pagina.map((p: any) => ({ ...produtoResumo(p), menor_preco_centavos: menor.get(p.product_id) ?? null, seguido: p.seguido === true })),
+      itens: pagina.map((p: any) => ({ ...produtoResumo(p), menor_preco_centavos: p.menor_preco === null ? null : Number(p.menor_preco), seguido: p.seguido === true })),
       proximo_cursor: r.rows.length > limite ? cursorDeOffset(offset + limite) : null,
     };
   });

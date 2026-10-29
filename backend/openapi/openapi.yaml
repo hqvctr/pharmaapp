@@ -661,20 +661,38 @@ paths:
     get:
       tags: [produtos]
       operationId: pesquisarProdutos
-      summary: Pesquisa entre os produtos que o app já monitora
+      summary: Pesquisa ou navegação entre os produtos que o app já monitora
       description: |
         Só produto com oferta coletada no tenant; nada é buscado fora. Exclui marca e loja silenciadas
-        com `alcance: tudo` e, até decisão D7, medicamento. Ordem por relevância; cursor opaco.
-        Limite (proposto): 30/min por conta.
+        com `alcance: tudo` e, até decisão D7, medicamento.
+
+        **Com `q`** é pesquisa: ordem por relevância, e o produto pode aparecer sem preço
+        (`menor_preco_centavos: null`) quando nenhuma loja entrega nos CEPs da pessoa. Limite (proposto): 30/min por conta.
+
+        **Sem `q`** (acréscimo da 1.2.0) é navegação por `categoria` e `subcategoria`: lista só o que a pessoa consegue
+        comprar agora, isto é, com preço atual em loja que entrega num dos CEPs do plano dela (mesmas regras do preço
+        de `GET /v1/produtos/{id}`). Sem `ordem`, o produto mais novo no catálogo vem primeiro. Limite: 120/min por conta.
+
+        `menor_preco_centavos` é o menor preço atual entre as ofertas que a pessoa pode ver; cursor opaco.
       parameters:
         - name: q
           in: query
-          required: true
-          description: Texto livre (nome, marca ou GTIN).
+          required: false
+          description: Texto livre (nome, marca ou GTIN). Omitido, vira navegação (veja acima); presente e fora de 2 a 100 caracteres, 422.
           schema: { type: string, minLength: 2, maxLength: 100 }
         - name: categoria
           in: query
           schema: { type: string, pattern: '^[a-z0-9_]+$' }
+        - name: subcategoria
+          in: query
+          description: Acréscimo da 1.2.0. Exige `categoria`. Um dos `subcategorias` dela em `/v1/configuracao`.
+          schema: { type: string, pattern: '^[a-z0-9_]+$' }
+        - name: ordem
+          in: query
+          description: |
+            Acréscimo da 1.2.0. `relevancia` (padrão: na pesquisa, a relevância; na navegação, o mais novo primeiro),
+            `menor_preco`, `maior_preco` (produto sem preço vai para o fim) ou `nome`.
+          schema: { type: string, enum: [relevancia, menor_preco, maior_preco, nome], default: relevancia }
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limite'
       responses:

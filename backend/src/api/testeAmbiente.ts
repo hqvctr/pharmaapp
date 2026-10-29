@@ -122,12 +122,12 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
       if (f !== null) await e.pool.query(`INSERT INTO store_service_areas (tenant_id, store_id, cep_inicio, cep_fim, prazo_dias) VALUES ($1,$2,$3,$4,$5)`, [t, loja, f[0], f[1], f[2]]);
       return { loja, fonte };
     },
-    async produto(o: { t?: string; nome?: string; marca?: string; marcaChave?: string | null; categoria?: string; quantidade?: number; unidade?: string; gtin?: string | null; familia?: string; advertencias?: string[] } = {}): Promise<string> {
+    async produto(o: { t?: string; nome?: string; marca?: string; marcaChave?: string | null; categoria?: string; quantidade?: number; unidade?: string; gtin?: string | null; familia?: string; advertencias?: string[]; subcategoria?: string | null; imagemUrl?: string | null } = {}): Promise<string> {
       return (
         await e.pool.query(
-          `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, marca_chave, nome, categoria, quantidade, unidade, advertencias)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::text[]) RETURNING id`,
-          [o.t ?? e.tenantId, o.gtin ?? null, randomUUID(), o.familia ?? randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Fralda Pampers G', o.categoria ?? 'bebe', o.quantidade ?? 60, o.unidade ?? 'un', o.advertencias ?? []],
+          `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, marca_chave, nome, categoria, quantidade, unidade, advertencias, subcategoria, imagem_url)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::text[],$12,$13) RETURNING id`,
+          [o.t ?? e.tenantId, o.gtin ?? null, randomUUID(), o.familia ?? randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Fralda Pampers G', o.categoria ?? 'bebe', o.quantidade ?? 60, o.unidade ?? 'un', o.advertencias ?? [], o.subcategoria ?? null, o.imagemUrl ?? null],
         )
       ).rows[0].id;
     },

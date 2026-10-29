@@ -1,6 +1,6 @@
 // Pesquisa, página e histórico de produto contra um Postgres de verdade. Pula sem PG_TESTE_URL.
 import { randomUUID } from 'node:crypto';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { ambienteDeTeste, DROGASMIL, URL_BASE } from './testeAmbiente.js';
 
 const executar = URL_BASE ? describe : describe.skip;
@@ -95,7 +95,7 @@ executar('produtos (Postgres)', () => {
       expect(nomes(await buscar(p.auth, '%%'))).toEqual([]);
       expect(nomes(await buscar(p.auth, '__'))).toEqual([]);
       for (const q of ['', 'a', 'x'.repeat(101)]) expect((await buscar(p.auth, q)).json().campos[0].campo, q).toBe('q');
-      expect((await t.chamar('GET', '/v1/produtos', p.auth)).statusCode).toBe(422);
+      expect((await t.chamar('GET', '/v1/produtos?q=', p.auth)).statusCode).toBe(422);
       expect((await t.chamar('GET', '/v1/produtos?q=ab&categoria=Ruim!', p.auth)).statusCode).toBe(422);
       expect((await t.chamar('GET', '/v1/produtos?q=ab&cursor=lixo', p.auth)).statusCode).toBe(422);
       expect((await t.chamar('GET', '/v1/produtos?q=ab&limite=51', p.auth)).statusCode).toBe(422);
@@ -107,6 +107,125 @@ executar('produtos (Postgres)', () => {
       expect(barrada.headers['retry-after']).toBeDefined();
       expect((await buscar((await t.pessoa({ termos: false })).auth, 'fralda')).json().codigo).toBe('termos_pendentes');
       expect((await t.chamar('GET', '/v1/produtos?q=ab', {})).statusCode).toBe(401);
+    });
+  });
+
+  describe('GET /v1/produtos (navegação por categoria, sem q)', () => {
+    const navegar = (auth: Record<string, string>, qs: string) => t.chamar('GET', `/v1/produtos${qs}`, auth);
+    const itens = (r: { json(): { itens: Array<{ nome: string }> } }) => r.json().itens.map((i) => i.nome);
+    // O banco é compartilhado entre os testes do arquivo: a navegação lista tudo da categoria, então começa sem oferta ativa.
+    beforeEach(async () => {
+      await e.pool.query(`UPDATE offers SET disponivel = false`);
+    });
+
+    it('lista só o que dá para comprar agora: preço atual, na área de entrega, categoria do app, sem advertência e sem loja silenciada', async () => {
+      const p = await t.pessoa();
+      const ok = await comOferta({ nome: 'Fralda Ok', categoria: 'bebe', subcategoria: 'fraldas', marca: 'a', marcaChave: 'a', preco: 4000, imagemUrl: 'https://img.exemplo.test/ok.jpg' });
+      const indisponivel = await t.produto({ nome: 'Fralda Indisponível', categoria: 'bebe', subcategoria: 'fraldas', marca: 'b', marcaChave: 'b' });
+      const velha = await t.produto({ nome: 'Fralda Velha', categoria: 'bebe', subcategoria: 'fraldas', marca: 'c', marcaChave: 'c' });
+      const vencida = await t.produto({ nome: 'Fralda Vencida', categoria: 'bebe', subcategoria: 'fraldas', marca: 'd', marcaChave: 'd' });
+      const escondida = await t.produto({ nome: 'Fralda Escondida', categoria: 'bebe', subcategoria: 'fraldas', marca: 'e', marcaChave: 'e' });
+      const { loja, fonte } = await t.loja();
+      await t.oferta({ produto: indisponivel, loja, fonte, disponivel: false });
+      await t.oferta({ produto: velha, loja, fonte, coletadaEm: new Date(e.agora.getTime() - 7 * 3600_000) });
+      await t.oferta({ produto: vencida, loja, fonte, validaAte: new Date(e.agora.getTime() - 60_000) });
+      await t.oferta({ produto: escondida, loja, fonte, escondida: true });
+      const semArea = await t.loja({ nome: 'Longe', faixa: ['80000000', '80000009', 3] });
+      const longe = await t.produto({ nome: 'Fralda Longe', categoria: 'bebe', subcategoria: 'fraldas', marca: 'f', marcaChave: 'f' });
+      await t.oferta({ produto: longe, loja: semArea.loja, fonte: semArea.fonte });
+      const outraCategoria = await comOferta({ nome: 'Brinquedo', categoria: 'infantil', subcategoria: 'brinquedos', marca: 'g', marcaChave: 'g' });
+      const remedio = await comOferta({ nome: 'Remédio', categoria: 'medicamentos_isentos', marca: 'h', marcaChave: 'h' });
+      const advertencia = await comOferta({ nome: 'Papinha', categoria: 'bebe', subcategoria: 'alimentacao', marca: 'i', marcaChave: 'i', advertencias: ['nbcal_apos_6_meses'] });
+      const silenciada = await comOferta({ nome: 'Fralda Silenciada', categoria: 'bebe', subcategoria: 'fraldas', marca: 'j', marcaChave: 'j' });
+      await e.pool.query(`INSERT INTO silenciamentos (tenant_id, user_id, tipo, loja_id, alcance) VALUES ($1,$2,'loja',$3,'tudo')`, [e.tenantId, p.userId, silenciada.loja]);
+      void outraCategoria; void remedio; void advertencia;
+
+      const r = await navegar(p.auth, '?categoria=bebe');
+      expect(r.statusCode).toBe(200);
+      expect(itens(r)).toEqual(['Fralda Ok']);
+      expect(r.json().itens[0]).toMatchObject({ categoria: 'bebe', subcategoria: 'fraldas', imagem_url: 'https://img.exemplo.test/ok.jpg', menor_preco_centavos: 4000, seguido: false });
+      expect(itens(await navegar(p.auth, '?categoria=infantil'))).toEqual(['Brinquedo']);
+      expect(itens(await navegar(p.auth, ''))).toEqual(expect.arrayContaining(['Fralda Ok', 'Brinquedo']));
+      expect(itens(await navegar(p.auth, ''))).toHaveLength(2);
+    });
+
+    it('subcategoria filtra dentro da categoria e exige a categoria', async () => {
+      const p = await t.pessoa();
+      await comOferta({ nome: 'Fralda A', categoria: 'bebe', subcategoria: 'fraldas', marca: 'a', marcaChave: 'a' });
+      await comOferta({ nome: 'Papinha B', categoria: 'bebe', subcategoria: 'alimentacao', marca: 'b', marcaChave: 'b' });
+      await comOferta({ nome: 'Berço C', categoria: 'bebe', subcategoria: null, marca: 'c', marcaChave: 'c' });
+      expect(itens(await navegar(p.auth, '?categoria=bebe&subcategoria=fraldas'))).toEqual(['Fralda A']);
+      expect(itens(await navegar(p.auth, '?categoria=bebe&subcategoria=alimentacao'))).toEqual(['Papinha B']);
+      expect(itens(await navegar(p.auth, '?categoria=bebe&subcategoria=quarto'))).toEqual([]);
+      const sem = await navegar(p.auth, '?subcategoria=fraldas');
+      expect(sem.statusCode).toBe(422);
+      expect(sem.json().campos[0].campo).toBe('categoria');
+      const ruim = await navegar(p.auth, '?categoria=bebe&subcategoria=Ruim!');
+      expect(ruim.json().campos.map((c: { campo: string }) => c.campo)).toEqual(['subcategoria']);
+    });
+
+    it('ordena por menor preço, maior preço e nome; sem ordem, o mais novo primeiro; paginação sem repetir', async () => {
+      const p = await t.pessoa();
+      const { loja, fonte } = await t.loja();
+      for (const [nome, preco] of [['Cc', 3000], ['Aa', 9000], ['Bb', 1000], ['Dd', 5000], ['Ee', 7000]] as const) {
+        await t.oferta({ produto: await t.produto({ nome, categoria: 'infantil', marca: nome, marcaChave: nome.toLowerCase() }), loja, fonte, preco });
+        await new Promise((r) => setTimeout(r, 5)); // criado_em distinto
+      }
+      expect(itens(await navegar(p.auth, '?categoria=infantil&ordem=menor_preco'))).toEqual(['Bb', 'Cc', 'Dd', 'Ee', 'Aa']);
+      expect(itens(await navegar(p.auth, '?categoria=infantil&ordem=maior_preco'))).toEqual(['Aa', 'Ee', 'Dd', 'Cc', 'Bb']);
+      expect(itens(await navegar(p.auth, '?categoria=infantil&ordem=nome'))).toEqual(['Aa', 'Bb', 'Cc', 'Dd', 'Ee']);
+      expect(itens(await navegar(p.auth, '?categoria=infantil'))).toEqual(['Ee', 'Dd', 'Bb', 'Aa', 'Cc']);
+      const vistos: string[] = [];
+      let cursor: string | null = null;
+      let paginas = 0;
+      do {
+        const r = await navegar(p.auth, `?categoria=infantil&ordem=menor_preco&limite=2${cursor ? `&cursor=${cursor}` : ''}`);
+        vistos.push(...itens(r));
+        cursor = r.json().proximo_cursor;
+        paginas += 1;
+      } while (cursor !== null && paginas < 10);
+      expect(vistos).toEqual(['Bb', 'Cc', 'Dd', 'Ee', 'Aa']);
+      expect(paginas).toBe(3);
+    });
+
+    it('o menor preço é o da melhor oferta atual coberta, igual ao da página do produto', async () => {
+      const p = await t.pessoa();
+      const produto = await t.produto({ nome: 'Duas lojas', categoria: 'bebe', marca: 'k', marcaChave: 'k' });
+      const a = await t.loja({ nome: 'Cara' });
+      const b = await t.loja({ nome: 'Barata' });
+      const longe = await t.loja({ nome: 'Longe', faixa: ['80000000', '80000009', 3] });
+      await t.oferta({ produto, loja: a.loja, fonte: a.fonte, preco: 8000 });
+      await t.oferta({ produto, loja: b.loja, fonte: b.fonte, preco: 6000 });
+      await t.oferta({ produto, loja: longe.loja, fonte: longe.fonte, preco: 100 }); // não entrega no CEP
+      const lista = (await navegar(p.auth, '?categoria=bebe')).json().itens;
+      expect(lista).toHaveLength(1);
+      expect(lista[0].menor_preco_centavos).toBe(6000);
+      const pagina = (await t.chamar('GET', `/v1/produtos/${produto}`, p.auth)).json();
+      expect(Math.min(...pagina.ofertas.map((o: { preco_centavos: number }) => o.preco_centavos))).toBe(6000);
+    });
+
+    it('quem não tem CEP coberto não vê nada; o limite de navegação é separado do da pesquisa', async () => {
+      await comOferta({ nome: 'Só no CEP', categoria: 'bebe', marca: 'l', marcaChave: 'l' });
+      const longe = await t.pessoa({ ceps: ['80000000'] });
+      expect(itens(await navegar(longe.auth, '?categoria=bebe'))).toEqual([]);
+      const p = await t.pessoa();
+      for (let i = 0; i < 31; i++) expect((await navegar(p.auth, '?categoria=bebe')).statusCode).toBe(200); // a pesquisa pararia em 30
+      expect((await buscar(p.auth, 'fralda')).statusCode).toBe(200);
+    });
+
+    it('ordem inválida é 422; na pesquisa, produto sem preço atual vai para o fim ao ordenar por preço', async () => {
+      const p = await t.pessoa();
+      expect((await navegar(p.auth, '?ordem=aleatoria')).json().campos[0].campo).toBe('ordem');
+      const barato = await comOferta({ nome: 'Xampuzinho Barato', categoria: 'mamae', marca: 'm', marcaChave: 'm', preco: 1000 });
+      const caro = await comOferta({ nome: 'Xampuzinho Caro', categoria: 'mamae', marca: 'n', marcaChave: 'n', preco: 9000 });
+      const semArea = await t.loja({ nome: 'Longe', faixa: ['80000000', '80000009', 3] });
+      const fora = await t.produto({ nome: 'Xampuzinho Fora', categoria: 'mamae', marca: 'o', marcaChave: 'o' });
+      await t.oferta({ produto: fora, loja: semArea.loja, fonte: semArea.fonte, preco: 10 });
+      void barato; void caro;
+      const r = await t.chamar('GET', '/v1/produtos?q=xampuzinho&ordem=menor_preco', p.auth);
+      expect(nomes(r)).toEqual(['Xampuzinho Barato', 'Xampuzinho Caro', 'Xampuzinho Fora']);
+      expect(r.json().itens[2].menor_preco_centavos).toBeNull();
+      expect(nomes(await t.chamar('GET', '/v1/produtos?q=xampuzinho&ordem=maior_preco', p.auth))).toEqual(['Xampuzinho Caro', 'Xampuzinho Barato', 'Xampuzinho Fora']);
     });
   });
 
