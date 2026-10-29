@@ -145,7 +145,7 @@ executar('conta e preferências (Postgres)', () => {
       const a = await novaConta({ aceitouTermos: true });
       const b = await novaConta({ aceitouTermos: true });
       for (const c of [a, b]) {
-        await pool.query(`INSERT INTO user_preferences (user_id, tenant_id, categorias) VALUES ($1,$2,'{limpeza}')`, [c.userId, tenantId]);
+        await pool.query(`INSERT INTO user_preferences (user_id, tenant_id, categorias) VALUES ($1,$2,'{infantil}')`, [c.userId, tenantId]);
         await pool.query(
           `INSERT INTO subscriptions (tenant_id, user_id, plano, status, origem, iniciada_em) VALUES ($1,$2,'premium_mensal','ativa','google_play',now())`,
           [tenantId, c.userId],
@@ -176,7 +176,7 @@ executar('conta e preferências (Postgres)', () => {
   });
 
   describe('/v1/preferencias', () => {
-    const base = { categorias: ['higiene_bebe', 'limpeza'], ceps: ['14020260'], silencio: { inicio: '22:00', fim: '07:00' }, limite_diario: 3 };
+    const base = { categorias: ['bebe', 'infantil'], ceps: ['14020260'], silencio: { inicio: '22:00', fim: '07:00' }, limite_diario: 3 };
 
     it('com os termos pendentes: 403 termos_pendentes', async () => {
       const { auth } = await novaConta();
@@ -210,7 +210,7 @@ executar('conta e preferências (Postgres)', () => {
     it('validação: categoria desconhecida (inclusive medicamento), repetida, CEP malformado, silêncio e limite', async () => {
       const { auth } = await novaConta({ aceitouTermos: true });
       const r = await chamar('PUT', '/v1/preferencias', auth, {
-        categorias: ['limpeza', 'medicamentos_isentos', 'limpeza', 5],
+        categorias: ['infantil', 'medicamentos_isentos', 'infantil', 5],
         ceps: ['1402026', 'abc'],
         silencio: { inicio: '25:00', fim: '07:00' },
         limite_diario: 0,

@@ -20,7 +20,13 @@
       "tipo": "online",
       "status": "em_observacao",
       "reputacao": 0.5,
-      "faixasCep": [{ "inicio": "01000000", "fim": "19999999", "prazoDias": 3 }]
+      "faixasCep": [
+        {
+          "inicio": "01000000",
+          "fim": "19999999",
+          "prazoDias": 3
+        }
+      ]
     },
     {
       "fonte": "lomadee",
@@ -30,7 +36,93 @@
       "tipo": "online",
       "status": "em_observacao",
       "reputacao": 0.5,
-      "faixasCep": [{ "inicio": "01000000", "fim": "19999999", "prazoDias": 3 }]
+      "faixasCep": [
+        {
+          "inicio": "01000000",
+          "fim": "19999999",
+          "prazoDias": 3
+        }
+      ]
+    },
+    {
+      "fonte": "lomadee",
+      "idExterno": "6877a08a-be27-4b5d-844e-db4689a58256",
+      "rede": "UP Kids",
+      "nome": "UP Kids (online)",
+      "tipo": "online",
+      "status": "em_observacao",
+      "reputacao": 0.5,
+      "faixasCep": [
+        {
+          "inicio": "01000000",
+          "fim": "19999999",
+          "prazoDias": 5
+        }
+      ]
+    },
+    {
+      "fonte": "lomadee",
+      "idExterno": "d9a040f8-bb54-40d2-804b-150f007305d0",
+      "rede": "Toymania",
+      "nome": "Toymania (online)",
+      "tipo": "online",
+      "status": "em_observacao",
+      "reputacao": 0.5,
+      "faixasCep": [
+        {
+          "inicio": "01000000",
+          "fim": "19999999",
+          "prazoDias": 5
+        }
+      ]
+    },
+    {
+      "fonte": "lomadee",
+      "idExterno": "9b4047d8-7011-4264-8144-d43fd0fb1f77",
+      "rede": "LITTLE DUCK",
+      "nome": "LITTLE DUCK (online)",
+      "tipo": "online",
+      "status": "em_observacao",
+      "reputacao": 0.5,
+      "faixasCep": [
+        {
+          "inicio": "01000000",
+          "fim": "19999999",
+          "prazoDias": 5
+        }
+      ]
+    },
+    {
+      "fonte": "lomadee",
+      "idExterno": "b08af64e-f7bd-434c-b0ac-6baec265f9fc",
+      "rede": "BabyStock",
+      "nome": "BabyStock (online)",
+      "tipo": "online",
+      "status": "em_observacao",
+      "reputacao": 0.5,
+      "faixasCep": [
+        {
+          "inicio": "01000000",
+          "fim": "19999999",
+          "prazoDias": 5
+        }
+      ]
+    },
+    {
+      "fonte": "lomadee",
+      "idExterno": "9aad28fe-dddf-4b4e-81c7-cdfaf5f00ee7",
+      "rede": "Ortope",
+      "nome": "Ortope (online)",
+      "tipo": "online",
+      "status": "em_observacao",
+      "reputacao": 0.5,
+      "faixasCep": [
+        {
+          "inicio": "01000000",
+          "fim": "19999999",
+          "prazoDias": 5
+        }
+      ]
     }
   ]
 }

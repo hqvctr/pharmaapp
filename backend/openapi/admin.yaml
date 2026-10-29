@@ -1277,7 +1277,7 @@ components:
           id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
           nome: Shampoo Elseve Hidra Hialurônico 400 ml
           marca: { chave: elseve, nome: Elseve }
-          categoria: cuidados_pessoais
+          categoria: mamae
           gtin: null
           embalagem: { quantidade: 0.4, unidade: l }
         loja:
@@ -1317,7 +1317,7 @@ components:
           id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
           nome: Shampoo Elseve Hidra Hialurônico 400 ml
           marca: { chave: elseve, nome: Elseve }
-          categoria: cuidados_pessoais
+          categoria: mamae
           gtin: null
           embalagem: { quantidade: 0.4, unidade: l }
         loja:
@@ -1386,7 +1386,7 @@ components:
             id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
             nome: Shampoo Elseve Hidra Hialurônico 400 ml
             marca: { chave: elseve, nome: Elseve }
-            categoria: cuidados_pessoais
+            categoria: mamae
             gtin: null
             embalagem: { quantidade: 0.4, unidade: l }
           loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
@@ -1441,7 +1441,7 @@ components:
           id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
           nome: Shampoo Elseve Hidra Hialurônico 400 ml
           marca: { chave: elseve, nome: Elseve }
-          categoria: cuidados_pessoais
+          categoria: mamae
           gtin: null
           embalagem: { quantidade: 0.4, unidade: l }
         loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
@@ -1466,7 +1466,7 @@ components:
           - id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
             nome: Shampoo Elseve Hidra Hialurônico 400 ml
             marca: { chave: elseve, nome: Elseve }
-            categoria: cuidados_pessoais
+            categoria: mamae
             gtin: null
             embalagem: { quantidade: 0.4, unidade: l }
         proximo_cursor: null

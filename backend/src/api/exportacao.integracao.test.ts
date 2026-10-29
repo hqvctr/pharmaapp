@@ -47,7 +47,7 @@ executar('exportação (Postgres)', () => {
     expect(Object.keys(d).sort()).toEqual(['assinaturas', 'avaliacoes', 'avisos', 'conta', 'denuncias', 'dispositivos', 'eventos', 'gerado_em', 'preferencias', 'seguidos', 'silenciamentos']);
     expect(d.gerado_em).toBe(e.agora.toISOString());
     expect(d.conta).toMatchObject({ id: c.p.userId, termos_pendentes: false, notificacoes_consentidas: true, plano: { tipo: 'gratuito' } });
-    expect(d.preferencias).toEqual({ categorias: ['higiene_bebe', 'cuidados_pessoais'], ceps: ['14020260'], silencio: { inicio: '22:00', fim: '07:00' }, limite_diario: 5, ceps_ignorados_pelo_plano: ['01310100'] });
+    expect(d.preferencias).toEqual({ categorias: ['bebe', 'mamae'], ceps: ['14020260'], silencio: { inicio: '22:00', fim: '07:00' }, limite_diario: 5, ceps_ignorados_pelo_plano: ['01310100'] });
     expect(d.silenciamentos.map((s: { tipo: string; alcance: string; nome: string }) => [s.tipo, s.alcance, s.nome])).toEqual([['marca', 'tudo', 'Huggies'], ['loja', 'push', 'Drogasil (online)']]);
     expect(d.seguidos).toHaveLength(1);
     expect(d.seguidos[0]).toMatchObject({ produto: { id: c.produto }, avisos: { queda_percentual: 20, menor_preco_180d: true, voltou_estoque: false } });

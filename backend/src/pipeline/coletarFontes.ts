@@ -78,6 +78,7 @@ export async function coletarFontes(o: OpcoesColeta): Promise<{ resultados: Resu
         adapter,
         config: o.config,
         mapaCategorias: bloco.mapaCategorias,
+        ...(bloco.categorizacao !== undefined ? { categorizacao: bloco.categorizacao } : {}),
         listas: o.listas,
         agora: o.agora,
         log: (m) => o.log(`[${nome}] ${m}`),

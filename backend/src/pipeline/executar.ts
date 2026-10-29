@@ -6,6 +6,7 @@ import type { Decisao } from '../curadoria/tipos.js';
 import { deduplicar } from '../avaliador/deduplicacao.js';
 import { agregarPorDia, calcularProva, diaLocal } from '../avaliador/historico.js';
 import type { SourceAdapter } from '../fontes/contrato.js';
+import type { RegrasCategorizacao } from '../normalizador/categorizar.js';
 import type { ListasMedicamentos } from '../normalizador/medicamentos.js';
 import { normalizarOferta, type ProdutoNormalizado } from '../normalizador/normalizar.js';
 import { precoPorUnidade } from '../curadoria/preco.js';
@@ -34,6 +35,8 @@ export interface ContextoColeta {
   adapter: SourceAdapter;
   config: ConfigTenant;
   mapaCategorias: Record<string, string>;
+  /** Regras de categorização da fonte (config `fontes.<nome>.categorizacao`). */
+  categorizacao?: RegrasCategorizacao;
   listas: ListasMedicamentos;
   agora: Date;
   log: (msg: string) => void;
@@ -67,6 +70,7 @@ export async function executarColeta(ctx: ContextoColeta): Promise<ResumoColeta>
     const norm = normalizarOferta(bruta, ctx.listas, {
       liberados: liberados.get(bruta.idExterno) ?? SEM_LIBERACAO,
       mapaCategorias: ctx.mapaCategorias,
+      ...(ctx.categorizacao !== undefined ? { categorizacao: ctx.categorizacao } : {}),
       categoriaMedicamentos: ctx.config.medicamentos.categoria,
       modoMedicamentos: ctx.config.medicamentos.modo,
       triagemPorNome: ctx.config.medicamentos.triagemPorNome,

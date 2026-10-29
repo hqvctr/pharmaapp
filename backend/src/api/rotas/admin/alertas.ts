@@ -33,7 +33,7 @@ export function lojaAdminJson(r: any, p = '') {
 export const COLUNAS_ALERTA_ADMIN = `a.id, a.criado_em, a.decisao, a.revisao_situacao, a.revisao_operador_id, a.revisao_em, a.revisao_observacao, ro.nome AS revisao_operador_nome,
        a.preco_centavos, a.preco_efetivo_por_unidade, a.preco_referencia_por_unidade, a.rotulo_condicao, a.entrega_a_confirmar,
        o.id AS offer_id, o.valida_ate, o.coletada_em, o.link, o.link_afiliado, o.disponivel, o.escondida_em, o.preco_centavos AS oferta_preco_centavos,
-       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url,
+       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
        s.id AS loja_id, s.rede AS loja_rede, s.nome AS loja_nome, s.cnpj AS loja_cnpj, s.tipo AS loja_tipo, s.status AS loja_status,
        s.reputacao AS loja_reputacao, s.autorizacao_sanitaria AS loja_autorizacao_sanitaria, s.criado_em AS loja_criado_em,
        src.id AS fonte_id, src.nome AS fonte_nome, src.tipo AS fonte_tipo, src.confiabilidade AS fonte_confiabilidade, src.status_confianca AS fonte_status`;

@@ -28,7 +28,7 @@ export function rotasAdminModeracao(app: FastifyInstance, d: DepsAuth): void {
   const COLUNAS_CASO = `cd.id, cd.aberto_em, cd.situacao, cd.denuncias, cd.pessoas_base, cd.limite, cd.motivo_preco_errado, cd.motivo_sem_estoque,
        cd.resolucao, cd.resolucao_em, cd.resolucao_observacao, cd.resolucao_operador_id, ro.nome AS resolucao_operador_nome,
        o.id AS offer_id, o.preco_centavos, o.link, o.coletada_em,
-       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url,
+       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
        s.id AS loja_id, s.nome AS loja_nome, s.rede AS loja_rede, s.tipo AS loja_tipo`;
   const JUNCOES_CASO = `FROM casos_denuncia cd
        JOIN offers o ON o.tenant_id = cd.tenant_id AND o.id = cd.offer_id

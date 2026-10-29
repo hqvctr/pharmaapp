@@ -53,9 +53,9 @@ executar('fluxo do app de prévia (Postgres)', () => {
     // --- preferências vazias → onboarding → salvar como o app salva (silencio e limite_diario voltam como vieram)
     const pref0 = (await get('/v1/preferencias')).json();
     expect(pref0.categorias).toEqual([]);
-    const salvo = await put('/v1/preferencias', { categorias: ['higiene_bebe'], ceps: ['14020260'], silencio: pref0.silencio ?? null, limite_diario: pref0.limite_diario ?? null });
+    const salvo = await put('/v1/preferencias', { categorias: ['bebe'], ceps: ['14020260'], silencio: pref0.silencio ?? null, limite_diario: pref0.limite_diario ?? null });
     expect(salvo.statusCode).toBe(200);
-    expect((await put('/v1/preferencias', { categorias: ['higiene_bebe'], ceps: ['00000001'], silencio: null, limite_diario: null })).json().codigo).toBe('cep_fora_da_regiao');
+    expect((await put('/v1/preferencias', { categorias: ['bebe'], ceps: ['00000001'], silencio: null, limite_diario: null })).json().codigo).toBe('cep_fora_da_regiao');
 
     // --- feed
     const feed = (await get('/v1/alertas?limite=30')).json();
@@ -64,7 +64,7 @@ executar('fluxo do app de prévia (Postgres)', () => {
     expect(a).toMatchObject({ destaque: true, situacao: 'ativa', rotulo_condicao: 'Leve 3, pague 2', produto: { nome: 'Fralda Huggies M 60 un', embalagem: { quantidade: 60, unidade: 'un' } }, loja: { rede: 'Drogasil' } });
     expect(typeof a.queda).toBe('number');
     expect(typeof a.preco_referencia_centavos).toBe('number');
-    expect((await get('/v1/alertas?limite=30&categoria=higiene_bebe')).json().itens.map((i: { id: string }) => i.id)).toContain(alerta);
+    expect((await get('/v1/alertas?limite=30&categoria=bebe')).json().itens.map((i: { id: string }) => i.id)).toContain(alerta);
 
     // --- detalhe + evento aberto (Idempotency-Key novo)
     const chave = randomUUID();

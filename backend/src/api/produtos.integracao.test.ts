@@ -22,11 +22,11 @@ executar('produtos (Postgres)', () => {
   describe('GET /v1/produtos (pesquisa)', () => {
     it('acha por palavras do nome ou da marca, sem acento nem caixa, e por GTIN; devolve o menor preço e se é seguido', async () => {
       const p = await t.pessoa();
-      const { produto } = await comOferta({ nome: 'Shampoo Hidratação Profunda 400 ml', marca: 'Elseve', marcaChave: 'elseve', categoria: 'cuidados_pessoais', preco: 2490, gtin: '7891234567895' });
+      const { produto } = await comOferta({ nome: 'Shampoo Hidratação Profunda 400 ml', marca: 'Elseve', marcaChave: 'elseve', categoria: 'mamae', preco: 2490, gtin: '7891234567895' });
       const { loja, fonte } = await t.loja({ nome: 'PromoFarma' });
       await t.oferta({ produto, loja, fonte, preco: 1990 }); // outra loja, mais barata
       await t.pessoa(); // ruído
-      await comOferta({ nome: 'Outro Shampoo', marca: 'Outra', marcaChave: 'outra', categoria: 'cuidados_pessoais', gtin: '7890000000001' });
+      await comOferta({ nome: 'Outro Shampoo', marca: 'Outra', marcaChave: 'outra', categoria: 'mamae', gtin: '7890000000001' });
       for (const q of ['hidratacao', 'HIDRATAÇÃO profunda', 'elseve shampoo', 'sham']) expect(nomes(await buscar(p.auth, q)), q).toContain('Shampoo Hidratação Profunda 400 ml');
       const porGtin = await buscar(p.auth, '7891234567895');
       expect(nomes(porGtin)).toEqual(['Shampoo Hidratação Profunda 400 ml']);
@@ -38,9 +38,9 @@ executar('produtos (Postgres)', () => {
 
     it('ordena por relevância: nome que começa com o texto, depois palavra no meio, depois o resto', async () => {
       const p = await t.pessoa();
-      await comOferta({ nome: 'Kit Sabonete Granado', marca: 'Granado', marcaChave: 'granado', categoria: 'cuidados_pessoais' });
-      await comOferta({ nome: 'Sabonete Líquido Dove', marca: 'Dove', marcaChave: 'dove', categoria: 'cuidados_pessoais' });
-      await comOferta({ nome: 'Refil de Sabonete', marca: 'Lux', marcaChave: 'lux', categoria: 'cuidados_pessoais' });
+      await comOferta({ nome: 'Kit Sabonete Granado', marca: 'Granado', marcaChave: 'granado', categoria: 'mamae' });
+      await comOferta({ nome: 'Sabonete Líquido Dove', marca: 'Dove', marcaChave: 'dove', categoria: 'mamae' });
+      await comOferta({ nome: 'Refil de Sabonete', marca: 'Lux', marcaChave: 'lux', categoria: 'mamae' });
       const r = await buscar(p.auth, 'sabonete');
       expect(nomes(r).filter((n) => /abonete/.test(n))).toEqual(['Sabonete Líquido Dove', 'Kit Sabonete Granado', 'Refil de Sabonete'].sort((a, b) => ranque(a) - ranque(b) || a.localeCompare(b)));
       function ranque(n: string) { return n.toLowerCase().startsWith('sabonete') ? 1 : n.toLowerCase().includes(' sabonete') ? 2 : 3; }
@@ -56,10 +56,10 @@ executar('produtos (Postgres)', () => {
       await comOferta({ nome: `${base} Silenciada`, marca: 'Muda', marcaChave: 'muda' });
       const { loja: lo, fonte: fo } = await t.loja({ t: e.outroTenantId });
       await t.oferta({ t: e.outroTenantId, produto: await t.produto({ t: e.outroTenantId, nome: `${base} Alheio` }), loja: lo, fonte: fo });
-      await comOferta({ nome: `${base} Limpeza`, categoria: 'limpeza', marca: 'Ype', marcaChave: 'ype' });
+      await comOferta({ nome: `${base} Limpeza`, categoria: 'infantil', marca: 'Ype', marcaChave: 'ype' });
       await e.pool.query(`INSERT INTO silenciamentos (tenant_id, user_id, tipo, marca_chave, alcance) VALUES ($1,$2,'marca','muda','tudo')`, [e.tenantId, p.userId]);
       expect(nomes(await buscar(p.auth, base)).sort()).toEqual([`${base} Limpeza`, `${base} Normal`].sort());
-      expect(nomes(await t.chamar('GET', `/v1/produtos?q=${base}&categoria=limpeza`, p.auth))).toEqual([`${base} Limpeza`]);
+      expect(nomes(await t.chamar('GET', `/v1/produtos?q=${base}&categoria=infantil`, p.auth))).toEqual([`${base} Limpeza`]);
       expect(ok).toBeDefined();
     });
 

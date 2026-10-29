@@ -80,7 +80,7 @@ describe('conversão da lista da CMED', () => {
       linha({ 'EAN 1': '7891000000066', TARJA: 'Tarja Preta', 'SUBSTÂNCIA': 'CODEÍNA' }),
     ]), 'v');
     const ls: ListasMedicamentos = { versao: listas.versao, porGtin: new Map(listas.referencia.map((r) => [gtin14(r.gtin), r])), substanciasControladas: new Set(listas.substanciasControladas), termosBloqueados: listas.termosBloqueados };
-    const triar = (gtin: string, opcoes = {}) => triarMedicamento({ gtin, titulo: 'Produto', descricao: null, categoria: 'cuidados_pessoais', condicao: null }, ls, 'medicamentos_isentos', opcoes);
+    const triar = (gtin: string, opcoes = {}) => triarMedicamento({ gtin, titulo: 'Produto', descricao: null, categoria: 'mamae', condicao: null }, ls, 'medicamentos_isentos', opcoes);
     expect(triar('7891000000011')).toMatchObject({ liberado: true, ehMedicamento: true });
     expect(triar('7891000000011', { modo: 'desligado' })).toMatchObject({ codigo: 'MEDICAMENTO_DESLIGADO' });
     expect(triar('7891000000028')).toMatchObject({ codigo: 'MEDICAMENTO_COM_PRESCRICAO' });

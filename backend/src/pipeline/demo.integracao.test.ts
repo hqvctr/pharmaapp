@@ -13,11 +13,11 @@ executar('alertas de demonstração (Postgres)', () => {
 
   async function mundo() {
     const { loja, fonte } = await t.loja({ nome: 'Demo Farma' });
-    const bebe = await t.produto({ nome: 'Fralda Demo', categoria: 'higiene_bebe' });
-    const pessoal = await t.produto({ nome: 'Shampoo Demo', categoria: 'cuidados_pessoais', marca: 'X', marcaChave: 'x' });
+    const bebe = await t.produto({ nome: 'Fralda Demo', categoria: 'bebe' });
+    const pessoal = await t.produto({ nome: 'Shampoo Demo', categoria: 'mamae', marca: 'X', marcaChave: 'x' });
     const remedio = await t.produto({ nome: 'Remédio Demo', categoria: 'medicamento', marca: 'R', marcaChave: 'r' });
-    const nbcal = await t.produto({ nome: 'Papinha Demo', categoria: 'higiene_bebe', advertencias: ['nbcal_apos_6_meses'], marca: 'N', marcaChave: 'n' });
-    const velha = await t.produto({ nome: 'Velha Demo', categoria: 'higiene_bebe', marca: 'V', marcaChave: 'v' });
+    const nbcal = await t.produto({ nome: 'Papinha Demo', categoria: 'bebe', advertencias: ['nbcal_apos_6_meses'], marca: 'N', marcaChave: 'n' });
+    const velha = await t.produto({ nome: 'Velha Demo', categoria: 'bebe', marca: 'V', marcaChave: 'v' });
     const o = {
       bebe: await t.oferta({ produto: bebe, loja, fonte, preco: 5990 }),
       pessoal: await t.oferta({ produto: pessoal, loja, fonte, preco: 2490 }),
@@ -31,7 +31,7 @@ executar('alertas de demonstração (Postgres)', () => {
   it('cria alertas só em oferta que o feed mostraria de verdade, aparecem no feed da pessoa marcados como demonstração, e removem sem deixar rastro', async () => {
     const config = await carregarConfigTenant('padrao');
     const w = await mundo();
-    const p = await t.pessoa({ categorias: ['higiene_bebe', 'cuidados_pessoais'] });
+    const p = await t.pessoa({ categorias: ['bebe', 'mamae'] });
     const antes = ids(await t.chamar('GET', '/v1/alertas', p.auth));
     const r = await criarDemonstracao(e.pool, e.tenantId, config, e.agora, 8);
     // Elegíveis: fralda e shampoo (remédio, advertência legal e oferta velha ficam de fora).
@@ -64,8 +64,8 @@ executar('alertas de demonstração (Postgres)', () => {
   it('respeita a quantidade, reparte entre categorias e não toca em alerta de verdade', async () => {
     const config = await carregarConfigTenant('padrao');
     const { loja, fonte } = await t.loja({ nome: 'Demo Farma 2' });
-    for (let i = 0; i < 4; i += 1) await t.oferta({ produto: await t.produto({ nome: `Bebe ${i}`, categoria: 'higiene_bebe', marca: `b${i}`, marcaChave: `b${i}` }), loja, fonte });
-    for (let i = 0; i < 4; i += 1) await t.oferta({ produto: await t.produto({ nome: `Pessoal ${i}`, categoria: 'cuidados_pessoais', marca: `p${i}`, marcaChave: `p${i}` }), loja, fonte });
+    for (let i = 0; i < 4; i += 1) await t.oferta({ produto: await t.produto({ nome: `Bebe ${i}`, categoria: 'bebe', marca: `b${i}`, marcaChave: `b${i}` }), loja, fonte });
+    for (let i = 0; i < 4; i += 1) await t.oferta({ produto: await t.produto({ nome: `Pessoal ${i}`, categoria: 'mamae', marca: `p${i}`, marcaChave: `p${i}` }), loja, fonte });
     await e.pool.query(`UPDATE offers SET disponivel = false WHERE store_id <> $1`, [loja]); // só as deste teste
     // Loja sem área de entrega não aparece no feed de ninguém, então não ganha alerta de demonstração.
     const semArea = await t.loja({ nome: 'Sem area', faixa: null });
@@ -75,9 +75,9 @@ executar('alertas de demonstração (Postgres)', () => {
     const real = await t.alerta({ oferta, loja, decisao: 'notificar' });
     const r = await criarDemonstracao(e.pool, e.tenantId, config, e.agora, 4);
     expect(r.criados).toBe(4);
-    expect(r.porCategoria).toEqual({ higiene_bebe: 2, cuidados_pessoais: 2 });
+    expect(r.porCategoria).toEqual({ bebe: 2, mamae: 2 });
     const cats = (await e.pool.query(`SELECT p.categoria FROM alerts a JOIN offers o ON o.id = a.offer_id JOIN products p ON p.id = o.product_id WHERE a.motivo LIKE 'DEMO:%' AND o.store_id = $1`, [loja])).rows.map((x) => x.categoria).sort();
-    expect(cats).toEqual(['cuidados_pessoais', 'cuidados_pessoais', 'higiene_bebe', 'higiene_bebe']);
+    expect(cats).toEqual(['bebe', 'bebe', 'mamae', 'mamae']);
     expect((await e.pool.query(`SELECT count(*)::int AS n FROM alerts a JOIN offers o ON o.id = a.offer_id WHERE a.motivo LIKE 'DEMO:%' AND o.store_id = $1`, [semArea.loja])).rows[0].n).toBe(0);
     await removerDemonstracao(e.pool, e.tenantId);
     expect((await e.pool.query(`SELECT count(*)::int AS n FROM alerts WHERE id = $1`, [real])).rows[0].n).toBe(1);

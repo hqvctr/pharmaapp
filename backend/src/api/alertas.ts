@@ -91,7 +91,7 @@ export async function consultarAlertas(db: Db, f: FiltroAlertas): Promise<any[]>
             o.id AS offer_id, o.valida_de, o.valida_ate, o.coletada_em, o.link, o.link_afiliado, o.frete_status, o.frete_centavos,
             (o.criada_por IS NOT NULL) AS manual, src.nome AS fonte,
             ${situacaoSql()} AS situacao,
-            p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.advertencias,
+            p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria, p.advertencias,
             s.id AS store_id, s.nome AS loja_nome, s.rede, s.tipo AS loja_tipo,
             cob.cep AS cobertura_cep, cob.prazo_dias,
             EXISTS (SELECT 1 FROM seguidos sg WHERE sg.tenant_id = a.tenant_id AND sg.user_id = $4 AND sg.product_id = p.id) AS seguido
@@ -128,6 +128,7 @@ export function produtoResumo(r: any) {
     gtin: r.gtin,
     embalagem: { quantidade: num(r.quantidade), unidade: r.unidade },
     imagem_url: r.imagem_url,
+    subcategoria: r.subcategoria ?? null,
   };
 }
 

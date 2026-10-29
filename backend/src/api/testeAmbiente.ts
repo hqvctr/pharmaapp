@@ -109,7 +109,7 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
           [e.tenantId, `t${e.seq}@exemplo.com`, o.termos === false ? null : VIGENTE, o.termos === false ? null : e.agora],
         )
       ).rows[0].id as string;
-      await e.pool.query(`INSERT INTO user_preferences (user_id, tenant_id, categorias, ceps) VALUES ($1,$2,$3::text[],$4::char(8)[])`, [userId, e.tenantId, o.categorias ?? ['higiene_bebe', 'cuidados_pessoais'], o.ceps ?? ['14020260']]);
+      await e.pool.query(`INSERT INTO user_preferences (user_id, tenant_id, categorias, ceps) VALUES ($1,$2,$3::text[],$4::char(8)[])`, [userId, e.tenantId, o.categorias ?? ['bebe', 'mamae'], o.ceps ?? ['14020260']]);
       return { userId, auth: await h.reabrir(userId) };
     },
     /** Loja online com a fonte própria (sem trava de marca) e uma faixa de CEP. */
@@ -127,7 +127,7 @@ export function ambienteDeTeste(prefixo: string, opcoes: { google?: VerificadorG
         await e.pool.query(
           `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, marca_chave, nome, categoria, quantidade, unidade, advertencias)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::text[]) RETURNING id`,
-          [o.t ?? e.tenantId, o.gtin ?? null, randomUUID(), o.familia ?? randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Fralda Pampers G', o.categoria ?? 'higiene_bebe', o.quantidade ?? 60, o.unidade ?? 'un', o.advertencias ?? []],
+          [o.t ?? e.tenantId, o.gtin ?? null, randomUUID(), o.familia ?? randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Fralda Pampers G', o.categoria ?? 'bebe', o.quantidade ?? 60, o.unidade ?? 'un', o.advertencias ?? []],
         )
       ).rows[0].id;
     },

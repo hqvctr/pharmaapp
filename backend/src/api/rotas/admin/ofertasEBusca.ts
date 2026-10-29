@@ -24,7 +24,7 @@ export function rotasAdminOfertasEBusca(app: FastifyInstance, d: DepsAuth): void
   // ---------------------------------------------------------------- ofertas manuais
   const COLUNAS_OFERTA = `o.id, o.preco_centavos, o.condicao, o.frete_status, o.frete_centavos, o.valida_de, o.valida_ate, o.validade_padrao_aplicada,
        o.link, o.link_afiliado, o.disponivel, o.criado_em AS criada_em, o.criada_por, op.nome AS criada_por_nome,
-       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url,
+       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
        s.id AS loja_id, s.nome AS loja_nome, s.rede AS loja_rede, s.tipo AS loja_tipo,
        (SELECT a.id FROM alerts a WHERE a.tenant_id = o.tenant_id AND a.offer_id = o.id ORDER BY a.criado_em DESC, a.id DESC LIMIT 1) AS alerta_id`;
   const JUNCOES_OFERTA = `FROM offers o
@@ -123,7 +123,7 @@ export function rotasAdminOfertasEBusca(app: FastifyInstance, d: DepsAuth): void
     }
     params.push(offset, limite + 1);
     const r = await d.db.query(
-      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url
+      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria
          FROM products p WHERE ${onde.join(' AND ')}
         ORDER BY CASE WHEN p.gtin = $3 THEN 0
                       WHEN f_unaccent(lower(p.nome)) LIKE $4 || '%' ESCAPE '\\' THEN 1

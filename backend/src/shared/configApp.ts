@@ -20,7 +20,7 @@ export interface ConfigApp {
   operador: { refreshDias: number };
   /** Oferta manual (D21): validade em dias quando o operador não informa `valida_ate`. */
   ofertaManual: { validadePadraoDias: number };
-  categorias: Array<{ slug: string; rotulo: string }>;
+  categorias: Array<{ slug: string; rotulo: string; subcategorias: Array<{ slug: string; rotulo: string }> }>;
   regiao: { cepInicio: string; cepFim: string };
   limites: {
     cepsGratuito: number;
@@ -94,7 +94,16 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     // Categoria que o motor desconhece nunca geraria alerta; medicamento está fora do app (decisão 58).
     if (curadoria.categorias[slug] === undefined) inv(`categorias[${i}].slug (não existe em curadoria)`);
     if (slug === categoriaMedicamento) inv(`categorias[${i}].slug (medicamento fica fora do app)`);
-    return { slug, rotulo: texto(c?.rotulo, `categorias[${i}].rotulo`) };
+    const subs = c?.subcategorias ?? [];
+    if (!Array.isArray(subs)) inv(`categorias[${i}].subcategorias`);
+    const subsVistas = new Set<string>();
+    const subcategorias = (subs as any[]).map((x, j) => {
+      const sub = texto(x?.slug, `categorias[${i}].subcategorias[${j}].slug`);
+      if (!/^[a-z0-9_]+$/.test(sub) || subsVistas.has(sub)) inv(`categorias[${i}].subcategorias[${j}].slug`);
+      subsVistas.add(sub);
+      return { slug: sub, rotulo: texto(x?.rotulo, `categorias[${i}].subcategorias[${j}].rotulo`) };
+    });
+    return { slug, rotulo: texto(c?.rotulo, `categorias[${i}].rotulo`), subcategorias };
   });
 
   const r = bruto.regiao;

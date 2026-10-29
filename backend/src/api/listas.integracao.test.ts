@@ -74,7 +74,7 @@ executar('silenciamentos e seguidos (Postgres)', () => {
     return (
       await pool.query(
         `INSERT INTO products (tenant_id, chave_hash, familia_chave, marca, marca_chave, nome, categoria, quantidade, unidade, advertencias) VALUES ($1,$2,$3,$4,$5,$6,$7,0.4,'l',$8::text[]) RETURNING id`,
-        [o.t ?? tenantId, randomUUID(), randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Shampoo', o.categoria ?? 'cuidados_pessoais', o.advertencias ?? []],
+        [o.t ?? tenantId, randomUUID(), randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Shampoo', o.categoria ?? 'mamae', o.advertencias ?? []],
       )
     ).rows[0].id;
   }
@@ -168,7 +168,7 @@ executar('silenciamentos e seguidos (Postgres)', () => {
       const a = await chamar('PUT', `/v1/seguidos/${prod}`, p.auth, { avisos: AVISOS });
       expect(a.statusCode).toBe(201);
       expect(a.json()).toMatchObject({
-        produto: { id: prod, nome: 'Shampoo Elseve 400 ml', marca: { chave: 'elseve', nome: 'Elseve' }, categoria: 'cuidados_pessoais', embalagem: { quantidade: 0.4, unidade: 'l' } },
+        produto: { id: prod, nome: 'Shampoo Elseve 400 ml', marca: { chave: 'elseve', nome: 'Elseve' }, categoria: 'mamae', embalagem: { quantidade: 0.4, unidade: 'l' } },
         avisos: AVISOS, criado_em: '2026-11-01T12:00:00.000Z', atualizado_em: '2026-11-01T12:00:00.000Z',
       });
       agora = new Date('2026-11-02T09:00:00Z');
@@ -243,7 +243,7 @@ executar('silenciamentos e seguidos (Postgres)', () => {
       await chamar('PUT', `/v1/seguidos/${primeiro}`, p.auth, { avisos: AVISOS });
       await pool.query(
         `INSERT INTO products (tenant_id, chave_hash, familia_chave, marca, nome, categoria, quantidade, unidade)
-         SELECT $1, gen_random_uuid()::text, gen_random_uuid()::text, 'M', 'Em massa ' || g, 'limpeza', 1, 'un' FROM generate_series(1, 99) g`,
+         SELECT $1, gen_random_uuid()::text, gen_random_uuid()::text, 'M', 'Em massa ' || g, 'infantil', 1, 'un' FROM generate_series(1, 99) g`,
         [tenantId],
       );
       await pool.query(

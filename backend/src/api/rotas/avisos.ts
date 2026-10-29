@@ -9,7 +9,7 @@ import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
 export const COLUNAS_AVISO = `av.id AS aviso_id, av.tipo, av.origem, av.criado_em, av.lido_em, av.alert_id, av.preco_centavos, av.queda, av.valida_ate,
-       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url,
+       p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
        s.id AS store_id, s.nome AS loja_nome, s.rede, s.tipo AS loja_tipo`;
 export const JUNCOES_AVISO = `FROM avisos av
        JOIN products p ON p.tenant_id = av.tenant_id AND p.id = av.product_id

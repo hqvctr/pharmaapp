@@ -25,6 +25,11 @@ export interface ConfigLomadee {
   maxPaginas: number;
   /** Categorias que não dizem nada sobre o produto (ex.: commerce_retail); ficam de fora na escolha da categoria. */
   categoriasGenericas: readonly string[];
+  /**
+   * Produto com várias variações (tamanho, cor) vira UMA oferta, a da variação disponível mais barata, com o nome do produto
+   * (sem o da variação) e sem EAN. Sem isto, cada variação é um produto à parte (3.858 produtos da UP Kids viram 25 mil).
+   */
+  colapsarOpcoes?: boolean;
 }
 
 interface Pagina {
@@ -57,7 +62,7 @@ export class LomadeeAdapter implements SourceAdapter {
           throw new Error(`Lomadee marca ${org} página ${pagina}: resposta fora do formato esperado`);
         }
         for (const [i, item] of corpo.data.entries()) {
-          const lido = parseProduto(item, this.config.categoriasGenericas);
+          const lido = parseProduto(item, this.config.categoriasGenericas, this.config.colapsarOpcoes === true);
           resultado.ofertas.push(...lido.ofertas);
           for (const erro of lido.erros) resultado.ilegiveis.push({ referencia: `marca ${org} página ${pagina} item ${i}`, erro });
         }
@@ -97,6 +102,19 @@ function escolherCategoria(produto: unknown, opcao: unknown, genericas: readonly
   return nomes.find((n) => !genericas.includes(n)) ?? nomes[0] ?? '';
 }
 
+/** Primeira foto https do produto ou da opção (a opção vale mais: é a variação que o preço descreve). */
+export function escolherImagem(produto: unknown, opcao: unknown): string | null {
+  for (const origem of [opcao, produto]) {
+    const imagens = (origem as { images?: unknown } | null)?.images;
+    if (!Array.isArray(imagens)) continue;
+    for (const i of imagens) {
+      const url = typeof i === 'string' ? i : (i as { url?: unknown } | null)?.url;
+      if (typeof url === 'string' && /^https:\/\/[^\s]+$/.test(url.trim()) && url.trim().length <= 2048) return url.trim();
+    }
+  }
+  return null;
+}
+
 function semHtml(html: unknown): string | null {
   if (typeof html !== 'string') return null;
   const t = html
@@ -114,6 +132,7 @@ function semHtml(html: unknown): string | null {
 export function parseProduto(
   item: unknown,
   categoriasGenericas: readonly string[] = CATEGORIAS_GENERICAS_PADRAO,
+  colapsarOpcoes = false,
 ): { ofertas: OfertaBruta[]; erros: string[] } {
   const ofertas: OfertaBruta[] = [];
   const erros: string[] = [];
@@ -126,7 +145,22 @@ export function parseProduto(
     const opcoes = p.options;
     if (!Array.isArray(opcoes) || opcoes.length === 0) throw new Error('campo options ausente ou vazio');
     const descricao = semHtml(p.description);
+    const colapsar = colapsarOpcoes && opcoes.length > 1;
+    let escolhida: number | null = null;
+    if (colapsar) {
+      // A variação disponível de menor preço representa o produto.
+      let menor = Infinity;
+      for (const [i, bruta] of opcoes.entries()) {
+        const o = bruta as Record<string, unknown>;
+        const preco = (Array.isArray(o.pricing) ? (o.pricing as Array<Record<string, unknown>>) : [])[0]?.price;
+        if (o.available === false || o.isAvailable === false || typeof preco !== 'number' || !(preco > 0) || preco >= menor) continue;
+        menor = preco;
+        escolhida = i;
+      }
+      if (escolhida === null) throw new Error('nenhuma opção disponível com preço válido');
+    }
     for (const [i, bruta] of opcoes.entries()) {
+      if (colapsar && i !== escolhida) continue;
       try {
         const o = bruta as Record<string, unknown>;
         const precos = Array.isArray(o.pricing) ? (o.pricing as Array<Record<string, unknown>>) : [];
@@ -137,16 +171,17 @@ export function parseProduto(
         const ean = typeof o.ean === 'string' && /^[0-9]{8,14}$/.test(o.ean.trim()) ? o.ean.trim() : null;
         const marcas = Array.isArray(o.brands) ? o.brands : [];
         ofertas.push({
-          idExterno: `${id}:${texto(o.id, 'options[].id')}`,
-          titulo: nomeOpcao !== '' && !nome.toLowerCase().includes(nomeOpcao.toLowerCase()) ? `${nome} ${nomeOpcao}` : nome,
+          idExterno: colapsar ? id : `${id}:${texto(o.id, 'options[].id')}`,
+          titulo: !colapsar && nomeOpcao !== '' && !nome.toLowerCase().includes(nomeOpcao.toLowerCase()) ? `${nome} ${nomeOpcao}` : nome,
           descricao,
-          gtin: ean,
+          gtin: colapsar ? null : ean,
           marca: nomeDe(marcas[0]),
           precoCentavos: Math.round(preco * 100),
           condicao: null,
           categoriaFonte: escolherCategoria(p.categories, o.categories, categoriasGenericas),
           lojaIdExterno: organizacao,
           link,
+          imagemUrl: escolherImagem(p, o),
           // O url do produto não é link rastreado (exige o encurtador).
           linkAfiliado: false,
           disponivel: p.available !== false && o.available !== false,
@@ -186,6 +221,7 @@ export const fabricaLomadee: FabricaFonte = {
         Array.isArray(config.categoriasGenericas) && config.categoriasGenericas.every((c) => typeof c === 'string')
           ? (config.categoriasGenericas as string[])
           : CATEGORIAS_GENERICAS_PADRAO,
+      colapsarOpcoes: config.colapsarOpcoes === true,
     });
   },
   httpGravado: (dir) => new HttpGravado(dir),

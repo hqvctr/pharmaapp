@@ -12,7 +12,7 @@ import type { DepsAuth } from './auth.js';
 const BOOLEANOS = ['promocao_excepcional', 'voltou_estoque', 'menor_preco_180d', 'promocao_acabando'] as const;
 
 const COLUNAS = `sg.promocao_excepcional, sg.queda_percentual, sg.voltou_estoque, sg.menor_preco_180d, sg.promocao_acabando, sg.criado_em, sg.atualizado_em, sg.id AS seguimento_id,
-                 p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url`;
+                 p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria`;
 const paraSeguimento = (r: any) => ({
   produto: produtoResumo(r),
   avisos: {

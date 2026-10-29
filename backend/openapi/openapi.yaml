@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: economae API (app)
-  version: 1.1.0
+  version: 1.2.0
   license:
     name: Proprietária
     identifier: LicenseRef-Proprietaria
@@ -1288,10 +1288,19 @@ components:
         url: { type: string, format: uri }
     Categoria:
       type: object
-      required: [slug, rotulo]
+      required: [slug, rotulo, subcategorias]
       properties:
         slug: { $ref: '#/components/schemas/Slug' }
-        rotulo: { type: string, example: Cuidados pessoais }
+        rotulo: { type: string, example: Bebê }
+        subcategorias:
+          description: Acréscimo da 1.2.0. Seções da categoria, na ordem em que o app mostra; vazio quando a categoria não se divide.
+          type: array
+          items:
+            type: object
+            required: [slug, rotulo]
+            properties:
+              slug: { $ref: '#/components/schemas/Slug' }
+              rotulo: { type: string, example: Fraldas }
     Regiao:
       type: object
       required: [cep_inicio, cep_fim]
@@ -1532,6 +1541,11 @@ components:
             - $ref: '#/components/schemas/Marca'
             - type: 'null'
         categoria: { $ref: '#/components/schemas/Slug' }
+        subcategoria:
+          description: Acréscimo da 1.2.0. Um dos `subcategorias` da categoria em `/v1/configuracao`; null = sem subcategoria.
+          oneOf:
+            - $ref: '#/components/schemas/Slug'
+            - type: 'null'
         gtin: { type: [string, 'null'], pattern: '^[0-9]{8,14}$' }
         embalagem: { $ref: '#/components/schemas/Embalagem' }
         imagem_url:
@@ -1988,8 +2002,12 @@ components:
         versao_minima: { android: 1.0.0, ios: null }
         metodos_login: [email, google]
         categorias:
-          - { slug: cuidados_pessoais, rotulo: Cuidados pessoais }
-          - { slug: higiene_bebe, rotulo: Higiene do bebê }
+          - slug: gestacao
+            rotulo: Gestação
+            subcategorias: [{ slug: enxoval, rotulo: Enxoval }, { slug: roupas, rotulo: Roupas }, { slug: cuidados, rotulo: Cuidados }]
+          - slug: bebe
+            rotulo: Bebê
+            subcategorias: [{ slug: fraldas, rotulo: Fraldas }, { slug: higiene, rotulo: Higiene }]
         regiao: { cep_inicio: '01000000', cep_fim: '19999999' }
         limites: { ceps_gratuito: 1, ceps_premium: 3, max_produtos_seguidos: 100, max_silenciamentos: 50, queda_percentual_min: 5, queda_percentual_max: 90, limite_diario_padrao: 3 }
         planos: []
@@ -2031,7 +2049,7 @@ components:
         assinatura: { plano: premium_mensal, status: ativa, loja: google_play, iniciada_em: '2026-10-27T15:10:00Z', expira_em: '2026-11-27T15:10:00Z' }
     Preferencias:
       value:
-        categorias: [cuidados_pessoais, higiene_bebe]
+        categorias: [mamae, bebe]
         ceps: ['14020260']
         silencio: { inicio: '22:00', fim: '07:00' }
         limite_diario: 3
@@ -2054,7 +2072,7 @@ components:
               id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
               nome: Shampoo Elseve Hidra Hialurônico 400 ml
               marca: { chave: elseve, nome: Elseve }
-              categoria: cuidados_pessoais
+              categoria: mamae
               gtin: null
               embalagem: { quantidade: 0.4, unidade: l }
             loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
@@ -2085,7 +2103,7 @@ components:
           id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
           nome: Shampoo Elseve Hidra Hialurônico 400 ml
           marca: { chave: elseve, nome: Elseve }
-          categoria: cuidados_pessoais
+          categoria: mamae
           gtin: null
           embalagem: { quantidade: 0.4, unidade: l }
         loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
@@ -2117,7 +2135,7 @@ components:
           - id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
             nome: Shampoo Elseve Hidra Hialurônico 400 ml
             marca: { chave: elseve, nome: Elseve }
-            categoria: cuidados_pessoais
+            categoria: mamae
             gtin: null
             embalagem: { quantidade: 0.4, unidade: l }
             menor_preco_centavos: 1990
@@ -2128,7 +2146,7 @@ components:
         id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
         nome: Shampoo Elseve Hidra Hialurônico 400 ml
         marca: { chave: elseve, nome: Elseve }
-        categoria: cuidados_pessoais
+        categoria: mamae
         gtin: null
         embalagem: { quantidade: 0.4, unidade: l }
         ofertas:
@@ -2164,7 +2182,7 @@ components:
           id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
           nome: Shampoo Elseve Hidra Hialurônico 400 ml
           marca: { chave: elseve, nome: Elseve }
-          categoria: cuidados_pessoais
+          categoria: mamae
           gtin: null
           embalagem: { quantidade: 0.4, unidade: l }
         avisos: { promocao_excepcional: true, queda_percentual: 20, voltou_estoque: true, menor_preco_180d: false, promocao_acabando: false }
@@ -2177,7 +2195,7 @@ components:
               id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
               nome: Shampoo Elseve Hidra Hialurônico 400 ml
               marca: { chave: elseve, nome: Elseve }
-              categoria: cuidados_pessoais
+              categoria: mamae
               gtin: null
               embalagem: { quantidade: 0.4, unidade: l }
             avisos: { promocao_excepcional: true, queda_percentual: 20, voltou_estoque: true, menor_preco_180d: false, promocao_acabando: false }
@@ -2196,7 +2214,7 @@ components:
               id: 9c2d5e3f-4b6a-4f7c-9d0e-1f2a3b4c5d6e
               nome: Shampoo Elseve Hidra Hialurônico 400 ml
               marca: { chave: elseve, nome: Elseve }
-              categoria: cuidados_pessoais
+              categoria: mamae
               gtin: null
               embalagem: { quantidade: 0.4, unidade: l }
             loja: { id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e, nome: Drogasil, rede: Drogasil, tipo: online }
@@ -2220,7 +2238,7 @@ components:
           notificacoes_consentidas_em: '2026-10-27T13:58:10Z'
           plano: { tipo: gratuito, anuncios: true, ceps_permitidos: 1, assinatura: null }
           criado_em: '2026-10-27T13:57:40Z'
-        preferencias: { categorias: [cuidados_pessoais], ceps: ['14020260'], silencio: null, limite_diario: null }
+        preferencias: { categorias: [mamae], ceps: ['14020260'], silencio: null, limite_diario: null }
         silenciamentos: []
         seguidos: []
         avisos: []

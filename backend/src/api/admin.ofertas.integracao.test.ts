@@ -101,7 +101,7 @@ executar('admin: ofertas manuais, produtos e auditoria (Postgres)', () => {
   describe('produtos', () => {
     it('acha por nome, marca e GTIN, sem acento nem caixa, só do tenant e só o que o app oferece', async () => {
       const op = await t.operador();
-      const shampoo = await t.produto({ nome: 'Shampoo Hidratação Profunda 400 ml', marca: 'Elseve', marcaChave: 'elseve', categoria: 'cuidados_pessoais', gtin: '7891234567895' });
+      const shampoo = await t.produto({ nome: 'Shampoo Hidratação Profunda 400 ml', marca: 'Elseve', marcaChave: 'elseve', categoria: 'mamae', gtin: '7891234567895' });
       await t.produto({ nome: 'Shampoo Hidratação do Outro', t: e.outroTenantId });
       await t.produto({ nome: 'Shampoo Remédio', categoria: 'medicamento', marcaChave: 'rem', marca: 'Rem' });
       for (const q of ['hidratacao profunda', 'ELSEVE', 'sham', '7891234567895']) {
@@ -113,7 +113,7 @@ executar('admin: ofertas manuais, produtos e auditoria (Postgres)', () => {
       expect(r.json().itens.map((i: { nome: string }) => i.nome)).not.toContain('Shampoo Hidratação do Outro');
       expect(r.json().itens.map((i: { nome: string }) => i.nome)).not.toContain('Shampoo Remédio');
       expect(r.json().itens.find((i: { id: string }) => i.id === shampoo)).toEqual({
-        id: shampoo, nome: 'Shampoo Hidratação Profunda 400 ml', marca: { chave: 'elseve', nome: 'Elseve' }, categoria: 'cuidados_pessoais', gtin: '7891234567895', embalagem: { quantidade: 60, unidade: 'un' }, imagem_url: null,
+        id: shampoo, nome: 'Shampoo Hidratação Profunda 400 ml', marca: { chave: 'elseve', nome: 'Elseve' }, categoria: 'mamae', subcategoria: null, gtin: '7891234567895', embalagem: { quantidade: 60, unidade: 'un' }, imagem_url: null,
       });
       expect(ids(await t.chamar('GET', '/v1/admin/produtos?q=7891234567895', op.auth))).toEqual([shampoo]);
     });

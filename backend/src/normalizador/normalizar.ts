@@ -11,6 +11,7 @@ import {
   type ModoMedicamentos,
   type TriagemPorNome,
 } from './medicamentos.js';
+import { categorizar, type RegrasCategorizacao } from './categorizar.js';
 import { triarNbcal, type CodigoAdvertenciaNbcal, type RegrasNbcal } from './nbcal.js';
 
 export interface ConfigNormalizacao {
@@ -20,6 +21,8 @@ export interface ConfigNormalizacao {
   modoMedicamentos: ModoMedicamentos;
   triagemPorNome: TriagemPorNome;
   nbcal: RegrasNbcal;
+  /** Categorização por texto, categoria da fonte e marca. Sem isto vale só `mapaCategorias` (comportamento antigo). */
+  categorizacao?: RegrasCategorizacao;
   /**
    * Códigos de bloqueio que um operador liberou para ESTA oferta (admin: triagem `liberado`, D20). Só valem os que a triagem
    * permite liberar (cautela da NBCAL e filtro de texto de medicamento); um código vedado ou de GTIN da CMED aqui é ignorado.
@@ -39,6 +42,10 @@ export interface ProdutoNormalizado {
   marca: string | null;
   nome: string;
   categoria: string;
+  /** Subcategoria dentro da categoria do app; null quando a regra não define. */
+  subcategoria: string | null;
+  /** Foto na loja (https) ou null. */
+  imagemUrl: string | null;
   embalagem: Embalagem;
   ehMedicamento: boolean;
   /** Advertências do Decreto 9.579/2018, art. 6º; vazio = livre. */
@@ -59,7 +66,15 @@ export function normalizarOferta(
   listas: ListasMedicamentos,
   config: ConfigNormalizacao,
 ): ResultadoNormalizacao {
-  const categoriaMapeada = config.mapaCategorias[normalizarTexto(bruta.categoriaFonte)];
+  const daFonte = config.mapaCategorias[normalizarTexto(bruta.categoriaFonte)];
+  // Medicamento continua decidido pelo mapa da fonte (a triagem precisa dele); o resto, pela categorização quando ela existe.
+  let categoriaMapeada = daFonte;
+  let subcategoria: string | null = null;
+  if (daFonte !== config.categoriaMedicamentos && config.categorizacao !== undefined) {
+    const c = categorizar(bruta, config.categorizacao);
+    categoriaMapeada = c?.categoria;
+    subcategoria = c?.subcategoria ?? null;
+  }
   // A triagem roda antes do descarte por categoria: um remédio controlado numa categoria
   // não mapeada também precisa ficar registrado.
   const triagem = triarMedicamento(
@@ -111,6 +126,8 @@ export function normalizarOferta(
       nome: bruta.titulo,
       // Liberado pelo operador: vale a categoria da fonte. Se ela for a de medicamentos, o produto continua tratado como medicamento.
       categoria: triagem.liberado ? triagem.categoria : (categoriaMapeada ?? ''),
+      subcategoria,
+      imagemUrl: bruta.imagemUrl ?? null,
       embalagem,
       ehMedicamento: triagem.liberado ? triagem.ehMedicamento : categoriaMapeada === config.categoriaMedicamentos,
       advertencias: nbcal.tipo === 'advertencia' ? nbcal.advertencias : [],

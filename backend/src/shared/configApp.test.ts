@@ -22,6 +22,19 @@ describe('config do app (bloco `app` do tenant)', () => {
     expect(app.operador.refreshDias).toBe(7); // D3
   });
 
+  it('as quatro categorias do app, com as subcategorias, na ordem do KV', async () => {
+    const app = (await carregarConfigTenant('padrao')).app;
+    expect(app.categorias.map((c) => c.slug)).toEqual(['gestacao', 'mamae', 'bebe', 'infantil']);
+    expect(app.categorias.find((c) => c.slug === 'bebe')!.subcategorias.map((s) => s.slug)).toContain('fraldas');
+  });
+
+  it('subcategoria repetida, sem rótulo ou fora de lista é recusada; categoria sem subcategorias vale', async () => {
+    expect(await validar((a) => a.categorias[0].subcategorias.push({ ...a.categorias[0].subcategorias[0] }))).toThrow(/subcategorias\[3\]\.slug/);
+    expect(await validar((a) => a.categorias[0].subcategorias.push({ slug: 'nova', rotulo: '' }))).toThrow(/rotulo/);
+    expect(await validar((a) => { a.categorias[0].subcategorias = 'x'; })).toThrow(/categorias\[0\]\.subcategorias/);
+    expect(await validar((a) => { delete a.categorias[0].subcategorias; })).not.toThrow();
+  });
+
   it('categoria de medicamento no app é recusada', async () => {
     const v = await validar((a) => a.categorias.push({ slug: 'medicamentos_isentos', rotulo: 'Remédios' }));
     expect(v).toThrow(/medicamento fica fora do app/);

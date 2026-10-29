@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { HttpGravado } from './gravacoes.js';
-import { fabricaLomadee, LomadeeAdapter, parseProduto } from './lomadee.js';
+import { escolherImagem, fabricaLomadee, LomadeeAdapter, parseProduto } from './lomadee.js';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const config = { baseUrl: 'https://api.exemplo.test/', organizacoes: ['9001', '9002'], tamanhoPagina: 100, maxPaginas: 20, categoriasGenericas: ['commerce_retail', 'industry_production'] };
@@ -143,5 +143,63 @@ describe('fábrica da Lomadee', () => {
   it('limita o tamanho de página a 100 (regra da API)', () => {
     const http = { get: async () => ({ data: [] }) };
     expect(() => fabricaLomadee.criar({ http, config: { baseUrl: 'https://x.test/', tamanhoPagina: 101, maxPaginas: 5 }, credenciais: {}, lojas: [] })).toThrow(/tamanhoPagina/);
+  });
+});
+
+describe('foto e variações (Lomadee)', () => {
+  it('escolherImagem: a da opção vale mais; só https, sem espaço e até 2048 caracteres', () => {
+    expect(escolherImagem({ images: [{ url: 'https://a.test/p.jpg' }] }, { images: [{ url: 'https://a.test/o.jpg' }] })).toBe('https://a.test/o.jpg');
+    expect(escolherImagem({ images: [{ url: 'https://a.test/p.jpg' }] }, { images: [] })).toBe('https://a.test/p.jpg');
+    expect(escolherImagem({ images: [{ url: 'http://a.test/p.jpg' }, { url: 'https://a.test/b c.jpg' }, { url: 'https://a.test/ok.jpg' }] }, {})).toBe('https://a.test/ok.jpg');
+    expect(escolherImagem({ images: [{ url: `https://a.test/${'x'.repeat(2048)}` }] }, {})).toBeNull();
+    expect(escolherImagem({ images: ['https://a.test/s.jpg'] }, null)).toBe('https://a.test/s.jpg');
+    expect(escolherImagem({}, {})).toBeNull();
+  });
+
+  it('a foto do produto vai para a oferta', () => {
+    const r = parseProduto(produto({ images: [{ url: 'https://a.test/p.jpg' }] }));
+    expect(r.ofertas[0]!.imagemUrl).toBe('https://a.test/p.jpg');
+    expect(parseProduto(produto()).ofertas[0]!.imagemUrl).toBeNull();
+  });
+
+  const variacoes = () => produto({ id: 'v1', name: 'Body Bebê' }, [
+    opcao({ id: 'a', name: 'P', pricing: [{ price: 50 }] }),
+    opcao({ id: 'b', name: 'M', pricing: [{ price: 39.9 }], images: [{ url: 'https://a.test/m.jpg' }] }),
+    opcao({ id: 'c', name: 'G', pricing: [{ price: 29.9 }], available: false }),
+    opcao({ id: 'd', name: 'GG', pricing: [{ price: 0 }] }),
+  ]);
+
+  it('sem colapsar: uma oferta por variação, como antes', () => {
+    const r = parseProduto(variacoes());
+    expect(r.ofertas.map((x) => x.idExterno)).toEqual(['v1:a', 'v1:b', 'v1:c']);
+    expect(r.erros).toHaveLength(1);
+  });
+
+  it('colapsando: uma oferta, a da variação disponível mais barata, com o nome do produto, o id do produto e sem EAN', () => {
+    const r = parseProduto(variacoes(), undefined, true);
+    expect(r.erros).toEqual([]);
+    expect(r.ofertas).toHaveLength(1);
+    expect(r.ofertas[0]).toMatchObject({ idExterno: 'v1', titulo: 'Body Bebê', precoCentavos: 3990, gtin: null, imagemUrl: 'https://a.test/m.jpg' });
+  });
+
+  it('colapsando, produto de uma opção só segue o caminho normal (id composto e EAN)', () => {
+    const r = parseProduto(produto(), undefined, true);
+    expect(r.ofertas[0]).toMatchObject({ idExterno: 'p1:o1', gtin: '7891234567895' });
+  });
+
+  it('colapsando sem nenhuma variação disponível e com preço válido: erro, nenhuma oferta', () => {
+    const r = parseProduto(produto({}, [opcao({ id: 'a', available: false }), opcao({ id: 'b', pricing: [{ price: -1 }] })]), undefined, true);
+    expect(r.ofertas).toEqual([]);
+    expect(r.erros).toEqual(['nenhuma opção disponível com preço válido']);
+  });
+
+  it('a fábrica liga o colapso só com colapsarOpcoes === true', () => {
+    const http = { get: async () => ({ data: [variacoes()] }) };
+    const cria = (extra: Record<string, unknown>) => fabricaLomadee.criar({ http, config: { baseUrl: 'https://x.test/', tamanhoPagina: 100, maxPaginas: 1, ...extra }, lojas: ['org-1'] } as never);
+    return Promise.all([cria({ colapsarOpcoes: true }).coletar(), cria({ colapsarOpcoes: 'sim' }).coletar(), cria({}).coletar()]).then(([a, b, c]) => {
+      expect(a.ofertas).toHaveLength(1);
+      expect(b.ofertas).toHaveLength(3);
+      expect(c.ofertas).toHaveLength(3);
+    });
   });
 });

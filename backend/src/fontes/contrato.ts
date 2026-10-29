@@ -16,6 +16,8 @@ export interface OfertaBruta {
   categoriaFonte: string;
   lojaIdExterno: string;
   link: string;
+  /** Foto do produto na loja (https). A fonte aponta; o app mostra direto dela, sem copiar o arquivo. */
+  imagemUrl?: string | null;
   linkAfiliado: boolean;
   disponivel: boolean;
   validaDe: Date | null;

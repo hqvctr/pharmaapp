@@ -25,7 +25,7 @@ const produto = (p: Partial<ProdutoEmTriagem>): ProdutoEmTriagem => ({
   gtin: null,
   titulo: 'Produto',
   descricao: null,
-  categoria: 'cuidados_pessoais',
+  categoria: 'mamae',
   condicao: null,
   ...p,
 });
@@ -53,7 +53,7 @@ describe('triagem de medicamento', () => {
   });
 
   it('medicamento isento vindo em outra categoria é recategorizado', () => {
-    const r = triarMedicamento(produto({ gtin: '7891000000011', categoria: 'cuidados_pessoais' }), listas, CAT);
+    const r = triarMedicamento(produto({ gtin: '7891000000011', categoria: 'mamae' }), listas, CAT);
     expect(r).toEqual({ liberado: true, ehMedicamento: true, categoria: CAT });
   });
 

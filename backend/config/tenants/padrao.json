@@ -22,7 +22,11 @@
       "higiene_bebe":          { "limiarQueda": 0.25, "perecivel": false },
       "limpeza":               { "limiarQueda": 0.25, "perecivel": false },
       "cuidados_pessoais":     { "limiarQueda": 0.25, "perecivel": false },
-      "medicamentos_isentos":  { "limiarQueda": 0.25, "perecivel": false }
+      "medicamentos_isentos":  { "limiarQueda": 0.25, "perecivel": false },
+      "gestacao":              { "limiarQueda": 0.25, "perecivel": false },
+      "mamae":                 { "limiarQueda": 0.25, "perecivel": false },
+      "bebe":                  { "limiarQueda": 0.25, "perecivel": false },
+      "infantil":              { "limiarQueda": 0.25, "perecivel": false }
     }
   },
   "deduplicacao": {
@@ -207,18 +211,49 @@
       "intervaloMs": 1100,
       "dominiosLinkRastreado": ["lmdee.link"],
       "canalId": "7633b2c1-98a7-45c9-adea-e529dc67cc87",
+      "colapsarOpcoes": true,
       "marcasPermitidasParaLink": {
         "d855f505-7e26-4961-a182-c2139aeadd2c": "Drogasmil",
-        "6d69265c-6b83-4ff4-916f-95a75057947d": "PromoFarma"
+        "6d69265c-6b83-4ff4-916f-95a75057947d": "PromoFarma",
+        "6877a08a-be27-4b5d-844e-db4689a58256": "UP Kids",
+        "d9a040f8-bb54-40d2-804b-150f007305d0": "Toymania",
+        "9b4047d8-7011-4264-8144-d43fd0fb1f77": "LITTLE DUCK",
+        "b08af64e-f7bd-434c-b0ac-6baec265f9fc": "BabyStock",
+        "9aad28fe-dddf-4b4e-81c7-cdfaf5f00ee7": "Ortope"
       },
       "categoriasGenericas": ["commerce_retail", "industry_production", "services"],
       "mapaCategorias": {
         "medicines": "medicamentos_isentos",
-        "pharmacy": "medicamentos_isentos",
-        "hygiene": "cuidados_pessoais",
-        "health_beauty": "cuidados_pessoais",
-        "cosmetics": "cuidados_pessoais",
-        "food_beverages": "mercearia"
+        "pharmacy": "medicamentos_isentos"
+      },
+      "categorizacao": {
+        "regrasTexto": [
+          { "categoria": "bebe", "subcategoria": "fraldas", "termos": ["fralda*"] },
+          { "categoria": "bebe", "subcategoria": "higiene", "termos": ["lenco umedecido", "lencos umedecidos", "lencinho umedecido", "lencinhos umedecidos", "toalha umedecida", "toalhas umedecidas", "assadura*", "banheira*", "trocador*", "shampoo infantil", "shampoo baby", "sabonete infantil", "sabonete baby", "hidratante infantil", "hidratante baby", "condicionador infantil"] },
+          { "categoria": "bebe", "subcategoria": "alimentacao", "termos": ["papinha*", "mamadeira*", "chupeta*", "babador*", "prato infantil", "copo infantil", "copo de treinamento", "cadeirao", "cadeira de alimentacao", "cereal infantil", "esterilizador*"] },
+          { "categoria": "bebe", "subcategoria": "passeio", "termos": ["carrinho de bebe", "carrinho para bebe", "carrinho de passeio", "bebe conforto", "cadeirinha para auto", "cadeira para auto", "moises", "sling", "canguru", "andador*"] },
+          { "categoria": "bebe", "subcategoria": "quarto", "termos": ["berco*", "cercadinho*", "comoda*", "ninho para bebe", "mobile para berco"] },
+          { "categoria": "gestacao", "subcategoria": "enxoval", "termos": ["bolsa maternidade", "kit maternidade", "saida de maternidade", "mala maternidade"] },
+          { "categoria": "gestacao", "subcategoria": "roupas", "termos": ["gestante*"] },
+          { "categoria": "gestacao", "subcategoria": "cuidados", "termos": ["gestacao", "gravida*", "prenatal", "pre natal", "pre-natal", "anti estria*", "antiestria*", "teste de gravidez"] },
+          { "categoria": "mamae", "subcategoria": "amamentacao", "termos": ["amamentacao", "tira leite", "bomba de leite", "protetor de seio", "protetor de mamilo", "protetores de mamilo", "protetor mamilar", "absorvente de seio", "conchas de amamentacao", "lanolina"] },
+          { "categoria": "mamae", "subcategoria": "pos_parto", "termos": ["pos parto", "pos-parto", "puerperio", "cinta pos"] },
+          { "categoria": "bebe", "subcategoria": "roupas", "termos": ["bebe", "baby", "recem nascido", "body*", "macaquinho*"], "fonte": ["kids_clothing"] },
+          { "categoria": "infantil", "subcategoria": "calcados", "termos": ["calcado*", "tenis", "sandalia*", "sapatilha*", "chinelo*", "bota*"], "fonte": ["kids_clothing", "fashion_accessories"] },
+          { "categoria": "infantil", "subcategoria": "brinquedos", "termos": ["brinquedo*", "boneca*", "quebra cabeca*", "quebra-cabeca*", "lego", "pelucia*", "hot wheels", "barbie", "massinha", "blocos de montar", "carrinho de brinquedo"] }
+        ],
+        "porCategoriaFonte": {
+          "kids_clothing": { "categoria": "infantil", "subcategoria": "roupas" },
+          "games_hobby": { "categoria": "infantil", "subcategoria": "brinquedos" },
+          "toys": { "categoria": "infantil", "subcategoria": "brinquedos" },
+          "toys_games": { "categoria": "infantil", "subcategoria": "brinquedos" }
+        },
+        "porMarca": {
+          "d9a040f8-bb54-40d2-804b-150f007305d0": { "categoria": "infantil", "subcategoria": "brinquedos" },
+          "9b4047d8-7011-4264-8144-d43fd0fb1f77": { "categoria": "infantil", "subcategoria": "quarto" },
+          "b08af64e-f7bd-434c-b0ac-6baec265f9fc": { "categoria": "bebe" },
+          "9aad28fe-dddf-4b4e-81c7-cdfaf5f00ee7": { "categoria": "infantil", "subcategoria": "calcados" }
+        }
       }
     }
   },
@@ -237,13 +272,42 @@
     "operador": { "refreshDias": 7 },
     "ofertaManual": { "validadePadraoDias": 7 },
     "categorias": [
-      { "slug": "higiene_bebe", "rotulo": "Higiene do bebê" },
-      { "slug": "cuidados_pessoais", "rotulo": "Cuidados pessoais" },
-      { "slug": "higiene_intima", "rotulo": "Higiene íntima" },
-      { "slug": "maquiagem", "rotulo": "Maquiagem" },
-      { "slug": "limpeza", "rotulo": "Limpeza" },
-      { "slug": "mercearia", "rotulo": "Mercearia" },
-      { "slug": "pereciveis", "rotulo": "Perecíveis" }
+      {
+        "slug": "gestacao", "rotulo": "Gestação",
+        "subcategorias": [
+          { "slug": "roupas", "rotulo": "Roupas" },
+          { "slug": "cuidados", "rotulo": "Cuidados" },
+          { "slug": "enxoval", "rotulo": "Enxoval e maternidade" }
+        ]
+      },
+      {
+        "slug": "mamae", "rotulo": "Mamãe",
+        "subcategorias": [
+          { "slug": "amamentacao", "rotulo": "Amamentação" },
+          { "slug": "pos_parto", "rotulo": "Pós-parto" },
+          { "slug": "cuidados", "rotulo": "Cuidados" }
+        ]
+      },
+      {
+        "slug": "bebe", "rotulo": "Bebê",
+        "subcategorias": [
+          { "slug": "fraldas", "rotulo": "Fraldas" },
+          { "slug": "higiene", "rotulo": "Higiene" },
+          { "slug": "alimentacao", "rotulo": "Alimentação" },
+          { "slug": "passeio", "rotulo": "Passeio" },
+          { "slug": "quarto", "rotulo": "Quarto" },
+          { "slug": "roupas", "rotulo": "Roupas" }
+        ]
+      },
+      {
+        "slug": "infantil", "rotulo": "Infantil",
+        "subcategorias": [
+          { "slug": "brinquedos", "rotulo": "Brinquedos" },
+          { "slug": "roupas", "rotulo": "Roupas" },
+          { "slug": "calcados", "rotulo": "Calçados" },
+          { "slug": "quarto", "rotulo": "Quarto" }
+        ]
+      }
     ],
     "regiao": { "cepInicio": "01000000", "cepFim": "19999999" },
     "limites": {

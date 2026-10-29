@@ -11,6 +11,7 @@ const tenant = await carregarConfigTenant('padrao');
 const listas = await carregarListasMedicamentos(path.join(RAIZ, 'fixtures/medicamentos/listas_teste.json'));
 const config: ConfigNormalizacao = {
   mapaCategorias: tenant.fontes['lomadee']!.mapaCategorias,
+  categorizacao: tenant.fontes['lomadee']!.categorizacao,
   categoriaMedicamentos: tenant.medicamentos.categoria,
   modoMedicamentos: tenant.medicamentos.modo,
   triagemPorNome: tenant.medicamentos.triagemPorNome,
@@ -100,7 +101,7 @@ describe('liberação do operador (D20)', () => {
   });
 
   it('filtro de texto de medicamento liberado passa, na categoria da fonte, e não como medicamento', () => {
-    const r = normalizarOferta(oferta({ titulo: 'Shampoo tarja preta' }), listas, liberando('TERMO_DE_VENDA_CONTROLADA'));
+    const r = normalizarOferta(oferta({ titulo: 'Shampoo infantil tarja preta' }), listas, liberando('TERMO_DE_VENDA_CONTROLADA'));
     expect(r.tipo).toBe('ok');
     if (r.tipo === 'ok') expect(r.produto.ehMedicamento).toBe(false);
   });
@@ -139,3 +140,27 @@ describe('liberação do operador (D20)', () => {
   });
 });
 
+
+describe('categoria e subcategoria do app', () => {
+  it('o título decide a categoria e a subcategoria, e a foto da oferta segue no produto', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Fralda Pampers G 60 Unidades', categoriaFonte: 'health_beauty', imagemUrl: 'https://img.exemplo.test/f.jpg' }), listas, config);
+    expect(r).toMatchObject({ tipo: 'ok', produto: { categoria: 'bebe', subcategoria: 'fraldas', imagemUrl: 'https://img.exemplo.test/f.jpg' } });
+  });
+
+  it('sem foto, imagemUrl é null; sem subcategoria da regra, subcategoria é null', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Fralda X G 40 Unidades', categoriaFonte: 'x', lojaIdExterno: 'b08af64e-f7bd-434c-b0ac-6baec265f9fc' }), listas, config);
+    expect(r).toMatchObject({ tipo: 'ok', produto: { imagemUrl: null } });
+    const marca = normalizarOferta(oferta({ titulo: 'Coisa sem regra', categoriaFonte: 'x', lojaIdExterno: 'b08af64e-f7bd-434c-b0ac-6baec265f9fc' }), listas, config);
+    expect(marca).toMatchObject({ tipo: 'ok', produto: { categoria: 'bebe', subcategoria: null } });
+  });
+
+  it('oferta que nenhuma regra reconhece fica de fora', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Furadeira 500W', categoriaFonte: 'tools', lojaIdExterno: 'qualquer' }), listas, config);
+    expect(r).toMatchObject({ tipo: 'categoria_ignorada', categoriaFonte: 'tools' });
+  });
+
+  it('medicamento não passa pela categorização do app: usa a categoria da fonte', () => {
+    const r = normalizarOferta(oferta({ titulo: 'Dipirona 500mg', categoriaFonte: 'medicines' }), listas, config);
+    expect(r.tipo === 'ok' ? r.produto.categoria : r.tipo).not.toBe('bebe');
+  });
+});

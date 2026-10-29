@@ -66,7 +66,7 @@ executar('prova do alerta pelo pipeline (Postgres)', () => {
     const adapter: SourceAdapter = { tipo: 'A', coletar: async () => ({ ofertas: [oferta], ilegiveis: [] }) };
     return executarColeta({
       pool, tenantId, fonte: c.fonte, lojas: await buscarLojasDaFonte(pool, tenantId, c.fonte.id), adapter, config,
-      mapaCategorias: { hygiene: 'cuidados_pessoais' }, listas, agora, log: () => {},
+      mapaCategorias: { hygiene: 'mamae' }, listas, agora, log: () => {},
     });
   }
 

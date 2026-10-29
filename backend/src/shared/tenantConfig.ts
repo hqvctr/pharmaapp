@@ -10,6 +10,7 @@ import {
 } from '../curadoria/config.js';
 import type { ConfigDeduplicacao } from '../avaliador/deduplicacao.js';
 import { compilarTriagemPorNome, normalizarTexto, type ModoMedicamentos, type TriagemPorNome } from '../normalizador/medicamentos.js';
+import { validarCategorizacao, type RegrasCategorizacao } from '../normalizador/categorizar.js';
 import { compilarRegrasNbcal, type RegrasNbcal } from '../normalizador/nbcal.js';
 import { validarConfigApp, type ConfigApp } from './configApp.js';
 
@@ -23,6 +24,8 @@ export interface ConfigFonte {
   adaptador: string;
   /** Categoria da fonte (normalizada) → categoria do app. Fora do mapa: ignorada. */
   mapaCategorias: Record<string, string>;
+  /** Regras de categoria e subcategoria do app (texto do título, categoria da fonte, marca). */
+  categorizacao?: RegrasCategorizacao;
   [campo: string]: unknown;
 }
 
@@ -54,6 +57,8 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
   }
   const triagemPorNome = compilarTriagemPorNome(bruto.medicamentos.triagemPorNome);
   const curadoria = validarConfigCuradoria(bruto.curadoria);
+  const app = validarConfigApp(bruto.app, curadoria, bruto.medicamentos.categoria);
+  const categoriasDoApp = new Map(app.categorias.map((c) => [c.slug, new Set(c.subcategorias.map((x) => x.slug))] as const));
   const fontes: Record<string, ConfigFonte> = {};
   for (const [nome, bloco] of Object.entries((bruto.fontes ?? {}) as Record<string, Record<string, unknown>>)) {
     if (!/^[a-z0-9-]+$/.test(nome)) throw new Error(`Config inválida: nome de fonte "${nome}"`);
@@ -64,6 +69,7 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
     fontes[nome] = {
       ...bloco,
       adaptador,
+      ...(bloco.categorizacao !== undefined ? { categorizacao: validarCategorizacao(bloco.categorizacao, `fontes.${nome}.categorizacao`, categoriasDoApp) } : {}),
       mapaCategorias: Object.fromEntries(
         Object.entries(mapa).map(([k, v]) => {
           if (curadoria.categorias[v] === undefined) throw new Error(`Config inválida: categoria "${v}" não existe em curadoria`);
@@ -81,6 +87,6 @@ export async function carregarConfigTenant(slug: string, dir: string = DIR_CONFI
     medicamentos: { ...bruto.medicamentos, triagemPorNome },
     nbcal: compilarRegrasNbcal(bruto.nbcal),
     fontes,
-    app: validarConfigApp(bruto.app, curadoria, bruto.medicamentos.categoria),
+    app,
   };
 }

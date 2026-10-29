@@ -240,7 +240,7 @@ executar('admin: denúncias e triagem (Postgres)', () => {
       });
       const rodar = async () => {
         const adapter: SourceAdapter = { tipo: 'A', coletar: async () => ({ ofertas: [oferta('TEXTO', 'Shampoo Liberavel tarja preta 400 ml'), oferta('VEDADO', 'Mamadeira Vedada 240ml tarja preta'), oferta('OUTRO', 'Sabonete Outro tarja preta 90 g')], ilegiveis: [] }) };
-        return executarColeta({ pool: e.pool, tenantId: e.tenantId, fonte, lojas: await buscarLojasDaFonte(e.pool, e.tenantId, fonte.id), adapter, config, mapaCategorias: { hygiene: 'cuidados_pessoais' }, listas, agora: e.agora, log: () => {} });
+        return executarColeta({ pool: e.pool, tenantId: e.tenantId, fonte, lojas: await buscarLojasDaFonte(e.pool, e.tenantId, fonte.id), adapter, config, mapaCategorias: { hygiene: 'mamae' }, listas, agora: e.agora, log: () => {} });
       };
       const produtos = async () => (await e.pool.query(`SELECT p.nome FROM offers o JOIN products p ON p.id = o.product_id WHERE o.source_id = $1 ORDER BY p.nome`, [fonte.id])).rows.map((r) => r.nome);
       expect((await rodar()).bloqueadas).toBe(3);

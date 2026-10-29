@@ -108,7 +108,7 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       await pool.query(
         `INSERT INTO products (tenant_id, chave_hash, familia_chave, marca, marca_chave, nome, categoria, quantidade, unidade, advertencias)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::text[]) RETURNING id`,
-        [o.t ?? tenantId, randomUUID(), randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Fralda Pampers G 60 un', o.categoria ?? 'higiene_bebe', o.quantidade ?? 60, o.unidade ?? 'un', o.advertencias ?? []],
+        [o.t ?? tenantId, randomUUID(), randomUUID(), o.marca ?? 'Pampers', o.marcaChave === undefined ? 'pampers' : o.marcaChave, o.nome ?? 'Fralda Pampers G 60 un', o.categoria ?? 'bebe', o.quantidade ?? 60, o.unidade ?? 'un', o.advertencias ?? []],
       )
     ).rows[0].id;
   }
@@ -152,7 +152,7 @@ executar('feed, detalhe e eventos (Postgres)', () => {
         [tenantId, `p${seq}@exemplo.com`, o.termos === false ? null : VIGENTE, o.termos === false ? null : agora],
       )
     ).rows[0].id as string;
-    await pool.query(`INSERT INTO user_preferences (user_id, tenant_id, categorias, ceps) VALUES ($1,$2,$3::text[],$4::char(8)[])`, [userId, tenantId, o.categorias ?? ['higiene_bebe'], o.ceps ?? ['14020260']]);
+    await pool.query(`INSERT INTO user_preferences (user_id, tenant_id, categorias, ceps) VALUES ($1,$2,$3::text[],$4::char(8)[])`, [userId, tenantId, o.categorias ?? ['bebe'], o.ceps ?? ['14020260']]);
     if (o.premium) await pool.query(`INSERT INTO subscriptions (tenant_id, user_id, plano, status, origem, iniciada_em, expira_em) VALUES ($1,$2,'premium_mensal','ativa','google_play',$3,$4)`, [tenantId, userId, new Date('2026-10-30T00:00:00Z'), new Date('2026-12-30T00:00:00Z')]);
     return { userId, auth: await reabrir(userId) };
   }
@@ -180,7 +180,7 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       const a = r.json().itens.find((i: { id: string }) => i.id === alerta);
       expect(a).toMatchObject({
         destaque: true, situacao: 'ativa', preco_centavos: 5990, rotulo_condicao: 'leve 3 pague 2', sem_historico_verificado: false, seguido: false,
-        produto: { id: produto, nome: 'Fralda Pampers G 60 un', marca: { chave: 'pampers', nome: 'Pampers' }, categoria: 'higiene_bebe', embalagem: { quantidade: 60, unidade: 'un' }, imagem_url: null },
+        produto: { id: produto, nome: 'Fralda Pampers G 60 un', marca: { chave: 'pampers', nome: 'Pampers' }, categoria: 'bebe', embalagem: { quantidade: 60, unidade: 'un' }, imagem_url: null },
         loja: { id: loja, nome: 'Drogasmil (online)', rede: 'Drogasmil', tipo: 'online' },
         cobertura: { modo: 'entrega_por_cep', cep: '14020260', prazo_dias: 3 },
         advertencias: [], prova: null, valida_ate: '2026-11-03T00:00:00.000Z',
@@ -235,15 +235,15 @@ executar('feed, detalhe e eventos (Postgres)', () => {
     it('respeita categoria escolhida, CEP coberto e filtro por categoria', async () => {
       const loja = await criarLoja();
       const bebe = await criarProduto();
-      const limpeza = await criarProduto({ categoria: 'limpeza', nome: 'Detergente', marcaChave: 'ype', marca: 'Ypê' });
+      const infantil = await criarProduto({ categoria: 'infantil', nome: 'Detergente', marcaChave: 'ype', marca: 'Ypê' });
       const a1 = await semear({ loja, produto: bebe });
-      const a2 = await semear({ loja, produto: limpeza });
-      const soBebe = await pessoa({ categorias: ['higiene_bebe'] });
+      const a2 = await semear({ loja, produto: infantil });
+      const soBebe = await pessoa({ categorias: ['bebe'] });
       expect(ids(await feed(soBebe.auth))).toEqual(expect.arrayContaining([a1.alerta]));
       expect(ids(await feed(soBebe.auth))).not.toContain(a2.alerta);
-      const ambas = await pessoa({ categorias: ['higiene_bebe', 'limpeza'] });
+      const ambas = await pessoa({ categorias: ['bebe', 'infantil'] });
       expect(ids(await feed(ambas.auth))).toEqual(expect.arrayContaining([a1.alerta, a2.alerta]));
-      expect(ids(await feed(ambas.auth, '?categoria=limpeza'))).toEqual([a2.alerta]);
+      expect(ids(await feed(ambas.auth, '?categoria=infantil'))).toEqual([a2.alerta]);
 
       const lojaRestrita = await criarLoja({ nome: 'Restrita', faixa: ['01000000', '09999999', 2] });
       const a3 = await semear({ loja: lojaRestrita, produto: bebe });
@@ -301,7 +301,7 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       const loja = await criarLoja();
       const remedio = await criarProduto({ categoria: 'medicamentos_isentos', nome: 'Dipirona' });
       const { alerta } = await semear({ loja, produto: remedio });
-      const p = await pessoa({ categorias: ['medicamentos_isentos', 'higiene_bebe'] });
+      const p = await pessoa({ categorias: ['medicamentos_isentos', 'bebe'] });
       expect(ids(await feed(p.auth))).not.toContain(alerta);
     });
 
@@ -413,10 +413,10 @@ executar('feed, detalhe e eventos (Postgres)', () => {
 
     it('responde mesmo fora das categorias escolhidas, mas 404 para rejeitado, pendente, inexistente e CEP sem cobertura', async () => {
       const loja = await criarLoja();
-      const limpeza = await criarProduto({ categoria: 'limpeza', nome: 'Detergente' });
+      const infantil = await criarProduto({ categoria: 'infantil', nome: 'Detergente' });
       const bebe = await criarProduto();
-      const p = await pessoa({ categorias: ['higiene_bebe'] });
-      const fora = await semear({ loja, produto: limpeza });
+      const p = await pessoa({ categorias: ['bebe'] });
+      const fora = await semear({ loja, produto: infantil });
       const rej = await semear({ loja, produto: bebe, revisao: 'rejeitado', decisao: 'somente_feed' });
       const pend = await semear({ loja, produto: bebe, decisao: 'aguardar_aprovacao' });
       const get = (id: string, auth = p.auth) => app.inject({ method: 'GET', url: `/v1/alertas/${id}`, headers: auth });
@@ -665,7 +665,7 @@ executar('feed, detalhe e eventos (Postgres)', () => {
   describe('gravação do produto pelo pipeline', () => {
     it('grava as advertências da NBCAL e a chave da marca, e atualiza quando o produto já existe', async () => {
       const base = {
-        gtin: null, chaveHash: `h-${randomUUID()}`, familiaChave: 'f', marca: 'Nestlé Ninho', nome: 'Cereal', categoria: 'mercearia',
+        gtin: null, chaveHash: `h-${randomUUID()}`, familiaChave: 'f', marca: 'Nestlé Ninho', nome: 'Cereal', categoria: 'gestacao',
         embalagem: { quantidade: 0.4, unidade: 'kg' as const }, ehMedicamento: false, advertencias: ['nbcal_apos_6_meses' as const],
       };
       const id = await gravarProduto(pool, tenantId, base);
@@ -674,6 +674,20 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       await gravarProduto(pool, tenantId, { ...base, advertencias: [] });
       linha = (await pool.query(`SELECT advertencias FROM products WHERE id = $1`, [id])).rows[0];
       expect(linha.advertencias).toEqual([]); // a regra mudou: o banco acompanha
+    });
+
+    it('grava subcategoria e foto; coleta sem foto não apaga a que já existe, e a subcategoria acompanha a regra', async () => {
+      const base = {
+        gtin: null, chaveHash: `h-${randomUUID()}`, familiaChave: 'f', marca: 'Marca', nome: 'Berço', categoria: 'bebe', subcategoria: 'quarto' as string | null,
+        imagemUrl: 'https://img.exemplo.test/a.jpg' as string | null, embalagem: { quantidade: 1, unidade: 'un' as const }, ehMedicamento: false, advertencias: [],
+      };
+      const id = await gravarProduto(pool, tenantId, base);
+      const ler = async () => (await pool.query(`SELECT subcategoria, imagem_url FROM products WHERE id = $1`, [id])).rows[0];
+      expect(await ler()).toEqual({ subcategoria: 'quarto', imagem_url: 'https://img.exemplo.test/a.jpg' });
+      await gravarProduto(pool, tenantId, { ...base, imagemUrl: null });
+      expect((await ler()).imagem_url).toBe('https://img.exemplo.test/a.jpg');
+      await gravarProduto(pool, tenantId, { ...base, imagemUrl: 'https://img.exemplo.test/b.jpg', subcategoria: null });
+      expect(await ler()).toEqual({ subcategoria: null, imagem_url: 'https://img.exemplo.test/b.jpg' });
     });
 
     it('chave da marca: sem acento, minúscula, hifenizada, null quando não sobra nada', () => {

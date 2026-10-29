@@ -91,7 +91,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
                         AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id))`);
     params.push(offset, limite + 1);
     const r = await d.db.query(
-      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url,
+      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
               EXISTS (SELECT 1 FROM seguidos sg WHERE sg.tenant_id = p.tenant_id AND sg.user_id = $3 AND sg.product_id = p.id) AS seguido
          FROM products p
         WHERE ${onde.join('\n          AND ')}
@@ -117,7 +117,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
   async function produtoVisivel(ctx: { tenantId: string; userId: string; tenant: { config: any } }, id: string) {
     if (!UUID.test(id)) throw new ErroApi('nao_encontrado');
     const r = await d.db.query(
-      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.familia_chave
+      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria, p.familia_chave
          FROM products p WHERE ${PODE_MOSTRAR} AND p.id = $4`,
       [ctx.tenantId, ctx.tenant.config.app.categorias.map((c: { slug: string }) => c.slug), ctx.userId, id],
     );
