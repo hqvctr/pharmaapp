@@ -12,8 +12,8 @@ android {
         applicationId = "br.com.economae"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.2.0-previa"
+        versionCode = 4
+        versionName = "0.3.0-previa"
         // ID de cliente OAuth Web do servidor (público): o app pede o ID token do Google para ele.
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com\"")
         buildConfigField("String", "TENANT", "\"padrao\"")
@@ -46,6 +46,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+    testOptions {
+        unitTests {
+            // Robolectric precisa dos recursos (fontes, artes, temas) para desenhar as telas na JVM, sem aparelho.
+            isIncludeAndroidResources = true
+            all { it.systemProperty("robolectric.dependency.repo.url", System.getenv("ROBOLECTRIC_REPO") ?: "https://repo1.maven.org/maven2/") }
+        }
+    }
 }
 
 dependencies {
@@ -55,6 +62,8 @@ dependencies {
     // Tela de abertura igual em todas as versões do Android (a única dependência da identidade visual).
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.compose.material3:material3")
+    // Fotos dos produtos (carregadas direto da loja, com cache em disco e redução ao tamanho da tela).
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
@@ -65,5 +74,10 @@ dependencies {
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     testImplementation("junit:junit:4.13.2")
+    // Desenho das telas com dados falsos, sem aparelho (TelasTest): confere que nada quebra na medição e gera imagens para olhar.
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.test:core:1.6.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("org.json:json:20240303")
 }

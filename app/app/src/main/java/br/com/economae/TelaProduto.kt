@@ -2,6 +2,22 @@ package br.com.economae
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,33 +45,50 @@ import org.json.JSONObject
 fun TelaProduto(m: Modelo, id: String) {
     val contexto = LocalContext.current
     val escopo = rememberCoroutineScope()
-    Moldura("Produto", { m.voltar() }) {
+    Moldura("Detalhes do produto", { m.voltar() }) {
         Carregar(listOf(id, m.versao), { m.api.get("/v1/produtos/$id") }) { r, recarregar ->
             val p = r.corpo
             if (!r.ok || p == null) { Erro(if (r.status == 404) "Produto não encontrado." else r.mensagem, recarregar); return@Carregar }
             val ofertas = p.lista("ofertas")
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), Arrangement.spacedBy(6.dp)) {
-                Text(p.getString("nome"), style = MaterialTheme.typography.titleLarge)
+                // Foto grande com o coração de seguir no canto, como no detalhe do KV (04).
+                Box(Modifier.fillMaxWidth()) {
+                    FotoProduto(p.textoOuNulo("imagem_url"), Modifier.fillMaxWidth().height(260.dp), descricao = p.getString("nome"))
+                    CoracaoDeSeguir(m, id, p.optJSONObject("seguimento") != null, Modifier.align(Alignment.TopEnd).padding(8.dp)) { recarregar() }
+                }
+                Text(p.getString("nome"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))
                 Text(embalagemTexto(p) + (p.optJSONObject("marca")?.let { " · ${it.getString("nome")}" } ?: ""), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                SeguirProduto(m, id, p.optJSONObject("seguimento") != null) { recarregar() }
+                ofertas.firstOrNull()?.let { melhor ->
+                    Text(if (ofertas.size > 1) "a partir de" else "por", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
+                    Text(reais(melhor.getInt("preco_centavos")), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.tertiary)
+                }
+                economiaEntreLojas(ofertas.map { it.getInt("preco_centavos") })?.let { economia ->
+                    // A faixa "Economize" do KV: só quando há mais de uma loja para comparar.
+                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer), shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().padding(top = 6.dp)) {
+                        Column(Modifier.padding(14.dp)) {
+                            Text("Economize ${reais(economia)}", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                            Text("Comprando na loja mais barata. Compare preços antes de comprar.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        }
+                    }
+                }
 
-                Titulo("Onde comprar agora")
+                Titulo("Onde comprar")
                 if (ofertas.isEmpty()) Text("Nenhuma oferta ativa para o seu CEP neste momento.", style = MaterialTheme.typography.bodyMedium)
                 ofertas.forEach { o ->
                     val loja = o.getJSONObject("loja")
-                    // "Onde comprar" do KV: loja à esquerda, preço em verde à direita.
+                    // "Onde comprar" do KV: loja à esquerda, preço e o botão "Ver oferta" à direita.
                     Cartao {
-                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                                Text(loja.getString("nome"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                                Text(reais(o.getInt("preco_centavos")), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary)
+                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(loja.getString("nome"), style = MaterialTheme.typography.titleSmall)
+                                    Text(freteTexto(o.getJSONObject("frete")) + " · atualizado ${dataHora(o.getString("coletada_em"))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Text(reais(o.getInt("preco_centavos")), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(horizontal = 8.dp))
+                                Button({ abrirNoNavegador(contexto, o.getString("link")) }, shape = MaterialTheme.shapes.small) { Text("Ver oferta") }
                             }
                             o.textoOuNulo("rotulo_condicao")?.let { Selo(it, tipoDoRotulo(it)) }
-                            Text(freteTexto(o.getJSONObject("frete")) + " · atualizado ${dataHora(o.getString("coletada_em"))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                OutlinedButton({ abrirNoNavegador(contexto, o.getString("link")) }) { Text("Ver na loja") }
-                                o.textoOuNulo("alerta_id")?.let { aid -> OutlinedButton({ m.ir(Tela.Alerta(aid, "produto")) }) { Text("Detalhes") } }
-                            }
+                            o.textoOuNulo("alerta_id")?.let { aid -> TextButton({ m.ir(Tela.Alerta(aid, "produto")) }) { Text("Detalhes da promoção") } }
                         }
                     }
                 }
@@ -98,5 +131,31 @@ fun Grafico(pontos: List<Int>) {
         }
         drawLine(base, Offset(0f, size.height), Offset(size.width, size.height), 2f)
         drawPath(caminho, cor, style = Stroke(width = 5f))
+    }
+}
+
+/** Diferença entre a oferta mais cara e a mais barata, quando há mais de uma loja e os preços diferem; senão null. */
+fun economiaEntreLojas(precosCentavos: List<Int>): Int? = if (precosCentavos.size < 2) null else (precosCentavos.max() - precosCentavos.min()).takeIf { it > 0 }
+
+/** Coração redondo sobre a foto: segue ou deixa de seguir o produto. */
+@Composable
+fun CoracaoDeSeguir(m: Modelo, produtoId: String, seguido: Boolean, modifier: Modifier = Modifier, aoMudar: () -> Unit) {
+    val escopo = rememberCoroutineScope()
+    var erro by remember { mutableStateOf<String?>(null) }
+    Column(modifier, horizontalAlignment = Alignment.End) {
+        Surface(shape = androidx.compose.foundation.shape.CircleShape, color = MaterialTheme.colorScheme.surfaceContainerLowest, shadowElevation = 2.dp) {
+            IconButton({
+                escopo.launch {
+                    try {
+                        val e = alternarSeguir(m, produtoId, seguido)
+                        if (e == null) aoMudar() else erro = e
+                    } catch (e: SemConexao) { erro = e.message }
+                }
+            }) {
+                Icon(if (seguido) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = if (seguido) "Deixar de seguir este produto" else "Seguir este produto")
+            }
+        }
+        erro?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp)) }
     }
 }

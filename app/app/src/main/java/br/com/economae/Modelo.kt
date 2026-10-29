@@ -14,6 +14,21 @@ sealed interface Tela {
     data class Principal(val aba: Int = 0) : Tela
     data class Alerta(val id: String, val origem: String = "feed") : Tela
     data class Produto(val id: String) : Tela
+    /** Página de uma categoria do app (slug de /v1/configuracao), já numa subcategoria se `sub` vier. */
+    data class Categoria(val slug: String, val sub: String? = null) : Tela
+    /** Pesquisa de produto; com `categoria`, só dentro dela. */
+    data class Busca(val categoria: String? = null) : Tela
+    /** Todas as promoções (o feed de alertas), de "Ver todas" no Início. */
+    data object Feed : Tela
+}
+
+/** Abas da barra de baixo, na ordem do KV (Cupons ficou de fora: não há dado). */
+object Abas {
+    const val INICIO = 0
+    const val CATEGORIAS = 1
+    const val FAVORITOS = 2
+    const val AVISOS = 3
+    const val PERFIL = 4
 }
 
 /** Estado do app inteiro (prévia): servidor, sessão, configuração do tenant, conta e a pilha de telas. */
@@ -29,6 +44,10 @@ class Modelo(contexto: Context) {
     var versao by mutableIntStateOf(0)
 
     val tela: Tela get() = pilha.last()
+
+    /** Categorias do app, na ordem da configuração do servidor (Gestação, Mamãe, Bebê, Infantil). */
+    val categorias: List<JSONObject> get() = config?.optJSONArray("categorias")?.objetos() ?: emptyList()
+    fun categoria(slug: String): JSONObject? = categorias.firstOrNull { it.getString("slug") == slug }
 
     fun ir(t: Tela) { pilha = pilha + t }
     fun voltar(): Boolean { if (pilha.size <= 1) return false; pilha = pilha.dropLast(1); return true }

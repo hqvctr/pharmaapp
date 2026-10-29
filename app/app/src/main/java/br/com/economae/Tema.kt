@@ -2,6 +2,11 @@ package br.com.economae
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Face
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -10,6 +15,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -163,4 +169,46 @@ fun contraste(a: Color, b: Color): Double {
     val la = luminancia(a)
     val lb = luminancia(b)
     return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+}
+
+/** Fundo e texto de um cartão de categoria. */
+class CoresDaCategoria(val fundo: Color, val texto: Color)
+
+/** O pastel de "Infantil" no KV (círculo amarelo-pêssego); as outras três categorias usam os contêineres do tema. */
+object CategoriaInfantil {
+    val FundoClaro = Color(0xFFFFEFD0)
+    val TextoClaro = Color(0xFF7A4F00)
+    val FundoEscuro = Color(0xFF5C4300)
+    val TextoEscuro = Color(0xFFFFE9B8)
+}
+
+/** Cor de cada categoria do app, como nos círculos do KV: Gestação rosa, Mamãe lilás, Bebê verde-água, Infantil amarelo. */
+@Composable
+fun coresDaCategoria(slug: String): CoresDaCategoria {
+    val c = MaterialTheme.colorScheme
+    val escuro = c.background.red < 0.5f
+    return when (slug) {
+        "gestacao" -> CoresDaCategoria(c.primaryContainer, c.onPrimaryContainer)
+        "mamae" -> CoresDaCategoria(c.secondaryContainer, c.onSecondaryContainer)
+        "bebe" -> CoresDaCategoria(c.tertiaryContainer, c.onTertiaryContainer)
+        "infantil" -> if (escuro) CoresDaCategoria(CategoriaInfantil.FundoEscuro, CategoriaInfantil.TextoEscuro) else CoresDaCategoria(CategoriaInfantil.FundoClaro, CategoriaInfantil.TextoClaro)
+        else -> CoresDaCategoria(c.surfaceVariant, c.onSurfaceVariant)
+    }
+}
+
+/** Ícone de cada categoria (o KV usa ♀, ♡, ☺ e ★); categoria nova sem ícone próprio usa a estrela. */
+fun iconeDaCategoria(slug: String): ImageVector = when (slug) {
+    "gestacao" -> Icons.Rounded.Person
+    "mamae" -> Icons.Rounded.Favorite
+    "bebe" -> Icons.Rounded.Face
+    else -> Icons.Rounded.Star
+}
+
+/** Frase do topo da página de cada categoria (a do KV para Bebê; as outras seguem o mesmo tom). */
+fun chamadaDaCategoria(slug: String, rotulo: String): String = when (slug) {
+    "gestacao" -> "Tudo para a sua gestação"
+    "mamae" -> "Cuidado para você, mamãe"
+    "bebe" -> "Tudo para o seu bebê"
+    "infantil" -> "Para os pequenos crescerem"
+    else -> "Tudo em $rotulo"
 }

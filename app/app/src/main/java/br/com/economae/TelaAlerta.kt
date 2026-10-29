@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,10 +40,10 @@ import org.json.JSONObject
 /** Moldura com título e botão de voltar, usada pelas telas de detalhe. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Moldura(titulo: String, aoVoltar: () -> Unit, conteudo: @Composable () -> Unit) {
+fun Moldura(titulo: String, aoVoltar: () -> Unit, acoes: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit = {}, conteudo: @Composable () -> Unit) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(titulo, maxLines = 1, style = MaterialTheme.typography.titleLarge) },
-            navigationIcon = { IconButton(aoVoltar) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Voltar") } })
+            navigationIcon = { IconButton(aoVoltar) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Voltar") } }, actions = acoes)
     }) { margem ->
         androidx.compose.foundation.layout.Box(Modifier.padding(margem).fillMaxSize()) { conteudo() }
     }
@@ -72,6 +73,7 @@ fun TelaAlerta(m: Modelo, id: String, origem: String) {
             }
 
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), Arrangement.spacedBy(6.dp)) {
+                FotoProduto(p.textoOuNulo("imagem_url"), Modifier.fillMaxWidth().height(200.dp))
                 val queda = percentual(a.getDouble("queda"))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Selo("-$queda", TipoSelo.Destaque, descricao = "queda de $queda", estilo = MaterialTheme.typography.labelLarge)
@@ -190,9 +192,8 @@ fun SeguirProduto(m: Modelo, produtoId: String, seguido: Boolean, aoMudar: () ->
     OutlinedButton({
         escopo.launch {
             try {
-                val r = if (seguido) m.api.delete("/v1/seguidos/$produtoId") else m.api.put("/v1/seguidos/$produtoId", JSONObject().put("avisos",
-                    JSONObject().put("promocao_excepcional", true).put("queda_percentual", JSONObject.NULL).put("voltou_estoque", false).put("menor_preco_180d", false).put("promocao_acabando", false)))
-                if (r.ok) { m.mudou(); aoMudar() } else erro = if (r.status == 404) "Este produto não pode ser seguido (por regra legal, só aparece nas promoções)." else r.mensagem
+                val e = alternarSeguir(m, produtoId, seguido)
+                if (e == null) aoMudar() else erro = e
             } catch (e: SemConexao) { erro = e.message }
         }
     }, Modifier.fillMaxWidth()) { Text(if (seguido) "★ Seguindo (toque para deixar de seguir)" else "☆ Seguir este produto") }

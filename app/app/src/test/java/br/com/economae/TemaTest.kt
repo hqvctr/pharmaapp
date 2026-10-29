@@ -72,4 +72,9 @@ class TemaTest {
         assertEquals(TipoSelo.Demonstracao, tipoDoRotulo(" demonstração "))
         assertEquals(TipoSelo.Condicao, tipoDoRotulo("Leve 3, pague 2"))
     }
+
+    @Test fun `pastel de infantil passa no AA em claro e escuro`() {
+        assertTrue(contraste(CategoriaInfantil.TextoClaro, CategoriaInfantil.FundoClaro) >= 4.5)
+        assertTrue(contraste(CategoriaInfantil.TextoEscuro, CategoriaInfantil.FundoEscuro) >= 4.5)
+    }
 }

@@ -33,8 +33,8 @@ class MainActivity : ComponentActivity() {
 fun Raiz() {
     val contexto = LocalContext.current
     val m = remember { Modelo(contexto.applicationContext) }
-    BackHandler(enabled = m.pilha.size > 1 || (m.tela as? Tela.Principal)?.aba?.let { it != 0 } == true) {
-        if (!m.voltar()) m.raiz(Tela.Principal(0))
+    BackHandler(enabled = m.pilha.size > 1 || (m.tela as? Tela.Principal)?.aba?.let { it != Abas.INICIO } == true) {
+        if (!m.voltar()) m.raiz(Tela.Principal(Abas.INICIO))
     }
     when (val t = m.tela) {
         is Tela.Entrar -> TelaEntrar(m)
@@ -43,5 +43,8 @@ fun Raiz() {
         is Tela.Principal -> TelaPrincipal(m, t.aba)
         is Tela.Alerta -> TelaAlerta(m, t.id, t.origem)
         is Tela.Produto -> TelaProduto(m, t.id)
+        is Tela.Categoria -> TelaCategoria(m, t.slug, t.sub)
+        is Tela.Busca -> TelaBusca(m, t.categoria)
+        is Tela.Feed -> TelaFeed(m)
     }
 }
