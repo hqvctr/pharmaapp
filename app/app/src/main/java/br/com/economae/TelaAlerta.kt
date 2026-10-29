@@ -76,7 +76,7 @@ fun TelaAlerta(m: Modelo, id: String, origem: String) {
                 FotoProduto(p.textoOuNulo("imagem_url"), Modifier.fillMaxWidth().height(200.dp))
                 val queda = percentual(a.getDouble("queda"))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Selo("-$queda", TipoSelo.Destaque, descricao = "queda de $queda", estilo = MaterialTheme.typography.labelLarge)
+                    if (temQueda(a)) Selo("-$queda", TipoSelo.Destaque, descricao = "queda de $queda", estilo = MaterialTheme.typography.labelLarge)
                     a.textoOuNulo("rotulo_condicao")?.let { Selo(it, tipoDoRotulo(it), estilo = MaterialTheme.typography.labelLarge) }
                 }
                 Text(p.getString("nome"), style = MaterialTheme.typography.titleLarge)

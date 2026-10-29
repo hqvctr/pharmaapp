@@ -134,13 +134,13 @@ fun CartaoAlerta(a: JSONObject, aoAbrir: () -> Unit) {
                 if (a.optBoolean("destaque")) Selo("DESTAQUE", TipoSelo.Destaque)
                 a.textoOuNulo("rotulo_condicao")?.let { Selo(it, tipoDoRotulo(it)) }
                 Spacer(Modifier.weight(1f))
-                Selo("-$queda", TipoSelo.Queda, descricao = "queda de $queda")
+                if (temQueda(a)) Selo("-$queda", TipoSelo.Queda, descricao = "queda de $queda")
             }
             Text(p.getString("nome"), style = MaterialTheme.typography.titleSmall)
             Text("${loja.getString("nome")} · ${embalagemTexto(p)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(reais(a.getInt("preco_centavos")), style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.tertiary)
-                Text("antes ${reais(a.getInt("preco_referencia_centavos"))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                if (temQueda(a)) Text("antes ${reais(a.getInt("preco_referencia_centavos"))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 4.dp))
             }
             if (a.getString("situacao") != "ativa") Text("Esta promoção já acabou ou está em revisão", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)

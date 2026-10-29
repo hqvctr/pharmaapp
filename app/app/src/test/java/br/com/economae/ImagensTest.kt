@@ -28,4 +28,22 @@ class ImagensTest {
         assertEquals("http://x.vteximg.com.br/arquivos/ids/1/a.jpg", fotoRedimensionada("http://x.vteximg.com.br/arquivos/ids/1/a.jpg", 400))
         assertEquals("não é url", fotoRedimensionada("não é url", 400))
     }
+
+    @Test fun `dois toques alternam entre inteira e ampliada`() {
+        assertEquals(ESCALA_DO_TOQUE_DUPLO, proximaEscala(1f), 0f)
+        assertEquals(1f, proximaEscala(ESCALA_DO_TOQUE_DUPLO), 0f)
+        assertEquals(1f, proximaEscala(5f), 0f)
+        assertEquals(ESCALA_DO_TOQUE_DUPLO, proximaEscala(1.005f), 0f) // quase 1 ainda conta como inteira
+    }
+
+    @Test fun `o deslocamento da foto ampliada nao passa da borda`() {
+        assertEquals(0f to 0f, limitarDeslocamento(50f, -30f, 1f, 400f, 800f))
+        assertEquals(0f to 0f, limitarDeslocamento(50f, -30f, 0.5f, 400f, 800f))
+        // escala 2: sobra metade do quadro para cada lado (200 de 400 de largura, 400 de 800 de altura)
+        assertEquals(200f to -400f, limitarDeslocamento(999f, -999f, 2f, 400f, 800f))
+        assertEquals(-200f to 400f, limitarDeslocamento(-999f, 999f, 2f, 400f, 800f))
+        assertEquals(30f to -40f, limitarDeslocamento(30f, -40f, 2f, 400f, 800f))
+        // escala 3: 400 e 800
+        assertEquals(400f to 800f, limitarDeslocamento(1000f, 1000f, 3f, 400f, 800f))
+    }
 }

@@ -31,9 +31,12 @@ fun consultaProdutos(q: String? = null, categoria: String? = null, subcategoria:
 /** Um cartão da vitrine do Início: de um alerta de queda ou, sem alertas, de um produto do catálogo. */
 class Destaque(val tela: Tela, val nome: String, val imagem: String?, val precoCentavos: Int?, val queda: String?)
 
+/** Alerta com queda de verdade: oferta manual (sem histórico verificado) vem com queda 0 e não ganha selo de "-0%". */
+fun temQueda(a: JSONObject): Boolean = a.optDouble("queda", 0.0) > 0.0
+
 fun destaqueDeAlerta(a: JSONObject): Destaque {
     val p = a.getJSONObject("produto")
-    return Destaque(Tela.Alerta(a.getString("id")), p.getString("nome"), p.textoOuNulo("imagem_url"), a.inteiroOuNulo("preco_centavos"), "-" + percentual(a.getDouble("queda")))
+    return Destaque(Tela.Alerta(a.getString("id")), p.getString("nome"), p.textoOuNulo("imagem_url"), a.inteiroOuNulo("preco_centavos"), if (temQueda(a)) "-" + percentual(a.getDouble("queda")) else null)
 }
 
 fun destaqueDeProduto(p: JSONObject) = Destaque(Tela.Produto(p.getString("id")), p.getString("nome"), p.textoOuNulo("imagem_url"), p.inteiroOuNulo("menor_preco_centavos"), null)

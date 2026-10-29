@@ -18,3 +18,19 @@ fun fotoRedimensionada(url: String, lado: Int): String {
     if (host == "cdn.shopify.com" && u.rawQuery?.contains("width=") != true) return url + (if (u.rawQuery == null) "?" else "&") + "width=$lado"
     return url
 }
+
+/** Escala da foto ampliada: dois toques alternam entre inteira e 2,5x. */
+const val ESCALA_MAXIMA = 5f
+const val ESCALA_DO_TOQUE_DUPLO = 2.5f
+fun proximaEscala(atual: Float): Float = if (atual > 1.01f) 1f else ESCALA_DO_TOQUE_DUPLO
+
+/**
+ * Deslocamento permitido da foto ampliada: com a escala `e`, a foto sobra `(e - 1) * tamanho / 2` para cada lado do quadro; passar disso
+ * mostraria o fundo preto. Sem ampliação, nenhum deslocamento.
+ */
+fun limitarDeslocamento(x: Float, y: Float, escala: Float, largura: Float, altura: Float): Pair<Float, Float> {
+    if (escala <= 1f) return 0f to 0f
+    val maxX = (escala - 1f) * largura / 2f
+    val maxY = (escala - 1f) * altura / 2f
+    return x.coerceIn(-maxX, maxX) to y.coerceIn(-maxY, maxY)
+}

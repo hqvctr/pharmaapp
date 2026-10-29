@@ -1,6 +1,7 @@
 package br.com.economae
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.pager.HorizontalPager
@@ -169,18 +170,24 @@ fun fotosDoProduto(p: JSONObject): List<String> {
     return lista.ifEmpty { listOfNotNull(p.textoOuNulo("imagem_url")) }
 }
 
-/** Fotos que se passam com o dedo, com os pontinhos embaixo. Uma foto só (ou nenhuma) não mostra pontinhos. */
+/** Fotos que se passam com o dedo, com os pontinhos embaixo; tocar abre a foto em tela cheia (visor com zoom). Uma foto só não mostra pontinhos. */
 @Composable
 fun GaleriaDeFotos(fotos: List<String>, descricao: String, modifier: Modifier = Modifier) {
-    if (fotos.size <= 1) { FotoProduto(fotos.firstOrNull(), modifier, descricao, lado = 800); return }
-    val estado = rememberPagerState { fotos.size }
-    Box(modifier) {
-        HorizontalPager(estado, Modifier.fillMaxSize()) { i -> FotoProduto(fotos[i], Modifier.fillMaxSize(), "$descricao, foto ${i + 1} de ${fotos.size}", lado = 800) }
-        Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            repeat(fotos.size) { i ->
-                val cor = if (i == estado.currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                Box(Modifier.size(8.dp).background(cor, CircleShape))
+    var visor by remember { mutableStateOf<Int?>(null) }
+    val ampliar: (Int) -> Modifier = { i -> if (fotos.isEmpty()) Modifier else Modifier.clickable(onClickLabel = "Ampliar a foto") { visor = i } }
+    if (fotos.size <= 1) {
+        FotoProduto(fotos.firstOrNull(), modifier.then(ampliar(0)), descricao, lado = 800)
+    } else {
+        val estado = rememberPagerState { fotos.size }
+        Box(modifier) {
+            HorizontalPager(estado, Modifier.fillMaxSize()) { i -> FotoProduto(fotos[i], Modifier.fillMaxSize().then(ampliar(i)), "$descricao, foto ${i + 1} de ${fotos.size}", lado = 800) }
+            Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                repeat(fotos.size) { i ->
+                    val cor = if (i == estado.currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                    Box(Modifier.size(8.dp).background(cor, CircleShape))
+                }
             }
         }
     }
+    visor?.let { VisorDeFotos(fotos, it, descricao) { visor = null } }
 }

@@ -11,7 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ApplicationProvider
 import org.json.JSONArray
 import org.json.JSONObject
@@ -122,7 +125,8 @@ class TelasTest {
     private fun esperar(texto: String) {
         try { rule.waitUntil(15_000) { rule.onAllNodesWithTextExists(texto) } } catch (e: Throwable) {
             foto("falha-" + texto.take(20).replace(Regex("[^A-Za-z0-9]"), "_"))
-            throw AssertionError("não apareceu \"$texto\"; pedidos: $pedidos", e)
+            val arvore = try { rule.onRoot().printToString(maxDepth = 12).take(2500) } catch (x: Throwable) { "(sem árvore: ${x.message})" }
+            throw AssertionError("não apareceu \"$texto\"; pedidos: $pedidos\n$arvore", e)
         }
     }
 
@@ -179,6 +183,19 @@ class TelasTest {
         esperar("sem oferta na sua região")
         esperar("R$")
         foto("05-favoritos")
+    }
+
+    @Test fun `tocar na foto abre o visor em tela cheia e o X fecha`() {
+        val a = "http://127.0.0.1:${servidor.porta}/img/1.png"
+        val b = "http://127.0.0.1:${servidor.porta}/img/2.png"
+        mostrar { GaleriaDeFotos(listOf(a, b), "Fralda", androidx.compose.ui.Modifier.fillMaxSize()) }
+        // A descrição da foto só existe depois que o Coil baixa e pinta a imagem (antes, o espaço neutro ocupa o lugar).
+        rule.waitUntil(15_000) { rule.onAllNodes(androidx.compose.ui.test.hasContentDescription("Fralda, foto 1 de 2")).fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithContentDescription("Fralda, foto 1 de 2").performClick()
+        esperar("1 / 2")
+        rule.onNodeWithContentDescription("Fechar").assertExists()
+        rule.onNodeWithContentDescription("Fechar").performClick()
+        rule.waitUntil(5_000) { !rule.onAllNodesWithTextExists("1 / 2") }
     }
 
     @Test fun `detalhe mostra onde comprar com as duas lojas e a economia`() {

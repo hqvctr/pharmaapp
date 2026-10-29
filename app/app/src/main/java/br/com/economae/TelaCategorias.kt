@@ -187,8 +187,7 @@ fun ListaProdutos(m: Modelo, consulta: String, vazio: String, cabecalho: LazyLis
             val c = cursor
             if (estado == Estado.Pronto && c != null && erroMais == null && !maisCarregando && ultimo != null && ultimo >= total - 3) {
                 maisCarregando = true
-                pagina(c)
-                maisCarregando = false
+                try { pagina(c) } finally { maisCarregando = false } // se o efeito for cancelado no meio, o giro não fica preso
             }
         }
     }

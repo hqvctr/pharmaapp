@@ -86,4 +86,13 @@ class ConsultasTest {
         assertEquals(listOf("https://a/p"), fotosDoProduto(JSONObject("""{"imagem_url":"https://a/p"}""")))
         assertEquals(emptyList<String>(), fotosDoProduto(JSONObject("""{"imagens":[],"imagem_url":null}""")))
     }
+
+    @Test fun `oferta manual vem com queda zero e nao ganha selo`() {
+        val manual = JSONObject("""{"id":"a2","preco_centavos":4990,"queda":0,"sem_historico_verificado":true,"produto":{"nome":"Fralda","imagem_url":null}}""")
+        assertTrue(!temQueda(manual))
+        assertNull(destaqueDeAlerta(manual).queda)
+        val real = JSONObject("""{"id":"a3","preco_centavos":4990,"queda":0.0001,"produto":{"nome":"Fralda"}}""")
+        assertTrue(temQueda(real))
+        assertTrue(!temQueda(JSONObject("""{"id":"x"}""")))
+    }
 }
