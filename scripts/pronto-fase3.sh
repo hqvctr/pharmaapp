@@ -114,14 +114,15 @@ DB_PROV=pronto_fase3_prov
 recria "$DB_PROV"
 export DATABASE_URL="$URL_BASE/$DB_PROV" REDIS_URL="redis://127.0.0.1:6379"
 node backend/dist/db/migrate.js >/dev/null
+LOJAS_VINC=$(node -p "require('./backend/config/vinculos/padrao.json').lojas.length")
 r=$(node backend/dist/pipeline/provisionar.js --tenant padrao)
-if echo "$r" | grep -q '"fontesCriadas":\["lomadee"\]' && [ "$(echo "$r" | grep -o 'online' | wc -l)" = "2" ]; then
-  echo "OK    provisão cria a fonte e as 2 lojas"; else echo "$r"; echo "FALHA provisão"; falhou=1; fi
+if echo "$r" | grep -q '"fontesCriadas":\["lomadee"\]' && [ "$(echo "$r" | grep -o 'online' | wc -l)" = "$LOJAS_VINC" ]; then
+  echo "OK    provisão cria a fonte e as $LOJAS_VINC lojas de config/vinculos"; else echo "$r"; echo "FALHA provisão"; falhou=1; fi
 psql_ "$DB_PROV" -q -c "UPDATE stores SET status = 'aprovada', reputacao = 0.9 WHERE rede = 'Drogasmil'"
 r=$(node backend/dist/pipeline/provisionar.js --tenant padrao)
 if echo "$r" | grep -q '"fontesCriadas":\[\],"lojasCriadas":\[\]' \
    && [ "$(psql_ "$DB_PROV" -Atc "SELECT status || reputacao FROM stores WHERE rede = 'Drogasmil'")" = "aprovada0.90" ] \
-   && [ "$(psql_ "$DB_PROV" -Atc "SELECT count(*) FROM stores")" = "2" ]; then
+   && [ "$(psql_ "$DB_PROV" -Atc "SELECT count(*) FROM stores")" = "$LOJAS_VINC" ]; then
   echo "OK    rodar de novo não duplica nem desfaz o que o operador mudou"; else echo "$r"; echo "FALHA provisão repetida"; falhou=1; fi
 saida=$(node backend/dist/pipeline/status.js)
 if echo "$saida" | grep -q "Ainda não há nenhum preço guardado"; then echo "OK    status em português quando ainda não há dados"; else echo "$saida"; echo "FALHA status"; falhou=1; fi

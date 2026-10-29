@@ -1509,7 +1509,7 @@ components:
           properties:
             propria: { type: boolean }
             fontes: { type: array, items: { type: string }, description: Nomes das fontes ligadas à loja. }
-            aceita_oferta_manual: { type: boolean, description: false em loja de marca com trava de link (Lomadee, D67). }
+            aceita_oferta_manual: { type: boolean, description: 'false em loja de marca com trava de link (Lomadee, D67).' }
             areas_entrega: { type: array, items: { $ref: '#/components/schemas/AreaEntrega' } }
             ofertas_disponiveis: { type: integer, minimum: 0 }
     PedidoLojaPropria:
@@ -1518,7 +1518,7 @@ components:
       properties:
         nome: { type: string, maxLength: 120 }
         rede: { type: [string, 'null'], maxLength: 120, description: Ausente ou null = o nome. }
-        cnpj: { type: [string, 'null'], description: 14 dígitos (pontos, barra e traço são ignorados). }
+        cnpj: { type: [string, 'null'], description: '14 dígitos (pontos, barra e traço são ignorados).' }
         autorizacao_sanitaria: { type: [string, 'null'], maxLength: 120 }
         status: { type: string, enum: [aprovada, em_observacao], default: em_observacao }
         reputacao: { type: number, minimum: 0, maximum: 1, default: 0.5 }
@@ -1871,7 +1871,20 @@ components:
         autorizacao_sanitaria: null
         criado_em: '2026-10-01T10:00:00Z'
     PaginaLojasAdmin:
-      value: { itens: [*lojaAprovada], proximo_cursor: null }
+      value:
+        itens:
+          - id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e
+            rede: Drogasil
+            nome: Drogasil
+            cnpj: null
+            tipo: online
+            status: aprovada
+            reputacao: 0.9
+            autorizacao_sanitaria: null
+            criado_em: '2026-10-01T10:00:00Z'
+            propria: false
+            areas_entrega_total: 1
+        proximo_cursor: null
     FonteAdmin:
       value: &fonteLomadee
         id: 8f9e0d1c-2b3a-4c5d-9e6f-7a8b9c0d1e2f
