@@ -5,7 +5,7 @@ Como instalar no celular e apontar para o servidor: `docs/operacao/testar-no-cel
 
 ## O que tem
 
-Entrar por código no e-mail ou com Google · termos e consentimento · categorias e CEP · feed de promoções com filtro por categoria ·
+Entrar por código no e-mail ou com Google · termos e consentimento · categorias e CEP · Início com vitrine, categorias com subcategorias, ordem e fotos, favoritos, feed de promoções ("Ver todas") ·
 detalhe da promoção (prova de preço, entrega, frete, advertência legal, link da loja, compartilhar, útil/não útil, denunciar, silenciar, seguir) ·
 busca de produto, página do produto com ofertas e histórico · central de avisos · conta (notificações, silenciados, seguidos,
 exportar dados, sair, excluir conta).
@@ -15,13 +15,15 @@ exportar dados, sair, excluir conta).
 Identidade do KV: `docs/design/identidade-visual.md`. Cores, fonte e formas só em `Tema.kt` (claro e escuro, segue o sistema);
 componentes visuais em `Componentes.kt`. As artes (`res/drawable/ic_launcher_*`, `arte_*`, `marca_coracao`) saem do KV por
 `scripts/gerar-arte-kv.sh` e as fontes (`res/font/inter_*`) por `scripts/fonte-inter.py`: não edite à mão.
-Conferência sem aparelho: `node scripts/conferencia-visual.mjs <pasta>`.
+Conferência sem aparelho: `node scripts/conferencia-visual.mjs <pasta>` (aproximação do tema) e `TelasTest` (Robolectric desenha as telas reais contra um servidor falso e grava PNGs em `app/app/build/telas/`).
 
 ## Como gerar o APK
 
 ```bash
 ANDROID_HOME=/caminho/do/android-sdk scripts/gerar-apk.sh
 ```
+
+Os testes (`testDebugUnitTest`, rodados pelo script) incluem o `TelasTest`, que baixa o android-all do Robolectric; se o Maven Central não responder, aponte `ROBOLECTRIC_REPO` para um espelho.
 
 Saída: `app/app/build/outputs/apk/debug/app-debug.apk`. Pacote `br.com.economae.debug`.
 

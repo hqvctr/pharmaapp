@@ -79,12 +79,10 @@ fun TelaProduto(m: Modelo, id: String) {
                     // "Onde comprar" do KV: loja à esquerda, preço e o botão "Ver oferta" à direita.
                     Cartao {
                         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(loja.getString("nome"), style = MaterialTheme.typography.titleSmall)
+                            Text(freteTexto(o.getJSONObject("frete")) + " · atualizado ${dataHora(o.getString("coletada_em"))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    Text(loja.getString("nome"), style = MaterialTheme.typography.titleSmall)
-                                    Text(freteTexto(o.getJSONObject("frete")) + " · atualizado ${dataHora(o.getString("coletada_em"))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                                Text(reais(o.getInt("preco_centavos")), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.tertiary, modifier = Modifier.padding(horizontal = 8.dp))
+                                Text(reais(o.getInt("preco_centavos")), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.tertiary)
                                 Button({ abrirNoNavegador(contexto, o.getString("link")) }, shape = MaterialTheme.shapes.small) { Text("Ver oferta") }
                             }
                             o.textoOuNulo("rotulo_condicao")?.let { Selo(it, tipoDoRotulo(it)) }

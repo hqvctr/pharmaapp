@@ -35,9 +35,6 @@ import java.net.URI
  * falso local, e confere o que aparece. Serve para pegar crash de medição e texto que sumiu sem aparelho; as imagens saem em
  * `app/build/telas/` para olhar. A conferência real continua sendo no celular.
  */
-// DESLIGADO por enquanto: a captura da imagem (captureToImage) estoura o tempo no Robolectric; falta trocar por desenhar a janela num bitmap.
-// Quando funcionar, tirar o @Ignore (precisa de rede para baixar o android-all; ROBOLECTRIC_REPO aponta o espelho).
-@org.junit.Ignore("captura de imagem ainda não funciona no Robolectric")
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w390dp-h844dp-port-xxhdpi")
@@ -119,12 +116,19 @@ class TelasTest {
         TemaEconomae { Surface(Modifier.fillMaxSize()) { Box(Modifier.safeDrawingPadding()) { conteudo() } } }
     }
 
-    private fun esperar(texto: String) = rule.waitUntil(15_000) { rule.onAllNodesWithTextExists(texto) }
+    /** Espera o texto aparecer; se não aparecer, guarda uma imagem da tela (`falha-*.png`) e os pedidos feitos, para entender o porquê. */
+    private fun esperar(texto: String) {
+        try { rule.waitUntil(15_000) { rule.onAllNodesWithTextExists(texto) } } catch (e: Throwable) {
+            foto("falha-" + texto.take(20).replace(Regex("[^A-Za-z0-9]"), "_"))
+            throw AssertionError("não apareceu \"$texto\"; pedidos: $pedidos", e)
+        }
+    }
 
     private fun androidx.compose.ui.test.junit4.ComposeContentTestRule.onAllNodesWithTextExists(t: String) =
         onAllNodes(androidx.compose.ui.test.hasText(t, substring = true)).fetchSemanticsNodes().isNotEmpty()
 
     /** Desenha a janela inteira num bitmap. (`captureToImage` do Compose espera um quadro que o Robolectric não entrega com o laço pausado.) */
+    /** Desenha a janela inteira num bitmap (`captureToImage` do Compose espera um quadro que o Robolectric não entrega com o laço pausado). */
     private fun foto(nome: String) {
         Thread.sleep(800) // dá tempo ao Coil de baixar as fotos
         rule.waitForIdle()
