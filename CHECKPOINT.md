@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Shopee: Open API lida, acesso pendente (2026-10-29)
+
+O Cowork leu a documentação da Open API com a conta logada (`docs/juridico/fontes/shopee-open-api-2026-10-29.md`; resumo em `docs/operacao/redes-afiliados.md`; linha nova em `SOURCES.md`). A documentação abre, mas **a conta não tem acesso à API** (AppID e Secret vazios). O pedido de acesso é pelo formulário de contato da Shopee e fica com o responsável, via Cowork. GraphQL num único endpoint; assinatura `sha256(AppId + Timestamp + corpo + Secret)`, **conferida com o exemplo da documentação**; limite de 8.000 chamadas por hora; feed diário FULL/DELTA. **Não há GTIN, marca, estoque, frete nem região**, e há uma foto só. A conta aparece como "Empresarial", sem CNPJ, a conferir. Nenhum código de adaptador ainda.
+
 ## Teste do app no celular aprovado e Shopee ativa (2026-10-29)
 
 O responsável testou no celular o app 0.3.2 (o que veio das DECISIONS 91 a 97: catálogo e categorias do KV, navegação por categoria e subcategoria, Início, Favoritos, galeria e visor de fotos com zoom, oferta manual sem "-0%") e informou que **tudo funciona**. A inscrição de afiliado da **Shopee foi aprovada** (conta ativa). Próximo passo, combinado com o responsável: **Shopee primeiro** (o Cowork lê a Open API com a conta logada e devolve `shopee-open-api-2026-10-29.md`; depois vem o adaptador em `backend/src/fontes/`). A forma do feed e o cadastro voltam em seguida.

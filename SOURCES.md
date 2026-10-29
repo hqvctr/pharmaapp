@@ -1,12 +1,13 @@
 # Fontes de oferta e base legal
 
-Fontes ativas hoje: Lomadee (Drogasmil e PromoFarma). Levantamento das demais redes: [docs/operacao/redes-afiliados.md](docs/operacao/redes-afiliados.md). Toda fonte nova recebe aqui: tipo (A–E), responsável, termos de uso lidos
+Fontes ativas hoje: Lomadee (Drogasmil e PromoFarma). Em preparação: Shopee (falta o acesso à Open API). Levantamento das demais redes: [docs/operacao/redes-afiliados.md](docs/operacao/redes-afiliados.md). Toda fonte nova recebe aqui: tipo (A–E), responsável, termos de uso lidos
 (link e data), robots.txt (quando TIPO C), frequência, User-Agent, confiabilidade do dado e base legal.
 Fonte cujo termo proíbe a coleta não entra.
 
 | Fonte | Tipo | Termos lidos em | Base legal | Frequência | Confiabilidade | Status |
 |-------|------|-----------------|------------|------------|----------------|--------|
 | Lomadee (API de afiliados, docs.lomadee.com.br) | A | 2026-10-28, [docs/juridico/lomadee-termos.md](docs/juridico/lomadee-termos.md): contrato silencioso sobre histórico e API; exige link rastreado; tipo de canal por marca | Programa de afiliados Lomadee; canal "economae" (Comparador de Preços); lojas coletadas: Drogasmil e PromoFarma (Drogasil e Droga Raia não existem na conta) | 120 min | alta | ativa em observação; risco de cancelamento sem motivo (cláusula 18.1) |
+| Shopee Afiliados (Open API GraphQL, affiliate.shopee.com.br/open_api) | A | 2026-10-29, [docs/juridico/fontes/shopee-open-api-2026-10-29.md](docs/juridico/fontes/shopee-open-api-2026-10-29.md) e [redes-afiliados.md](docs/operacao/redes-afiliados.md): termos e documentação sem regra sobre cache, histórico, comparação ou push; "aplicativos" contam como mídia (1.3) | Programa de Afiliados Shopee; mídia economae.pages.dev, tipo "comparação de preço" | a definir (limite 8.000/h; feed diário) | média (marketplace, sem GTIN, sem frete nem estoque) | documentação lida; **sem acesso à API** (pedido pelo formulário pendente); sem adaptador |
 
 ## Como entra um canal novo
 Passo a passo técnico em [docs/operacao/fontes.md](docs/operacao/fontes.md). Antes de ativar qualquer fonte:
