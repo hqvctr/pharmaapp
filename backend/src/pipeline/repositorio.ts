@@ -94,14 +94,15 @@ export function chaveDaMarca(marca: string | null): string | null {
 
 export async function gravarProduto(db: Db, tenantId: string, p: ProdutoNormalizado): Promise<string> {
   const r = await db.query<{ id: string }>(
-    `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, marca_chave, nome, categoria, subcategoria, quantidade, unidade, advertencias, imagem_url)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::text[], $13)
+    `INSERT INTO products (tenant_id, gtin, chave_hash, familia_chave, marca, marca_chave, nome, categoria, subcategoria, quantidade, unidade, advertencias, imagem_url, imagens)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::text[], $13, $14::text[])
      ON CONFLICT (tenant_id, chave_hash)
      DO UPDATE SET nome = EXCLUDED.nome, categoria = EXCLUDED.categoria, subcategoria = EXCLUDED.subcategoria, marca = EXCLUDED.marca,
                    marca_chave = EXCLUDED.marca_chave, advertencias = EXCLUDED.advertencias,
-                   imagem_url = COALESCE(EXCLUDED.imagem_url, products.imagem_url)
+                   imagem_url = COALESCE(EXCLUDED.imagem_url, products.imagem_url),
+                   imagens = CASE WHEN cardinality(EXCLUDED.imagens) > 0 THEN EXCLUDED.imagens ELSE products.imagens END
      RETURNING id`,
-    [tenantId, p.gtin, p.chaveHash, p.familiaChave, p.marca, chaveDaMarca(p.marca), p.nome, p.categoria, p.subcategoria, p.embalagem.quantidade, p.embalagem.unidade, p.advertencias, p.imagemUrl],
+    [tenantId, p.gtin, p.chaveHash, p.familiaChave, p.marca, chaveDaMarca(p.marca), p.nome, p.categoria, p.subcategoria, p.embalagem.quantidade, p.embalagem.unidade, p.advertencias, p.imagemUrl, p.imagens ?? []],
   );
   return r.rows[0]!.id;
 }

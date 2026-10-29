@@ -79,4 +79,11 @@ class ConsultasTest {
     @Test fun `abas ficam na ordem do KV`() {
         assertEquals(listOf(0, 1, 2, 3, 4), listOf(Abas.INICIO, Abas.CATEGORIAS, Abas.FAVORITOS, Abas.AVISOS, Abas.PERFIL))
     }
+
+    @Test fun `fotos do detalhe vem da lista, e sem ela da imagem principal`() {
+        assertEquals(listOf("https://a/1", "https://a/2"), fotosDoProduto(JSONObject("""{"imagens":["https://a/1","https://a/2"],"imagem_url":"https://a/1"}""")))
+        assertEquals(listOf("https://a/p"), fotosDoProduto(JSONObject("""{"imagens":[],"imagem_url":"https://a/p"}""")))
+        assertEquals(listOf("https://a/p"), fotosDoProduto(JSONObject("""{"imagem_url":"https://a/p"}""")))
+        assertEquals(emptyList<String>(), fotosDoProduto(JSONObject("""{"imagens":[],"imagem_url":null}""")))
+    }
 }

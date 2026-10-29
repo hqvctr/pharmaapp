@@ -18,6 +18,8 @@ export interface OfertaBruta {
   link: string;
   /** Foto do produto na loja (https). A fonte aponta; o app mostra direto dela, sem copiar o arquivo. */
   imagemUrl?: string | null;
+  /** Todas as fotos https do item (a primeira é a `imagemUrl`), até 6. */
+  imagensUrls?: string[];
   linkAfiliado: boolean;
   disponivel: boolean;
   validaDe: Date | null;

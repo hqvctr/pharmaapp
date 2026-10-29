@@ -161,7 +161,7 @@ fun Logotipo(modifier: Modifier = Modifier, estilo: TextStyle = MaterialTheme.ty
  * carrinho: o produto continua utilizável. É decorativa para o leitor de tela (o nome do produto vem logo ao lado).
  */
 @Composable
-fun FotoProduto(url: String?, modifier: Modifier = Modifier, descricao: String? = null) {
+fun FotoProduto(url: String?, modifier: Modifier = Modifier, descricao: String? = null, lado: Int = 400) {
     val neutro: @Composable () -> Unit = {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiaryContainer), Alignment.Center) {
             Icon(Icons.Rounded.ShoppingCart, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.6f), modifier = Modifier.size(28.dp))
@@ -169,7 +169,7 @@ fun FotoProduto(url: String?, modifier: Modifier = Modifier, descricao: String? 
     }
     Box(modifier.clip(MaterialTheme.shapes.small)) {
         if (url == null) neutro()
-        else SubcomposeAsyncImage(model = url, contentDescription = descricao, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color.White),
+        else SubcomposeAsyncImage(model = fotoRedimensionada(url, lado), contentDescription = descricao, contentScale = ContentScale.Fit, modifier = Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color.White),
             loading = { neutro() }, error = { neutro() })
     }
 }

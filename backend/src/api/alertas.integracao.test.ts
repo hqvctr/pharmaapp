@@ -688,6 +688,15 @@ executar('feed, detalhe e eventos (Postgres)', () => {
       expect((await ler()).imagem_url).toBe('https://img.exemplo.test/a.jpg');
       await gravarProduto(pool, tenantId, { ...base, imagemUrl: 'https://img.exemplo.test/b.jpg', subcategoria: null });
       expect(await ler()).toEqual({ subcategoria: null, imagem_url: 'https://img.exemplo.test/b.jpg' });
+      // Galeria: a coleta nova troca a lista; coleta sem fotos (lista vazia) não apaga a que já existe.
+      const fotos = async () => (await pool.query(`SELECT imagens FROM products WHERE id = $1`, [id])).rows[0].imagens;
+      expect(await fotos()).toEqual([]);
+      await gravarProduto(pool, tenantId, { ...base, imagens: ['https://img.exemplo.test/1.jpg', 'https://img.exemplo.test/2.jpg'] });
+      expect(await fotos()).toEqual(['https://img.exemplo.test/1.jpg', 'https://img.exemplo.test/2.jpg']);
+      await gravarProduto(pool, tenantId, { ...base, imagens: [] });
+      expect(await fotos()).toHaveLength(2);
+      await gravarProduto(pool, tenantId, { ...base, imagens: ['https://img.exemplo.test/3.jpg'] });
+      expect(await fotos()).toEqual(['https://img.exemplo.test/3.jpg']);
     });
 
     it('chave da marca: sem acento, minúscula, hifenizada, null quando não sobra nada', () => {

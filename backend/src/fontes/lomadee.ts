@@ -115,6 +115,24 @@ export function escolherImagem(produto: unknown, opcao: unknown): string | null 
   return null;
 }
 
+const MAX_FOTOS = 6;
+
+/** Até 6 fotos https do produto: primeiro as da opção (a variação que o preço descreve), depois as do produto, sem repetir. */
+export function escolherImagens(produto: unknown, opcao: unknown): string[] {
+  const saida: string[] = [];
+  for (const origem of [opcao, produto]) {
+    const imagens = (origem as { images?: unknown } | null)?.images;
+    if (!Array.isArray(imagens)) continue;
+    for (const i of imagens) {
+      const url = (typeof i === 'string' ? i : (i as { url?: unknown } | null)?.url);
+      if (typeof url !== 'string') continue;
+      const u = url.trim();
+      if (/^https:\/\/[^\s]+$/.test(u) && u.length <= 2048 && !saida.includes(u) && saida.length < MAX_FOTOS) saida.push(u);
+    }
+  }
+  return saida;
+}
+
 function semHtml(html: unknown): string | null {
   if (typeof html !== 'string') return null;
   const t = html
@@ -182,6 +200,7 @@ export function parseProduto(
           lojaIdExterno: organizacao,
           link,
           imagemUrl: escolherImagem(p, o),
+          imagensUrls: escolherImagens(p, o),
           // O url do produto não é link rastreado (exige o encurtador).
           linkAfiliado: false,
           disponivel: p.available !== false && o.available !== false,

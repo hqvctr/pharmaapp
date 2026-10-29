@@ -81,7 +81,9 @@ class TelasTest {
                 caminho == "/v1/alertas" -> json(200, """{"itens":[],"proximo_cursor":null,"vazio_por":null}""")
                 caminho == "/v1/produtos" -> {
                     val cat = Regex("categoria=(\\w+)").find(q)?.groupValues?.get(1) ?: "bebe"
-                    val itens = JSONArray((1..4).map { produto(it + (if (cat == "bebe") 0 else 10), cat) })
+                    // Segunda página repete dois produtos da primeira (o catálogo mudou no meio) e traz um novo: a lista não pode quebrar.
+                    val base = if (cat == "bebe") 0 else 10
+                    val itens = JSONArray((if (q.contains("cursor=")) listOf(3, 4, 5) else listOf(1, 2, 3, 4)).map { produto(it + base, cat) })
                     val cursor = if (q.contains("cursor=")) JSONObject.NULL else "proxima"
                     json(200, JSONObject().put("itens", itens).put("proximo_cursor", cursor).toString())
                 }
@@ -93,7 +95,7 @@ class TelasTest {
                 caminho.endsWith("/historico") -> json(200, """{"series":[]}""")
                 caminho.startsWith("/v1/produtos/") -> json(200, produto(1, "bebe").also { p ->
                     p.remove("menor_preco_centavos"); p.remove("seguido")
-                    p.put("historico_desde", JSONObject.NULL).put("seguimento", if (seguidoAgora) JSONObject() else JSONObject.NULL)
+                    p.put("imagens", JSONArray((1..3).map { "http://127.0.0.1:${servidor.porta}/img/$it.png" })).put("historico_desde", JSONObject.NULL).put("seguimento", if (seguidoAgora) JSONObject() else JSONObject.NULL)
                     p.put("ofertas", JSONArray(listOf(
                         JSONObject().put("preco_centavos", 5990).put("rotulo_condicao", JSONObject.NULL).put("frete", JSONObject().put("status", "a_confirmar").put("centavos", JSONObject.NULL))
                             .put("coletada_em", "2026-10-29T12:00:00Z").put("link", "https://loja.test/a").put("alerta_id", JSONObject.NULL).put("loja", JSONObject().put("nome", "Drogasmil (online)")),

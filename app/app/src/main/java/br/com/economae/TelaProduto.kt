@@ -3,6 +3,11 @@ package br.com.economae
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -53,7 +58,7 @@ fun TelaProduto(m: Modelo, id: String) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), Arrangement.spacedBy(6.dp)) {
                 // Foto grande com o coração de seguir no canto, como no detalhe do KV (04).
                 Box(Modifier.fillMaxWidth()) {
-                    FotoProduto(p.textoOuNulo("imagem_url"), Modifier.fillMaxWidth().height(260.dp), descricao = p.getString("nome"))
+                    GaleriaDeFotos(fotosDoProduto(p), p.getString("nome"), Modifier.fillMaxWidth().height(260.dp))
                     CoracaoDeSeguir(m, id, p.optJSONObject("seguimento") != null, Modifier.align(Alignment.TopEnd).padding(8.dp)) { recarregar() }
                 }
                 Text(p.getString("nome"), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))
@@ -155,5 +160,27 @@ fun CoracaoDeSeguir(m: Modelo, produtoId: String, seguido: Boolean, modifier: Mo
             }
         }
         erro?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp)) }
+    }
+}
+
+/** As fotos do detalhe: a lista `imagens` da API; sem ela (produto coletado antes da galeria), só `imagem_url`. */
+fun fotosDoProduto(p: JSONObject): List<String> {
+    val lista = p.optJSONArray("imagens")?.textos() ?: emptyList()
+    return lista.ifEmpty { listOfNotNull(p.textoOuNulo("imagem_url")) }
+}
+
+/** Fotos que se passam com o dedo, com os pontinhos embaixo. Uma foto só (ou nenhuma) não mostra pontinhos. */
+@Composable
+fun GaleriaDeFotos(fotos: List<String>, descricao: String, modifier: Modifier = Modifier) {
+    if (fotos.size <= 1) { FotoProduto(fotos.firstOrNull(), modifier, descricao, lado = 800); return }
+    val estado = rememberPagerState { fotos.size }
+    Box(modifier) {
+        HorizontalPager(estado, Modifier.fillMaxSize()) { i -> FotoProduto(fotos[i], Modifier.fillMaxSize(), "$descricao, foto ${i + 1} de ${fotos.size}", lado = 800) }
+        Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            repeat(fotos.size) { i ->
+                val cor = if (i == estado.currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                Box(Modifier.size(8.dp).background(cor, CircleShape))
+            }
+        }
     }
 }

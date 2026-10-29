@@ -47,23 +47,24 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
         AND (p.marca_chave IS NULL OR NOT EXISTS (SELECT 1 FROM silenciamentos sm WHERE sm.tenant_id = p.tenant_id AND sm.user_id = $3 AND sm.alcance = 'tudo' AND sm.tipo = 'marca' AND sm.marca_chave = p.marca_chave))`;
 
   /**
-   * Menor preço atual do produto entre as ofertas que a pessoa pode ver: as mesmas regras de `ofertasAtuais` (disponível, na
+   * Menor preço atual de cada produto entre as ofertas que a pessoa pode ver: as mesmas regras de `ofertasAtuais` (disponível, na
    * validade, não escondida, coletada há pouco, marca da fonte liberada, loja não silenciada com "tudo", CEP coberto).
-   * $1 tenant, $3 pessoa; os demais números vêm de `parametros`.
+   * Calculado uma vez para o tenant inteiro (agrupado por produto), e não produto a produto: com milhares de produtos a
+   * consulta correlacionada levava ~1 s por página. $1 tenant, $3 pessoa; os demais números vêm de `parametros`.
    */
-  const PRECO_ATUAL = (o: { agora: number; coletaMinima: number; ceps: number; fontes: number; marcas: number }) => `LEFT JOIN LATERAL (
-        SELECT min(o.preco_centavos) AS menor
+  const PRECO_ATUAL = (o: { agora: number; coletaMinima: number; ceps: number; fontes: number; marcas: number }, juncao: 'JOIN' | 'LEFT JOIN') => `${juncao} (
+        SELECT o.product_id, min(o.preco_centavos) AS menor
           FROM offers o
-          JOIN stores s ON s.tenant_id = o.tenant_id AND s.id = o.store_id
           JOIN sources src ON src.tenant_id = o.tenant_id AND src.id = o.source_id
           LEFT JOIN store_source_refs ref ON ref.tenant_id = o.tenant_id AND ref.source_id = o.source_id AND ref.store_id = o.store_id
-         WHERE o.tenant_id = p.tenant_id AND o.product_id = p.id
+         WHERE o.tenant_id = $1
            AND o.disponivel AND (o.valida_ate IS NULL OR o.valida_ate > $${o.agora}) AND o.escondida_em IS NULL AND o.coletada_em >= $${o.coletaMinima}
            AND (NOT (src.nome = ANY($${o.fontes}::text[])) OR ref.id_externo = ANY($${o.marcas}::text[]))
            AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id)
-           AND EXISTS (SELECT 1 FROM unnest($${o.ceps}::text[]) AS c(cep)
-                         JOIN store_service_areas sa ON sa.tenant_id = o.tenant_id AND sa.store_id = o.store_id AND c.cep BETWEEN sa.cep_inicio AND sa.cep_fim)
-      ) preco ON true`;
+           AND o.store_id IN (SELECT sa.store_id FROM unnest($${o.ceps}::text[]) AS c(cep)
+                                JOIN store_service_areas sa ON sa.tenant_id = $1 AND c.cep BETWEEN sa.cep_inicio AND sa.cep_fim)
+         GROUP BY o.product_id
+      ) preco ON preco.product_id = p.id`;
 
   const ORDENS = ['relevancia', 'menor_preco', 'maior_preco', 'nome'] as const;
   type Ordem = (typeof ORDENS)[number];
@@ -115,7 +116,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
       ceps: par(ceps),
       fontes: par(fontes),
       marcas: par(marcas),
-    });
+    }, pesquisa ? 'LEFT JOIN' : 'JOIN');
     const onde: string[] = [PODE_MOSTRAR];
     let relevancia = 'p.nome, p.id';
     if (pesquisa) {
@@ -137,8 +138,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
       onde.push(`EXISTS (SELECT 1 FROM offers o WHERE o.tenant_id = p.tenant_id AND o.product_id = p.id
                           AND NOT EXISTS (SELECT 1 FROM silenciamentos sl WHERE sl.tenant_id = o.tenant_id AND sl.user_id = $3 AND sl.alcance = 'tudo' AND sl.tipo = 'loja' AND sl.loja_id = o.store_id))`);
     } else {
-      // Navegação mostra só o que a pessoa consegue comprar agora: tem de haver preço atual na área de entrega dela.
-      onde.push('preco.menor IS NOT NULL');
+      // X
       relevancia = 'p.criado_em DESC, p.id';
     }
     if (categoria !== undefined) onde.push(`p.categoria = $${par(categoria)}`);
@@ -171,7 +171,7 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
   async function produtoVisivel(ctx: { tenantId: string; userId: string; tenant: { config: any } }, id: string) {
     if (!UUID.test(id)) throw new ErroApi('nao_encontrado');
     const r = await d.db.query(
-      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria, p.familia_chave
+      `SELECT p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.imagens, p.subcategoria, p.familia_chave
          FROM products p WHERE ${PODE_MOSTRAR} AND p.id = $4`,
       [ctx.tenantId, ctx.tenant.config.app.categorias.map((c: { slug: string }) => c.slug), ctx.userId, id],
     );
@@ -217,6 +217,8 @@ export function rotasProdutos(app: FastifyInstance, d: DepsProdutos): void {
     const sg = (await d.db.query(`SELECT promocao_excepcional, queda_percentual, voltou_estoque, menor_preco_180d, promocao_acabando FROM seguidos WHERE tenant_id = $1 AND user_id = $2 AND product_id = $3`, [ctx.tenantId, ctx.userId, p.product_id])).rows[0];
     return {
       ...produtoResumo(p),
+      // A galeria do detalhe: a primeira é a `imagem_url`; produto antigo (coletado antes da galeria) devolve só a principal.
+      imagens: p.imagens.length > 0 ? p.imagens : p.imagem_url === null ? [] : [p.imagem_url],
       ofertas,
       historico_desde: desde === null ? null : diaLocal(desde, ctx.tenant.config.fuso),
       seguimento: sg === undefined ? null : sg,

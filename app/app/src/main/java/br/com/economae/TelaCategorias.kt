@@ -174,7 +174,8 @@ fun ListaProdutos(m: Modelo, consulta: String, vazio: String, cabecalho: LazyLis
             if (depoisDe == null) { mensagem = resposta.mensagem; estado = Estado.Falha } else erroMais = resposta.mensagem
             return
         }
-        itens = if (depoisDe == null) corpo.lista("itens") else itens + corpo.lista("itens")
+        // A paginação é por posição: se o catálogo mudar entre duas páginas, um produto pode vir de novo. A chave da lista tem de ser única.
+        itens = if (depoisDe == null) corpo.lista("itens") else itens + corpo.lista("itens").filter { n -> itens.none { it.getString("id") == n.getString("id") } }
         cursor = corpo.textoOuNulo("proximo_cursor")
         estado = Estado.Pronto
     }

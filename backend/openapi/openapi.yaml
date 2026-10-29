@@ -1789,6 +1789,11 @@ components:
         - type: object
           required: [ofertas, historico_desde, seguimento]
           properties:
+            imagens:
+              description: Acréscimo da 1.2.0. Fotos do produto para a galeria do detalhe (até 6, só https; a primeira é `imagem_url`). Vazio sem foto.
+              type: array
+              maxItems: 6
+              items: { type: string, format: uri, pattern: '^https://' }
             ofertas:
               type: array
               description: Ofertas disponíveis, na validade, cobertas para um CEP do plano (decisão D8), menor preço primeiro.

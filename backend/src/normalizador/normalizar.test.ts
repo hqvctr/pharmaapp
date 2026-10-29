@@ -147,6 +147,15 @@ describe('categoria e subcategoria do app', () => {
     expect(r).toMatchObject({ tipo: 'ok', produto: { categoria: 'bebe', subcategoria: 'fraldas', imagemUrl: 'https://img.exemplo.test/f.jpg' } });
   });
 
+  it('a lista de fotos segue no produto; só com imagemUrl, vira lista de uma; sem nada, vazia', () => {
+    const base = { titulo: 'Fralda Pampers G 60 Unidades', categoriaFonte: 'health_beauty' };
+    const a = normalizarOferta(oferta({ ...base, imagemUrl: 'https://i.test/1.jpg', imagensUrls: ['https://i.test/1.jpg', 'https://i.test/2.jpg'] }), listas, config);
+    expect(a).toMatchObject({ tipo: 'ok', produto: { imagens: ['https://i.test/1.jpg', 'https://i.test/2.jpg'] } });
+    const b = normalizarOferta(oferta({ ...base, imagemUrl: 'https://i.test/1.jpg' }), listas, config);
+    expect(b).toMatchObject({ tipo: 'ok', produto: { imagens: ['https://i.test/1.jpg'] } });
+    expect(normalizarOferta(oferta(base), listas, config)).toMatchObject({ tipo: 'ok', produto: { imagens: [] } });
+  });
+
   it('sem foto, imagemUrl é null; sem subcategoria da regra, subcategoria é null', () => {
     const r = normalizarOferta(oferta({ titulo: 'Fralda X G 40 Unidades', categoriaFonte: 'x', lojaIdExterno: 'b08af64e-f7bd-434c-b0ac-6baec265f9fc' }), listas, config);
     expect(r).toMatchObject({ tipo: 'ok', produto: { imagemUrl: null } });

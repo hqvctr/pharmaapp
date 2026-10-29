@@ -46,6 +46,7 @@ export interface ProdutoNormalizado {
   subcategoria: string | null;
   /** Foto na loja (https) ou null. */
   imagemUrl: string | null;
+  imagens: string[];
   embalagem: Embalagem;
   ehMedicamento: boolean;
   /** Advertências do Decreto 9.579/2018, art. 6º; vazio = livre. */
@@ -128,6 +129,7 @@ export function normalizarOferta(
       categoria: triagem.liberado ? triagem.categoria : (categoriaMapeada ?? ''),
       subcategoria,
       imagemUrl: bruta.imagemUrl ?? null,
+      imagens: bruta.imagensUrls ?? (bruta.imagemUrl ? [bruta.imagemUrl] : []),
       embalagem,
       ehMedicamento: triagem.liberado ? triagem.ehMedicamento : categoriaMapeada === config.categoriaMedicamentos,
       advertencias: nbcal.tipo === 'advertencia' ? nbcal.advertencias : [],

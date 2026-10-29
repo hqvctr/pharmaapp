@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.json.JSONObject
 
 /**
@@ -78,13 +80,12 @@ fun CirculoDeCategoria(c: JSONObject, aoAbrir: () -> Unit) {
 }
 
 /** Alertas de queda (até 10) ou, sem nenhum, até 12 produtos intercalados entre as categorias. Falha de uma categoria não derruba as outras. */
-suspend fun buscarDestaques(m: Modelo, cats: List<JSONObject>): List<Destaque> {
-    val alertas = m.api.get("/v1/alertas?limite=10")
-    val deAlertas = if (alertas.ok) alertas.corpo?.lista("itens")?.map(::destaqueDeAlerta) ?: emptyList() else emptyList()
-    if (deAlertas.isNotEmpty()) return deAlertas
-    val listas = cats.map { c ->
-        val r = m.api.get(consultaProdutos(categoria = c.getString("slug"), limite = 4))
-        if (r.ok) r.corpo?.lista("itens")?.map(::destaqueDeProduto) ?: emptyList() else emptyList()
-    }
-    return intercalar(listas, 12)
+suspend fun buscarDestaques(m: Modelo, cats: List<JSONObject>): List<Destaque> = coroutineScope {
+    // Tudo em paralelo: alertas e uma página de cada categoria (em série, o Início esperava a soma das respostas).
+    val alertas = async { m.api.get("/v1/alertas?limite=10") }
+    val porCategoria = cats.map { c -> async { m.api.get(consultaProdutos(categoria = c.getString("slug"), limite = 4)) } }
+    val a = alertas.await()
+    val deAlertas = if (a.ok) a.corpo?.lista("itens")?.map(::destaqueDeAlerta) ?: emptyList() else emptyList()
+    if (deAlertas.isNotEmpty()) return@coroutineScope deAlertas
+    intercalar(porCategoria.map { r -> val x = r.await(); if (x.ok) x.corpo?.lista("itens")?.map(::destaqueDeProduto) ?: emptyList() else emptyList() }, 12)
 }

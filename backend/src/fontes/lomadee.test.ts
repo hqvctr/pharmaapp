@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { HttpGravado } from './gravacoes.js';
-import { escolherImagem, fabricaLomadee, LomadeeAdapter, parseProduto } from './lomadee.js';
+import { escolherImagem, escolherImagens, fabricaLomadee, LomadeeAdapter, parseProduto } from './lomadee.js';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const config = { baseUrl: 'https://api.exemplo.test/', organizacoes: ['9001', '9002'], tamanhoPagina: 100, maxPaginas: 20, categoriasGenericas: ['commerce_retail', 'industry_production'] };
@@ -201,5 +201,23 @@ describe('foto e variações (Lomadee)', () => {
       expect(b.ofertas).toHaveLength(3);
       expect(c.ofertas).toHaveLength(3);
     });
+  });
+});
+
+describe('várias fotos (Lomadee)', () => {
+  it('escolherImagens: as da opção primeiro, depois as do produto, sem repetir, só https, até 6', () => {
+    const p = { images: [{ url: 'https://a.test/1.jpg' }, { url: 'https://a.test/2.jpg' }, { url: 'http://a.test/x.jpg' }] };
+    const o = { images: [{ url: 'https://a.test/2.jpg' }, { url: 'https://a.test/o.jpg' }] };
+    expect(escolherImagens(p, o)).toEqual(['https://a.test/2.jpg', 'https://a.test/o.jpg', 'https://a.test/1.jpg']);
+    const muitas = { images: Array.from({ length: 10 }, (_, i) => ({ url: `https://a.test/${i}.jpg` })) };
+    expect(escolherImagens(muitas, {})).toHaveLength(6);
+    expect(escolherImagens({}, null)).toEqual([]);
+  });
+
+  it('a oferta leva a lista e a primeira é a imagemUrl', () => {
+    const r = parseProduto(produto({ images: [{ url: 'https://a.test/1.jpg' }, { url: 'https://a.test/2.jpg' }] }));
+    expect(r.ofertas[0]!.imagensUrls).toEqual(['https://a.test/1.jpg', 'https://a.test/2.jpg']);
+    expect(r.ofertas[0]!.imagemUrl).toBe('https://a.test/1.jpg');
+    expect(parseProduto(produto()).ofertas[0]!.imagensUrls).toEqual([]);
   });
 });

@@ -322,6 +322,19 @@ executar('produtos (Postgres)', () => {
     });
   });
 
+  describe('GET /v1/produtos/{id} (galeria de fotos)', () => {
+    it('devolve as fotos do produto; sem lista usa só a principal; sem foto, vazio', async () => {
+      const p = await t.pessoa();
+      const varias = await comOferta({ nome: 'Galeria Varias', imagemUrl: 'https://i.test/1.jpg', imagens: ['https://i.test/1.jpg', 'https://i.test/2.jpg', 'https://i.test/3.jpg'] });
+      const antigo = await comOferta({ nome: 'Galeria Antigo', imagemUrl: 'https://i.test/a.jpg' });
+      const sem = await comOferta({ nome: 'Galeria Sem' });
+      const ler = async (id: string) => (await t.chamar('GET', `/v1/produtos/${id}`, p.auth)).json();
+      expect((await ler(varias.produto)).imagens).toEqual(['https://i.test/1.jpg', 'https://i.test/2.jpg', 'https://i.test/3.jpg']);
+      expect((await ler(antigo.produto)).imagens).toEqual(['https://i.test/a.jpg']);
+      expect((await ler(sem.produto)).imagens).toEqual([]);
+    });
+  });
+
   describe('GET /v1/produtos/{id}/historico', () => {
     it('um ponto por dia fechado: menor preço por unidade da família, convertido para a embalagem deste produto', async () => {
       const p = await t.pessoa();
