@@ -136,17 +136,18 @@ interface SeguidoLinha {
   estado_em: Date | null;
   estoque_visto: boolean | null;
   menor_180d_visto: boolean | null;
-  preco_base_centavos: number | null;
+  queda_avisada_centavos: number | null;
 }
 
 /**
  * Avalia os produtos seguidos de todas as pessoas. Só deve rodar logo depois de uma coleta que chegou a todas as fontes: com uma
  * fonte fora, as ofertas dela parecem "sem estoque" e, na volta, todo mundo receberia "voltou ao estoque".
  *
- * Regras (DECISIONS 100): a primeira avaliação só guarda o estado, sem aviso; "voltou ao estoque" e "menor preço em 180 dias" avisam
- * na virada de falso para verdadeiro; a queda conta do preço-base (o da primeira avaliação, de quando a pessoa mudou os avisos do
- * produto ou do último aviso de queda) e, depois de avisar, o base passa a ser o preço avisado; "promoção acabando" avisa uma vez
- * por validade, quando faltam até 24 h.
+ * Regras (DECISIONS 100 e 102): a primeira avaliação só guarda o estado, sem aviso; "voltou ao estoque" e "menor preço em 180 dias"
+ * avisam na virada de falso para verdadeiro; "baixou X%" avisa quando o preço fica X% abaixo do **preço normal** do produto (mediana
+ * dos preços dele em todas as lojas nos últimos 30 dias, só com a mesma base mínima de dias do motor), uma vez por queda (de novo
+ * só se cair mais X pontos ou depois de voltar acima do limite); "promoção acabando" avisa uma vez por validade, faltando até 24 h.
+ * Na primeira avaliação e quando a pessoa muda os avisos do produto, uma queda que já existe conta como avisada (ela acabou de ver).
  */
 export async function avaliarSeguidos(pool: pg.Pool, t: Tenant, agora: Date): Promise<{ pessoas: number; avisos: number }> {
   const slugs = t.config.app.categorias.map((c) => c.slug);
@@ -170,7 +171,7 @@ export async function avaliarSeguidos(pool: pg.Pool, t: Tenant, agora: Date): Pr
       const seguidos = (
         await c.query(
           `SELECT sg.id, sg.product_id, sg.queda_percentual, sg.voltou_estoque, sg.menor_preco_180d, sg.promocao_acabando, sg.atualizado_em,
-                  sg.estado_em, sg.estoque_visto, sg.menor_180d_visto, sg.preco_base_centavos
+                  sg.estado_em, sg.estoque_visto, sg.menor_180d_visto, sg.queda_avisada_centavos
              FROM seguidos sg
              JOIN products p ON p.tenant_id = sg.tenant_id AND p.id = sg.product_id
             WHERE sg.tenant_id = $1 AND sg.user_id = $2 AND p.categoria = ANY($3::text[]) AND cardinality(p.advertencias) = 0
@@ -194,6 +195,19 @@ export async function avaliarSeguidos(pool: pg.Pool, t: Tenant, agora: Date): Pr
       }
       const cartoes = await consultarProdutos(c, { tenantId: t.tenantId, userId, config: t.config, agora, ceps, ids, ordem: 'relevancia', offset: 0, limite: ids.length });
       const menor180d = new Set(cartoes.itens.filter((x) => x.menor_preco_180d === true).map((x) => x.id as string));
+      // Preço normal: mediana de 30 dias em todas as lojas; produto com histórico mais curto que a base do motor não tem normal.
+      const normais = new Map<string, number>(
+        (
+          await c.query(
+            `SELECT ph.product_id, percentile_cont(0.5) WITHIN GROUP (ORDER BY ph.preco_centavos) AS normal
+               FROM price_history ph
+              WHERE ph.tenant_id = $1 AND ph.product_id = ANY($2::uuid[]) AND ph.observado_em >= $3
+                AND (SELECT min(x.observado_em) FROM price_history x WHERE x.tenant_id = ph.tenant_id AND x.product_id = ph.product_id) <= $4
+              GROUP BY ph.product_id`,
+            [t.tenantId, ids, new Date(agora.getTime() - 30 * 24 * HORA), new Date(agora.getTime() - t.config.curadoria.minObservacoes * 24 * HORA)],
+          )
+        ).rows.map((r: { product_id: string; normal: number }) => [r.product_id, Number(r.normal)]),
+      );
 
       let n = 0;
       for (const s of seguidos) {
@@ -201,21 +215,24 @@ export async function avaliarSeguidos(pool: pg.Pool, t: Tenant, agora: Date): Pr
         const disponivel = oferta !== undefined;
         const noMenor = menor180d.has(s.product_id);
         const base = (o: OfertaLinha) => ({ userId, origem: 'seguido' as const, productId: s.product_id, storeId: o.store_id, alertId: o.alerta_id, precoCentavos: o.preco_centavos });
-        let precoBase = s.preco_base_centavos;
+        const normal = normais.get(s.product_id);
+        const x = s.queda_percentual;
+        const abaixo = x !== null && oferta !== undefined && normal !== undefined && oferta.preco_centavos <= normal * (1 - x / 100);
+        const recomeco = s.estado_em === null || s.atualizado_em > s.estado_em;
+        let avisada = s.queda_avisada_centavos;
+        if (!abaixo) avisada = null;
+        else if (recomeco) avisada = oferta!.preco_centavos;
+        else if (avisada === null || oferta!.preco_centavos <= avisada - (normal! * x!) / 100) {
+          const queda = arredondar4(1 - oferta!.preco_centavos / normal!);
+          if (await inserirAviso(c, t.tenantId, { ...base(oferta!), tipo: 'queda_percentual', queda, validaAte: oferta!.valida_ate }, agora)) n++;
+          avisada = oferta!.preco_centavos;
+        }
         if (s.estado_em !== null) {
           if (s.voltou_estoque && s.estoque_visto === false && oferta !== undefined) {
             if (await inserirAviso(c, t.tenantId, { ...base(oferta), tipo: 'voltou_estoque', queda: null, validaAte: oferta.valida_ate }, agora)) n++;
           }
           if (s.menor_preco_180d && s.menor_180d_visto === false && noMenor && oferta !== undefined) {
             if (await inserirAviso(c, t.tenantId, { ...base(oferta), tipo: 'menor_preco_180d', queda: null, validaAte: oferta.valida_ate }, agora)) n++;
-          }
-          // Mudou os avisos do produto depois da última avaliação: a queda passa a contar de agora.
-          if (s.atualizado_em > s.estado_em) precoBase = null;
-          else if (s.queda_percentual !== null && oferta !== undefined && precoBase !== null
-            && oferta.preco_centavos <= precoBase * (1 - s.queda_percentual / 100)) {
-            const queda = arredondar4(1 - oferta.preco_centavos / precoBase);
-            if (await inserirAviso(c, t.tenantId, { ...base(oferta), tipo: 'queda_percentual', queda, validaAte: oferta.valida_ate }, agora)) n++;
-            precoBase = oferta.preco_centavos;
           }
         }
         const fim = acabando.get(s.product_id);
@@ -226,10 +243,9 @@ export async function avaliarSeguidos(pool: pg.Pool, t: Tenant, agora: Date): Pr
           );
           if (ja.rowCount === 0 && (await inserirAviso(c, t.tenantId, { ...base(fim), tipo: 'promocao_acabando', queda: null, validaAte: fim.valida_ate }, agora))) n++;
         }
-        if (precoBase === null && oferta !== undefined) precoBase = oferta.preco_centavos;
         await c.query(
-          `UPDATE seguidos SET estado_em = $2, estoque_visto = $3, menor_180d_visto = $4, preco_base_centavos = $5 WHERE id = $1`,
-          [s.id, agora, disponivel, noMenor, precoBase],
+          `UPDATE seguidos SET estado_em = $2, estoque_visto = $3, menor_180d_visto = $4, queda_avisada_centavos = $5 WHERE id = $1`,
+          [s.id, agora, disponivel, noMenor, avisada],
         );
       }
       return n;

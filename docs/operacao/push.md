@@ -8,7 +8,7 @@ coletor, no seu computador: depois de cada coleta e a cada 10 minutos. Regras co
 | Aviso | Quando | Para quem |
 |---|---|---|
 | Promoção excepcional | o motor cria um alerta de destaque (ou o operador aprova um alerta que aguardava) | quem escolheu a categoria **ou** segue o produto, e tem loja que entrega no CEP |
-| Baixou X% | o preço caiu mais que o X da pessoa desde o preço-base | quem segue o produto com esse aviso ligado |
+| Baixou X% | o preço ficou X% abaixo do **preço normal** do produto (mediana dos preços dele em todas as lojas nos últimos 30 dias; precisa de 14 dias de histórico). Uma vez por queda; de novo se cair mais X pontos ou depois de voltar ao normal | quem segue o produto com esse aviso ligado |
 | Voltou ao estoque | o produto estava sem oferta no CEP da pessoa e voltou | idem |
 | Menor preço em 180 dias | o selo "menor preço em 180 dias" acendeu | idem |
 | Promoção acabando | uma oferta do produto vence em menos de 24 h | idem |
@@ -19,7 +19,9 @@ Alerta "só feed" (medicamento, produto com aviso legal da NBCAL, oferta manual)
 
 Todo aviso fica na central. O push sai se a pessoa deu consentimento de notificação, tem o app instalado com sessão ativa, não
 silenciou a loja ou a marca, não está no horário de silêncio (o push espera o fim do silêncio, até 12 h), não passou do limite
-diário e não recebeu push do mesmo produto nas últimas 24 h. O que aconteceu fica em `avisos.push`:
+diário e, se já recebeu push do mesmo produto, **abriu o anterior** (leu o aviso ou abriu a promoção do produto) **ou** o aviso
+novo é pelo menos 1% mais barato **ou** é de uma promoção nova (a loja subiu o preço depois do último push). O que aconteceu
+fica em `avisos.push`:
 
 `enviado`, `pendente` (esperando o silêncio ou o FCM voltar), `sem_consentimento`, `sem_aparelho`, `silenciado`, `limite_diario`,
 `repetido`, `advertencia_legal`, `expirado` (a oferta acabou, subiu ou o push esperou demais), `falhou`.
@@ -96,7 +98,6 @@ Só use `--seguidos` logo depois de uma coleta que deu certo: com uma fonte fora
 
 | Campo | Padrão | O que faz |
 |---|---|---|
-| `antiRepeticaoHoras` | 24 | o mesmo produto não vira push duas vezes para a mesma pessoa nesse tempo |
 | `validadeHoras` | 12 | push que esperou mais que isso não sai mais |
 | `alertaMaxIdadeHoras` | 48 | alerta mais velho que isso quando o despachante o vê não gera aviso |
 | `avisosRetencaoDias` | 90 | a central guarda os avisos por esse tempo (D12) |

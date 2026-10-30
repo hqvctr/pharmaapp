@@ -167,7 +167,7 @@ executar('despachante (Postgres)', () => {
       expect(fcm.chamadas).toEqual([]);
     });
 
-    it('anti-repetição por produto e limite diário da pessoa', async () => {
+    it('o mesmo produto não repete push sem novidade; limite diário da pessoa', async () => {
       const p = await comAparelho({ categorias: ['bebe'] });
       await e.pool.query(`UPDATE user_preferences SET limite_diario = 2 WHERE user_id = $1`, [p.userId]);
       const a = await promocao();
@@ -183,12 +183,43 @@ executar('despachante (Postgres)', () => {
       expect([...porProduto(b.produto), ...porProduto(c.produto)].sort()).toEqual(['enviado', 'limite_diario']);
       const barrado = porProduto(b.produto)[0] === 'limite_diario' ? b : c;
       expect(fcm.chamadas).toHaveLength(2);
-      // No dia seguinte (fuso do tenant) o limite volta; a anti-repetição vale 24 h.
+      // No dia seguinte (fuso do tenant) o limite volta; o produto barrado pelo limite nunca virou push, então sai.
       e.agora = horas(25);
       const amanha = await t.aviso({ userId: p.userId, produto: barrado.produto, loja: barrado.loja, tipo: 'voltou_estoque', preco: 5990, criadoEm: e.agora });
       await e.pool.query(`UPDATE offers SET coletada_em = $1`, [horas(-1)]);
       await enviarPendentes(e.pool, tenant(), e.agora, fcm);
       expect(await pushDe(amanha)).toBe('enviado');
+    });
+
+    it('repetição: sem abrir o push anterior, só sai mais barato (1%) ou de promoção nova; aberto, sai a qualquer hora', async () => {
+      const p = await comAparelho({ categorias: ['bebe'] });
+      await e.pool.query(`UPDATE user_preferences SET limite_diario = 10 WHERE user_id = $1`, [p.userId]);
+      const promo = await promocao();
+      const fcm = new EnviadorFalso();
+      await despachar(e.pool, tenant(), e.agora, { avaliarSeguidos: false, enviador: fcm });
+      expect(fcm.chamadas).toHaveLength(1);
+      const novo = async (preco: number) => {
+        e.agora = new Date(e.agora.getTime() + 60 * 60_000);
+        await e.pool.query(`UPDATE offers SET preco_centavos = $2, coletada_em = $3 WHERE id = $1`, [promo.oferta, preco, e.agora]);
+        const id = await t.aviso({ userId: p.userId, produto: promo.produto, loja: promo.loja, tipo: 'voltou_estoque', preco, criadoEm: e.agora });
+        await enviarPendentes(e.pool, tenant(), e.agora, fcm);
+        return pushDe(id);
+      };
+      // Não abriu e o preço é o mesmo, mesmo um dia depois: repetido.
+      e.agora = horas(24);
+      expect(await novo(5990)).toBe('repetido');
+      // 1% mais barato: sai.
+      expect(await novo(5930)).toBe('enviado');
+      // Promoção nova: a mesma loja registrou preço maior depois do último push; ao mesmo preço, sai.
+      await t.historico(promo.produto, promo.loja, new Date(e.agora.getTime() + 10 * 60_000).toISOString(), 6990 / 60, 6990);
+      expect(await novo(5930)).toBe('enviado');
+      // Abriu o push anterior (o aviso ficou lido): sai ao mesmo preço.
+      await e.pool.query(`UPDATE avisos SET lido_em = $2 WHERE user_id = $1 AND push = 'enviado'`, [p.userId, e.agora]);
+      expect(await novo(5930)).toBe('enviado');
+      // Abrir a promoção do produto pelo app (evento "aberto") também conta.
+      expect(await novo(5930)).toBe('repetido');
+      await e.pool.query(`INSERT INTO alert_events (tenant_id, user_id, alert_id, tipo, origem, ocorrido_em) VALUES ($1,$2,$3,'aberto','feed',$4)`, [e.tenantId, p.userId, promo.alerta, e.agora]);
+      expect(await novo(5930)).toBe('enviado');
     });
 
     it('no horário de silêncio espera; quando acaba, sai; se passar da validade, expira', async () => {
@@ -283,34 +314,58 @@ executar('despachante (Postgres)', () => {
       expect(await avisosDe(p.userId)).toHaveLength(1);
     });
 
-    it('queda conta do preço-base; depois de avisar, o base vira o preço avisado; mudar os avisos recomeça a conta', async () => {
+    it('baixou X% conta do preço normal (mediana de 30 dias); avisa uma vez por queda, de novo se cair mais X pontos ou depois de voltar', async () => {
       if (config === undefined) config = await carregarConfigTenant('padrao');
       const p = await t.pessoa({ categorias: [] });
       const { loja, fonte } = await t.loja();
       const produto = await t.produto();
       const oferta = await t.oferta({ produto, loja, fonte, preco: 10000 });
+      const avisada = async () => (await e.pool.query(`SELECT queda_avisada_centavos FROM seguidos WHERE user_id = $1`, [p.userId])).rows[0].queda_avisada_centavos;
+      const quedas = async () => (await avisosDe(p.userId)).filter((x) => x.tipo === 'queda_percentual').map((x) => [x.preco_centavos, x.queda])
+        .sort((a, b) => b[0] - a[0]); // nascem no mesmo instante: ordem pelo preço, do maior ao menor
+      const preco = async (v: number) => e.pool.query(`UPDATE offers SET preco_centavos = $2, coletada_em = $3 WHERE id = $1`, [oferta, v, e.agora]);
       await t.chamar('PUT', `/v1/seguidos/${produto}`, p.auth, { avisos: avisos({ queda_percentual: 10 }) });
       e.agora = horas(1);
+      // Histórico curto demais (menos que a base do motor): sem preço normal, nada a avisar.
+      await t.historico(produto, loja, dias(-5).toISOString(), 10000 / 60, 10000);
+      await avaliarSeguidos(e.pool, tenant(), e.agora); // primeira avaliação, a 100,00
+      await preco(8000);
       await avaliarSeguidos(e.pool, tenant(), e.agora);
-      const preco = async (v: number) => e.pool.query(`UPDATE offers SET preco_centavos = $2, coletada_em = $3 WHERE id = $1`, [oferta, v, e.agora]);
+      expect(await quedas()).toEqual([]);
+      await preco(10000);
+      // Com 20 dias de histórico a 100,00 o normal é 100,00.
+      await t.historico(produto, loja, dias(-20).toISOString(), 10000 / 60, 10000);
       await preco(9500); // 5%: não basta
       await avaliarSeguidos(e.pool, tenant(), e.agora);
-      expect(await avisosDe(p.userId)).toEqual([]);
-      await preco(8900); // 11% do base de 100,00
+      expect(await quedas()).toEqual([]);
+      await preco(8900); // 11% abaixo do normal
       await avaliarSeguidos(e.pool, tenant(), e.agora);
-      expect(await avisosDe(p.userId)).toEqual([expect.objectContaining({ tipo: 'queda_percentual', preco_centavos: 8900, queda: 0.11 })]);
-      expect((await e.pool.query(`SELECT preco_base_centavos FROM seguidos WHERE user_id = $1`, [p.userId])).rows[0].preco_base_centavos).toBe(8900);
-      await preco(8100); // 9% do novo base: não basta
       await avaliarSeguidos(e.pool, tenant(), e.agora);
-      expect(await avisosDe(p.userId)).toHaveLength(1);
+      expect(await quedas()).toEqual([[8900, 0.11]]);
+      expect(await avisada()).toBe(8900);
+      await preco(8100); // só mais 8 pontos: não basta
+      await avaliarSeguidos(e.pool, tenant(), e.agora);
+      expect(await quedas()).toHaveLength(1);
+      await preco(7800); // mais 11 pontos
+      await avaliarSeguidos(e.pool, tenant(), e.agora);
+      expect(await quedas()).toEqual([[8900, 0.11], [7800, 0.22]]);
+      await preco(10000); // voltou ao normal: a próxima queda avisa de novo
+      await avaliarSeguidos(e.pool, tenant(), e.agora);
+      expect(await avisada()).toBeNull();
+      await preco(8900);
+      await avaliarSeguidos(e.pool, tenant(), e.agora);
+      expect(await quedas()).toHaveLength(3);
 
+      // Mudar os avisos do produto com o preço já abaixo: conta como avisada (a pessoa acabou de ver), sem aviso novo.
+      await preco(10000);
+      await avaliarSeguidos(e.pool, tenant(), e.agora);
       e.agora = horas(2);
+      await preco(8900);
       await t.chamar('PUT', `/v1/seguidos/${produto}`, await t.reabrir(p.userId), { avisos: avisos({ queda_percentual: 5 }) });
       e.agora = horas(3);
-      await preco(8100);
       await avaliarSeguidos(e.pool, tenant(), e.agora);
-      expect((await e.pool.query(`SELECT preco_base_centavos FROM seguidos WHERE user_id = $1`, [p.userId])).rows[0].preco_base_centavos).toBe(8100);
-      expect(await avisosDe(p.userId)).toHaveLength(1);
+      expect(await quedas()).toHaveLength(3);
+      expect(await avisada()).toBe(8900);
     });
 
     it('menor preço em 180 dias avisa na virada; promoção acabando avisa uma vez por validade', async () => {

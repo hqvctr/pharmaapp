@@ -5,7 +5,8 @@
 //  3. sem consentimento de notificação → sem_consentimento;
 //  4. loja ou marca silenciadas (push ou tudo) → silenciado;
 //  5. dentro do horário de silêncio da pessoa → continua pendente e sai quando o silêncio acabar (se não expirar antes);
-//  6. o mesmo produto já virou push para a pessoa em `push.antiRepeticaoHoras` → repetido;
+//  6. repetição (DECISIONS 102): o último push do mesmo produto para a pessoa não foi aberto e o aviso novo não é mais barato
+//     (1% ou mais) nem de uma promoção nova (o preço daquela loja subiu depois do push) → repetido. Se ela abriu, pode sair;
 //  7. já saíram `limite_diario` pushes hoje (dia do fuso do tenant) → limite_diario;
 //  8. nenhum aparelho com sessão viva → sem_aparelho;
 //  9. envia a todos os aparelhos da pessoa: algum recebeu → enviado; token recusado apaga o aparelho; falha passageira deixa
@@ -69,7 +70,6 @@ export async function enviarPendentes(pool: pg.Pool, t: Tenant, agora: Date, env
 
   const inicioDoDia = (await pool.query(`SELECT date_trunc('day', $1::timestamptz AT TIME ZONE $2) AT TIME ZONE $2 AS d`, [agora, t.config.fuso])).rows[0].d as Date;
   const hora = horaLocal(agora, t.config.fuso);
-  const antiRepeticao = new Date(agora.getTime() - cfg.push.antiRepeticaoHoras * HORA);
   const validade = agora.getTime() - cfg.push.validadeHoras * HORA;
 
   const porPessoa = new Map<string, any[]>();
@@ -101,11 +101,26 @@ export async function enviarPendentes(pool: pg.Pool, t: Tenant, agora: Date, env
     const silencios = (
       await pool.query(`SELECT tipo, loja_id, marca_chave FROM silenciamentos WHERE tenant_id = $1 AND user_id = $2`, [t.tenantId, userId])
     ).rows as Array<{ tipo: string; loja_id: string | null; marca_chave: string | null }>;
-    const recentes = new Set(
-      (
-        await pool.query(`SELECT DISTINCT product_id FROM avisos WHERE tenant_id = $1 AND user_id = $2 AND push = 'enviado' AND push_em > $3`, [t.tenantId, userId, antiRepeticao])
-      ).rows.map((r: { product_id: string }) => r.product_id),
-    );
+    // Último push de cada produto: se a pessoa o abriu (leu o aviso ou abriu uma promoção do produto depois dele) e se a promoção
+    // dele acabou (a mesma loja registrou preço maior depois do push).
+    const ultimos = new Map<string, { preco: number | null; aberto: boolean; acabou: boolean }>();
+    for (const r of (
+      await pool.query(
+        `SELECT DISTINCT ON (av.product_id) av.product_id, av.preco_centavos,
+                (av.lido_em IS NOT NULL OR EXISTS (
+                   SELECT 1 FROM alert_events ev JOIN alerts al ON al.tenant_id = ev.tenant_id AND al.id = ev.alert_id
+                                                 JOIN offers o ON o.tenant_id = al.tenant_id AND o.id = al.offer_id
+                    WHERE ev.tenant_id = av.tenant_id AND ev.user_id = av.user_id AND o.product_id = av.product_id
+                      AND ev.tipo = 'aberto' AND ev.ocorrido_em >= av.push_em)) AS aberto,
+                EXISTS (SELECT 1 FROM price_history ph
+                         WHERE ph.tenant_id = av.tenant_id AND ph.product_id = av.product_id AND ph.store_id = av.store_id
+                           AND ph.observado_em > av.push_em AND ph.preco_centavos > av.preco_centavos) AS acabou
+           FROM avisos av
+          WHERE av.tenant_id = $1 AND av.user_id = $2 AND av.push = 'enviado'
+          ORDER BY av.product_id, av.push_em DESC, av.id`,
+        [t.tenantId, userId],
+      )
+    ).rows) ultimos.set(r.product_id, { preco: r.preco_centavos, aberto: r.aberto, acabou: r.acabou });
     let hoje = (
       await pool.query(`SELECT count(*)::int AS n FROM avisos WHERE tenant_id = $1 AND user_id = $2 AND push = 'enviado' AND push_em >= $3`, [t.tenantId, userId, inicioDoDia])
     ).rows[0].n as number;
@@ -136,7 +151,9 @@ export async function enviarPendentes(pool: pg.Pool, t: Tenant, agora: Date, env
         resumo.aguardandoSilencio++;
         continue;
       }
-      if (recentes.has(a.product_id)) {
+      const ultimo = ultimos.get(a.product_id);
+      const maisBarato = ultimo?.preco != null && a.preco_centavos !== null && a.preco_centavos <= ultimo.preco * 0.99;
+      if (ultimo !== undefined && !ultimo.aberto && !ultimo.acabou && !maisBarato) {
         await marcar(a.id, 'repetido');
         continue;
       }
@@ -183,7 +200,7 @@ export async function enviarPendentes(pool: pg.Pool, t: Tenant, agora: Date, env
       if (recebido) {
         await marcar(a.id, 'enviado');
         hoje++;
-        recentes.add(a.product_id);
+        ultimos.set(a.product_id, { preco: a.preco_centavos, aberto: false, acabou: false });
       } else if (invalidos === aparelhos.length) await marcar(a.id, 'sem_aparelho');
       else if (!temporaria) await marcar(a.id, 'falhou');
     }

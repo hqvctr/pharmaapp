@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Regras do push decididas (2026-10-30, DECISIONS 102)
+
+O responsável confirmou o silêncio que espera e a validade de 12 h, e trocou duas regras: (1) **repetição**: sem abrir o último push do produto, só sai outro com desconto maior (1%) ou numa promoção nova; se abriu, a qualquer hora; (2) **baixou X%** conta do **preço normal** (mediana de 30 dias em todas as lojas). Migration 0015; `antiRepeticaoHoras` saiu da config. 735 testes passam; 14 mutações das regras novas quebram o teste certo. Lembrete "carrinho parado" adiado (BACKLOG). Entra no computador na próxima atualização (zip da branch + `atualizar.bat`).
+
 ## Push testado no celular (2026-10-30)
 
 **Funcionou de ponta a ponta**, informado pelo responsável: app 0.5.0 instalado, notificações ligadas no Perfil, aparelho registrado (`dispositivos`: android, 0.5.0-previa), alertas de demonstração (`demo-feed.bat`) e as notificações chegaram ao celular, enviadas pelo coletor com a chave da conta de serviço `b5aeff6f...`. Achados do teste no BACKLOG: falta "puxar para atualizar" no app; quem já tinha consentido não vê o pedido de permissão do Android. Próximos: o responsável confirmar as regras propostas do push (DECISIONS 100); depois de ~11/11, os primeiros alertas reais do motor.
