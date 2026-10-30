@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Computador atualizado com a fase 4 (2026-10-30)
+
+Relatório do Cowork: `docs/juridico/fontes/atualizacao-fase4-2026-10-30.md`. Zip da `claude/zen-gates-965k2e` aplicado pelo `atualizar.bat` (rodado pelo responsável); coletor religado às 02h23 com "push ligado"; `status.bat` novo: "3 de 7 dias", 1 aparelho registrado, avisos das últimas 24 h "enviado 2, sem_aparelho 2" (os da demonstração). Os 8 alertas são os de demonstração (apagar com `demo-feed-remover.bat`). Primeiros alertas reais por volta de 04/11.
+
 ## Histórico mínimo de 7 dias e branches juntas (2026-10-30, DECISIONS 103)
 
 O responsável reduziu o histórico mínimo do motor de 14 para 7 dias: primeiros alertas reais por volta de 04/11. `status.bat` e o painel leem o valor da config. A branch `claude/zen-gates-965k2e` recebeu toda a fase 4 (avanço simples, sem reescrever nada) e está igual à `ccr-a7b2508f-xu0ojs`; o `atualizar.bat` volta a servir com o zip dela. 735 testes passam; `pronto-fase3` PRONTO. **`pronto-fase2.sh` falha em 4 checagens, já antes desta mudança** (com 14 dias também): tarefa separada sugerida. Atualização do computador pelo Cowork: prompt de 30/10.
