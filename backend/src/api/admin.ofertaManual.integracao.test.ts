@@ -50,8 +50,8 @@ executar('admin: cadastro de oferta manual (Postgres)', () => {
     expect(aud[0]).toMatchObject({ acao: 'oferta_manual_criada', alvo_tipo: 'oferta', detalhe: { produto_novo: true, loja_id: loja, preco_centavos: 4990, validade_padrao_aplicada: false } });
     // A fonte "manual" é do tipo E e fica inativa: o coletor nunca a recolhe nem a esconde.
     expect((await e.pool.query(`SELECT s.nome, s.tipo, s.ativa FROM offers o JOIN sources s ON s.id = o.source_id WHERE o.id = $1`, [o.id])).rows[0]).toEqual({ nome: 'manual', tipo: 'E', ativa: false });
-    // Sem push: nada em entregas.
-    expect(await contar(`SELECT count(*)::int AS n FROM deliveries WHERE alert_id = $1`, [o.alerta_id])).toBe(0);
+    // Sem push: o alerta é só de feed, então nenhum aviso nasce dele.
+    expect(await contar(`SELECT count(*)::int AS n FROM avisos WHERE alert_id = $1`, [o.alerta_id])).toBe(0);
   });
 
   it('sem valida_ate vale o prazo padrão do tenant (7 dias) e a resposta avisa', async () => {

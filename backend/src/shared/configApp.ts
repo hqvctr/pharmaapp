@@ -37,6 +37,12 @@ export interface ConfigApp {
   inicio: { porUnidade: Array<{ categoria: string; subcategoria: string; unidade: 'un' | 'kg' | 'l'; quantidadeMinima: number; titulo: string }> };
   /** Regra de denúncia (PRODUTO.md): limite = max(minimo, ceil(percentual × pessoas que abriram ou clicaram nos últimos `janelaDias`)). */
   denuncia: { minimo: number; percentual: number; janelaDias: number };
+  /**
+   * Despachante (fase 4, DECISIONS 100). `antiRepeticaoHoras`: o mesmo produto não vira push duas vezes para a mesma pessoa nessa
+   * janela; `validadeHoras`: push que esperou mais que isso (silêncio, falha da rede) não sai mais; `alertaMaxIdadeHoras`: alerta
+   * mais velho que isso quando o despachante o vê não gera aviso; `avisosRetencaoDias`: a central guarda (D12).
+   */
+  push: { antiRepeticaoHoras: number; validadeHoras: number; alertaMaxIdadeHoras: number; avisosRetencaoDias: number };
   limitesTaxa: Record<string, { maximo: number; janelaSegundos: number }>;
 }
 
@@ -150,6 +156,14 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
   if (typeof dn.percentual !== 'number' || !(dn.percentual > 0 && dn.percentual <= 1)) inv('denuncia.percentual');
   const denuncia = { minimo: inteiro(dn.minimo, 'denuncia.minimo', 1), percentual: dn.percentual as number, janelaDias: inteiro(dn.janelaDias, 'denuncia.janelaDias', 1, 90) };
 
+  const pu = bruto.push ?? {};
+  const push = {
+    antiRepeticaoHoras: inteiro(pu.antiRepeticaoHoras ?? 24, 'push.antiRepeticaoHoras', 1, 168),
+    validadeHoras: inteiro(pu.validadeHoras ?? 12, 'push.validadeHoras', 1, 48),
+    alertaMaxIdadeHoras: inteiro(pu.alertaMaxIdadeHoras ?? 48, 'push.alertaMaxIdadeHoras', 1, 168),
+    avisosRetencaoDias: inteiro(pu.avisosRetencaoDias ?? 90, 'push.avisosRetencaoDias', 7, 365),
+  };
+
   const limitesTaxa: ConfigApp['limitesTaxa'] = {};
   for (const [rota, v] of Object.entries((bruto.limitesTaxa ?? {}) as Record<string, any>)) {
     limitesTaxa[rota] = {
@@ -178,6 +192,7 @@ export function validarConfigApp(bruto: any, curadoria: ConfigCuradoria, categor
     feed,
     inicio,
     denuncia,
+    push,
     limitesTaxa,
   };
 }

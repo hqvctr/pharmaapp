@@ -106,9 +106,14 @@ services:
       CREDENTIALS_KEY_VERSION: ${CREDENTIALS_KEY_VERSION:-v1}
       TENANT: ${TENANT:-padrao}
       INTERVALO_COLETA_MIN: ${INTERVALO_COLETA_MIN:-120}
+      INTERVALO_DESPACHO_MIN: ${INTERVALO_DESPACHO_MIN:-10}
+      # Push (fase 4): o JSON da conta de serviço do Firebase fica em ./segredos (fora do Git) e aparece aqui como
+      # /segredos/<arquivo>. Vazio = push desligado; os avisos continuam na central do app.
+      FCM_CONTA_SERVICO: ${FCM_CONTA_SERVICO:-}
       NODE_OPTIONS: --max-old-space-size=2048
     volumes:
       - dados:/app/data
+      - ./segredos:/segredos:ro
     depends_on:
       provisionar:
         condition: service_completed_successfully

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: economae API (app)
-  version: 1.3.0
+  version: 1.4.0
   license:
     name: Proprietária
     identifier: LicenseRef-Proprietaria
@@ -2070,6 +2070,19 @@ components:
         preco_centavos: { type: [integer, 'null'] }
         queda: { type: [number, 'null'], minimum: 0, maximum: 1 }
         valida_ate: { type: [string, 'null'], format: date-time, description: Preenchido em promocao_acabando. }
+        push: { $ref: '#/components/schemas/PushDoAviso' }
+    PushDoAviso:
+      type: object
+      description: |
+        Acréscimo da 1.4.0. O que aconteceu com a notificação deste aviso (o aviso fica na central de qualquer jeito).
+        `pendente` = ainda vai ser decidido (ex.: esperando o fim do horário de silêncio); `enviado` = saiu para ao menos um
+        aparelho; os outros dizem por que não saiu. Valor novo pode aparecer: o app trata o desconhecido como "não enviado".
+      required: [situacao, em]
+      properties:
+        situacao:
+          type: string
+          enum: [pendente, enviado, sem_consentimento, sem_aparelho, silenciado, limite_diario, repetido, advertencia_legal, expirado, falhou]
+        em: { type: [string, 'null'], format: date-time, description: Quando saiu ou foi decidido não enviar; null enquanto pendente. }
     PaginaAvisos:
       allOf:
         - $ref: '#/components/schemas/PaginaBase'
@@ -2414,6 +2427,7 @@ components:
             preco_centavos: 1990
             queda: 0.3344
             valida_ate: null
+            push: { situacao: enviado, em: '2026-10-27T12:02:00Z' }
         proximo_cursor: null
         nao_lidos: 1
     ExportacaoDados:

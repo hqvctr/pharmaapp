@@ -2,7 +2,9 @@
 // medicamentos (CMED) em dia. Pensado para ficar ligado no computador do operador (Docker) ou num servidor.
 //   node dist/pipeline/ciclo.js
 // Ambiente: DATABASE_URL, CREDENTIALS_KEY (+ CREDENTIALS_KEY_VERSION), TENANT (padrão "padrao"),
-//   DADOS (pasta de dados, padrão "data"), INTERVALO_COLETA_MIN (padrão 120), LISTA_MAX_DIAS (padrão 7).
+//   DADOS (pasta de dados, padrão "data"), INTERVALO_COLETA_MIN (padrão 120), LISTA_MAX_DIAS (padrão 7),
+//   INTERVALO_DESPACHO_MIN (padrão 10), FCM_CONTA_SERVICO (JSON da conta de serviço do Firebase; sem ele, sem push).
+// O despachante de avisos (fase 4) roda no mesmo processo: depois de cada coleta e a cada INTERVALO_DESPACHO_MIN minutos.
 // Um ciclo com erro não derruba o coletor: o erro vai para o log e o próximo ciclo tenta de novo.
 import { mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -11,6 +13,8 @@ import pg from 'pg';
 import { atualizarListas, listaEstaVelha } from '../normalizador/atualizarListas.js';
 import { carregarListasMedicamentos } from '../normalizador/listas.js';
 import type { ListasMedicamentos } from '../normalizador/medicamentos.js';
+import { descreverDespacho, despachar } from '../despachante/despachar.js';
+import { enviadorDoAmbiente } from '../despachante/fcm.js';
 import { carregarChaveCredenciais } from '../shared/cifra.js';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
 import { coletarFontes, type ResultadoFonte } from './coletarFontes.js';
@@ -132,6 +136,8 @@ async function main(): Promise<void> {
   const dados = process.env.DADOS ?? 'data';
   const intervaloMin = inteiroEnv('INTERVALO_COLETA_MIN', 120, 15, 1440);
   const listaMaxDias = inteiroEnv('LISTA_MAX_DIAS', 7, 1, 60);
+  const intervaloDespachoMin = inteiroEnv('INTERVALO_DESPACHO_MIN', 10, 1, 120);
+  const enviador = await enviadorDoAmbiente();
   const chave = carregarChaveCredenciais();
   const config = await carregarConfigTenant(tenant);
   const arquivoLista = path.join(dados, 'listas', 'atual.json');
@@ -142,7 +148,27 @@ async function main(): Promise<void> {
   for (const s of ['SIGTERM', 'SIGINT'] as const) process.on(s, () => parar.abort());
   const log = (m: string): void => console.log(`${new Date().toISOString()} ${m}`);
 
-  log(`Coletor iniciado: tenant ${tenant}, a cada ${intervaloMin} min`);
+  log(`Coletor iniciado: tenant ${tenant}, a cada ${intervaloMin} min; push ${enviador === null ? 'desligado (sem FCM_CONTA_SERVICO)' : 'ligado'}`);
+  // Seguidos só depois de coleta que chegou a todas as fontes: com uma fora, as ofertas dela pareceriam sem estoque.
+  // As rodadas deste processo vão em fila: a de depois da coleta não é pulada por coincidir com a periódica.
+  let fila: Promise<void> = Promise.resolve();
+  const rodarDespacho = (avaliarSeguidos: boolean): Promise<void> => (fila = fila.then(() => umDespacho(avaliarSeguidos)));
+  const umDespacho = async (avaliarSeguidos: boolean): Promise<void> => {
+    try {
+      const t = (await pool.query(`SELECT id FROM tenants WHERE slug = $1`, [tenant])).rows[0];
+      if (t === undefined) return;
+      const r = await despachar(pool, { tenantId: t.id, config }, new Date(), { avaliarSeguidos, enviador, log });
+      if (avaliarSeguidos || (r.envio?.avaliados ?? 0) > 0 || (r.alertas?.alertas ?? 0) > 0) log(descreverDespacho(r));
+    } catch (err) {
+      log(`Despachante com erro: ${(err as Error).message}`);
+    }
+  };
+  const despachos = (async () => {
+    while (!parar.signal.aborted) {
+      await dormirReal(intervaloDespachoMin * 60_000, parar.signal);
+      if (!parar.signal.aborted) await rodarDespacho(false);
+    }
+  })();
   try {
     await rodarCiclos({
       intervaloMs: intervaloMin * 60_000,
@@ -166,9 +192,12 @@ async function main(): Promise<void> {
         const totais = r.fontes.map((f) => `${f.fonte}: ${f.erro ? `ERRO ${f.erro}` : `${f.coletadas ?? 0} ofertas`}`).join('; ');
         log(`Ciclo ${r.falhou ? 'com problemas' : 'ok'}${totais ? ` (${totais})` : ''}`);
         await gravarEstado(dados, r);
+        await rodarDespacho(!naoChegouAColetar(r));
       },
     });
   } finally {
+    parar.abort();
+    await despachos;
     await pool.end();
     log('Coletor parado');
   }

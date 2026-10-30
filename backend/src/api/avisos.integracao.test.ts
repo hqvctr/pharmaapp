@@ -37,6 +37,8 @@ executar('avisos (Postgres)', () => {
         produto: expect.objectContaining({ id: produto, nome: 'Fralda Pampers G' }),
         loja: { id: loja, nome: 'Drogasil (online)', rede: 'Drogasil', tipo: 'online' },
         alerta_id: alerta, preco_centavos: 5990, queda: 0.3344, valida_ate: null,
+        // Aviso gravado à mão no teste: o despachante não passou por ele.
+        push: { situacao: 'pendente', em: null },
       });
       expect(d.itens[1]).toMatchObject({ loja: null, alerta_id: null, preco_centavos: null, queda: null, valida_ate: minutos(-60).toISOString() });
       expect(d.itens[2].lido_em).toBe(minutos(5).toISOString());

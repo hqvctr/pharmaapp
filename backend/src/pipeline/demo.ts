@@ -81,7 +81,8 @@ export async function removerDemonstracao(db: repo.Db, tenantId: string): Promis
   await db.query(`DELETE FROM avaliacoes WHERE tenant_id = $1 AND alert_id IN (${ids})`, args);
   await db.query(`DELETE FROM denuncias WHERE tenant_id = $1 AND alert_id IN (${ids})`, args);
   await db.query(`DELETE FROM casos_denuncia WHERE tenant_id = $1 AND alert_id IN (${ids})`, args);
-  await db.query(`UPDATE avisos SET alert_id = NULL WHERE tenant_id = $1 AND alert_id IN (${ids})`, args);
+  // A queda da demonstração é inventada: o aviso (e o push) que ela gerou sai junto, não fica na central como se fosse real.
+  await db.query(`DELETE FROM avisos WHERE tenant_id = $1 AND alert_id IN (${ids})`, args);
   const r = await db.query(`DELETE FROM alerts WHERE tenant_id = $1 AND motivo LIKE $2`, args);
   return r.rowCount ?? 0;
 }

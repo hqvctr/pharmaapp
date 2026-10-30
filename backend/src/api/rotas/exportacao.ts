@@ -17,7 +17,6 @@ import { listarSilenciamentos } from './silenciamentos.js';
  */
 export const TABELAS_FORA_DA_EXPORTACAO: Record<string, string> = {
   sessions: 'só hashes de token e datas de sessão; não é dado da pessoa que o contrato exporte',
-  deliveries: 'registro de envio de push (fase 4); entra na exportação junto com o despachante, com mudança no contrato',
 };
 
 const iso = (d: Date): string => d.toISOString();

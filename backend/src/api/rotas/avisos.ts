@@ -1,5 +1,5 @@
 // /v1/avisos e /v1/avisos/leitura (openapi.yaml, tag avisos): a central de avisos. Exigem termos aceitos.
-// Hoje nada cria aviso (o despachante é da fase 4); a rota lê o que a tabela tiver.
+// Quem cria os avisos é o despachante (src/despachante, fase 4); a rota lê o que a tabela tiver.
 import type { FastifyInstance } from 'fastify';
 import { produtoResumo } from '../alertas.js';
 import { corpoObjeto, falhaDeValidacao } from '../corpo.js';
@@ -8,7 +8,7 @@ import type { CampoInvalido } from '../erros.js';
 import { exigirSessao } from '../sessao.js';
 import type { DepsAuth } from './auth.js';
 
-export const COLUNAS_AVISO = `av.id AS aviso_id, av.tipo, av.origem, av.criado_em, av.lido_em, av.alert_id, av.preco_centavos, av.queda, av.valida_ate,
+export const COLUNAS_AVISO = `av.id AS aviso_id, av.tipo, av.origem, av.criado_em, av.lido_em, av.alert_id, av.preco_centavos, av.queda, av.valida_ate, av.push, av.push_em,
        p.id AS product_id, p.nome, p.marca, p.marca_chave, p.categoria, p.gtin, p.quantidade, p.unidade, p.imagem_url, p.subcategoria,
        s.id AS store_id, s.nome AS loja_nome, s.rede, s.tipo AS loja_tipo`;
 export const JUNCOES_AVISO = `FROM avisos av
@@ -29,6 +29,7 @@ export function paraAviso(r: any) {
     preco_centavos: r.preco_centavos,
     queda: r.queda === null ? null : Number(r.queda),
     valida_ate: r.valida_ate === null ? null : r.valida_ate.toISOString(),
+    push: { situacao: r.push, em: r.push_em === null ? null : r.push_em.toISOString() },
   };
 }
 

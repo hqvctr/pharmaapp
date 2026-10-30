@@ -35,6 +35,7 @@ backend/
   src/fontes/        contrato SourceAdapter e adaptadores (Lomadee)
   src/normalizador/  embalagem, chaves de produto, triagem de medicamento
   src/avaliador/     histórico diário e deduplicação de alerta
+  src/despachante/   avisos da central e push (FCM), fase 4
   src/pipeline/      coleta ponta a ponta e SQL
   src/db/            runner de migration
   src/shared/        leitura de ambiente

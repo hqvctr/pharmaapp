@@ -57,7 +57,7 @@ executar('alertas de demonstração (Postgres)', () => {
     expect(await removerDemonstracao(e.pool, e.tenantId)).toBe(2);
     expect(ids(await t.chamar('GET', '/v1/alertas', p.auth))).toEqual(antes);
     expect((await e.pool.query(`SELECT count(*)::int AS n FROM alerts WHERE motivo LIKE 'DEMO:%'`)).rows[0].n).toBe(0);
-    expect((await e.pool.query(`SELECT count(*)::int AS n FROM avisos WHERE alert_id IS NULL AND user_id = $1`, [p.userId])).rows[0].n).toBe(1); // o aviso fica, sem o alerta
+    expect((await e.pool.query(`SELECT count(*)::int AS n FROM avisos WHERE user_id = $1`, [p.userId])).rows[0].n).toBe(0); // a queda era inventada: o aviso sai junto
     expect(await removerDemonstracao(e.pool, e.tenantId)).toBe(0);
   });
 
