@@ -116,7 +116,7 @@ fun AbaAvisos(m: Modelo) {
             if (!r.ok || corpo == null) { Erro(r.mensagem, recarregar); return@Carregar }
             LaunchedEffect(corpo.optInt("nao_lidos")) { m.naoLidos = corpo.optInt("nao_lidos") }
             val itens = corpo.lista("itens")
-            if (itens.isEmpty()) { Vazio("Nenhum aviso ainda. Os avisos dos produtos que você segue chegam aqui (o envio automático ainda não existe nesta prévia)."); return@Carregar }
+            if (itens.isEmpty()) { Vazio("Nenhum aviso ainda. As promoções excepcionais das suas categorias e os avisos dos produtos que você segue chegam aqui."); return@Carregar }
             LazyColumn(contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(itens, key = { it.getString("id") }) { a ->
                     val lido = !a.isNull("lido_em")
@@ -158,6 +158,18 @@ fun AbaConta(m: Modelo) {
     val u = m.usuario
     var mensagem by remember { mutableStateOf<String?>(null) }
     var confirmarExclusao by remember { mutableStateOf(false) }
+    // Recalcula ao voltar das configurações do Android (a versão muda quando a conta recarrega).
+    var permitidas by remember(m.versao, u) { mutableStateOf(Push.permitido(contexto)) }
+    val pedirNotificacoes = rememberPedirNotificacoes { ok ->
+        permitidas = ok
+        escopo.launch {
+            try {
+                m.api.put("/v1/me/consentimentos", JSONObject().put("notificacoes", true))
+                m.recarregarUsuario()
+                Push.registrar(m.api)
+            } catch (e: SemConexao) { mensagem = e.message }
+        }
+    }
     if (u == null) { Erro("Conta não carregada."); return }
     val plano = u.getJSONObject("plano")
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), Arrangement.spacedBy(6.dp)) {
@@ -171,12 +183,20 @@ fun AbaConta(m: Modelo) {
         Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
             Text("Avisos por notificação", Modifier.weight(1f))
             Switch(u.getBoolean("notificacoes_consentidas"), { ligado ->
-                escopo.launch {
-                    try { m.api.put("/v1/me/consentimentos", JSONObject().put("notificacoes", ligado)); m.recarregarUsuario() } catch (e: SemConexao) { mensagem = e.message }
+                // Ligar pede a permissão do Android (13+) e registra o aparelho; desligar faz a API apagar o registro dos aparelhos.
+                if (ligado) pedirNotificacoes()
+                else escopo.launch {
+                    try { m.api.put("/v1/me/consentimentos", JSONObject().put("notificacoes", false)); m.recarregarUsuario() } catch (e: SemConexao) { mensagem = e.message }
                 }
             })
         }
-        Text("O envio de notificações push ainda não existe nesta prévia; esta chave só grava o seu consentimento.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (u.getBoolean("notificacoes_consentidas") && !permitidas) {
+            Text(TEXTO_NOTIFICACAO_BLOQUEADA, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TextButton({ abrirConfiguracaoDeNotificacoes(contexto) }) { Text("Abrir configurações de notificação") }
+        } else {
+            Text("Promoções excepcionais das categorias escolhidas e avisos dos produtos que você segue, respeitando o silêncio e o limite diário.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
 
         Titulo("Silenciados")
         Carregar(m.versao, { m.api.get("/v1/silenciamentos") }) { r, _ ->

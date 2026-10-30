@@ -1,0 +1,47 @@
+# Compila o app Android de prévia e roda os testes dele (os mesmos do scripts/gerar-apk.sh). O APK fica nos artefatos da execução
+# ("economae-previa-apk"), para baixar pelo GitHub. A máquina do GitHub já traz o Android SDK.
+name: app Android
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - ".github/workflows/app.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Testes e APK
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          ./gradlew --no-daemon testDebugUnitTest assembleDebug
+      - name: Assinatura (SHA-1 esperado 7C:1C:...:36:A6)
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT"/apksigner verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep -E "SHA-1"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: economae-previa-apk
+          path: app/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: relatorio-testes
+          path: app/app/build/reports/tests/
+          retention-days: 7

@@ -46,8 +46,10 @@ fun TelaTermos(m: Modelo) {
     val cfg = m.config
     var aceito by remember { mutableStateOf(false) }
     var notificacoes by remember { mutableStateOf(false) }
+    var bloqueadas by remember { mutableStateOf(false) }
     var ocupado by remember { mutableStateOf(false) }
     var erro by remember { mutableStateOf<String?>(null) }
+    val pedirNotificacoes = rememberPedirNotificacoes { permitidas -> bloqueadas = !permitidas }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), Arrangement.spacedBy(12.dp)) {
         Text("Antes de começar", style = MaterialTheme.typography.headlineSmall)
         Text("Leia os termos de uso e a política de privacidade. Os textos ainda estão em revisão jurídica (prévia).")
@@ -56,7 +58,11 @@ fun TelaTermos(m: Modelo) {
             OutlinedButton({ abrirNoNavegador(contexto, cfg.getJSONObject("privacidade").getString("url")) }, Modifier.fillMaxWidth()) { Text("Ler a política de privacidade") }
         }
         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(aceito, { aceito = it }); Text("Li e aceito os termos e a política", Modifier.weight(1f)) }
-        Row(verticalAlignment = Alignment.CenterVertically) { Switch(notificacoes, { notificacoes = it }); Text("  Quero receber avisos de queda de preço (as notificações push ainda não funcionam nesta prévia)", Modifier.weight(1f)) }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Switch(notificacoes, { notificacoes = it; if (it) pedirNotificacoes() else bloqueadas = false })
+            Text("  Quero receber avisos de promoção por notificação", Modifier.weight(1f))
+        }
+        if (notificacoes && bloqueadas) Text(TEXTO_NOTIFICACAO_BLOQUEADA, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Botao("Continuar", aceito && !ocupado && cfg != null) {
             escopo.launch {
                 ocupado = true; erro = null

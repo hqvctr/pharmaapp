@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+: pedida quando a pessoa liga "Avisos por notificação". -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
+        android:name=".EconomaeApp"
         android:allowBackup="false"
         android:label="economae"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Economae.Abertura"
         android:usesCleartextTraffic="true">
-        <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
+        <!-- Notificação feita pelo Android com o app fechado (push do servidor): ícone e canal. -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_notificacao" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="avisos" />
+        <service android:name=".ServicoPush" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <!-- singleTop: tocar na notificação com o app aberto chega em onNewIntent, sem abrir outra tela por cima. -->
+        <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

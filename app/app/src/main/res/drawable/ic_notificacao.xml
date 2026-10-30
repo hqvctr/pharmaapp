@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícone pequeno da notificação: o coração do ícone monocromático (ic_launcher_monocromatico), recortado em 24 dp. O Android
+     usa só a forma (o branco vira a cor do sistema). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="58" android:viewportHeight="58">
+    <group android:translateX="-166" android:translateY="-135.5">
+        <path android:fillColor="#FFFFFFFF" android:pathData="M 195 187.0 C 166.2 165.4, 175.8 141.4, 195 158.2 C 214.2 141.4, 223.8 165.4, 195 187.0 Z" />
+    </group>
+</vector>

@@ -1,5 +1,6 @@
 package br.com.economae
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,11 +23,24 @@ class MainActivity : ComponentActivity() {
         // De ponta a ponta: o fundo do tema vai até atrás das barras do sistema (claras ou escuras conforme o modo).
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        lerNotificacao(intent)
         setContent {
             TemaEconomae {
                 Surface(Modifier.fillMaxSize()) { Box(Modifier.safeDrawingPadding()) { Raiz() } }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        lerNotificacao(intent)
+    }
+
+    /** Tocou numa notificação de aviso: guarda o que abrir (a Raiz abre quando a pessoa estiver dentro do app). */
+    private fun lerNotificacao(intent: Intent?) {
+        val aviso = intent?.let { i -> avisoDosDados { i.getStringExtra(it) } } ?: return
+        AberturaPush.pendente = aviso
+        intent.removeExtra("aviso_id")
     }
 }
 
@@ -33,6 +48,16 @@ class MainActivity : ComponentActivity() {
 fun Raiz() {
     val contexto = LocalContext.current
     val m = remember { Modelo(contexto.applicationContext) }
+    // Notificação tocada: abre o alerta (ou o produto) quando a pessoa já passou do login, dos termos e das preferências.
+    val pendente = AberturaPush.pendente
+    val dentro = m.usuario != null && m.tela !is Tela.Entrar && m.tela !is Tela.Termos && m.tela !is Tela.Preferencias
+    LaunchedEffect(pendente, dentro) {
+        if (pendente != null && dentro) {
+            AberturaPush.pendente = null
+            m.ir(if (pendente.alertaId != null) Tela.Alerta(pendente.alertaId, "push") else Tela.Produto(pendente.produtoId))
+            m.marcarAvisoLido(pendente.avisoId)
+        }
+    }
     BackHandler(enabled = m.pilha.size > 1 || (m.tela as? Tela.Principal)?.aba?.let { it != Abas.INICIO } == true) {
         if (!m.voltar()) m.raiz(Tela.Principal(Abas.INICIO))
     }

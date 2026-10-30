@@ -12,11 +12,17 @@ android {
         applicationId = "br.com.economae"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.4.0-previa"
+        versionCode = 8
+        versionName = "0.5.0-previa"
         // ID de cliente OAuth Web do servidor (público): o app pede o ID token do Google para ele.
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com\"")
         buildConfigField("String", "TENANT", "\"padrao\"")
+        // Firebase (push, docs/operacao/push.md): valores públicos do google-services.json, que vão dentro do APK. Configurados no
+        // código, sem o plugin google-services. A chave de API é a primeira do arquivo (a que o plugin usaria).
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"project-79519032-1c32-4dac-a1f\"")
+        buildConfigField("String", "FIREBASE_SENDER_ID", "\"984598232826\"")
+        buildConfigField("String", "FIREBASE_API_KEY", "\"AIzaSyBPgopnJ21_M4QhIJcYXFk2ZTKrTFmINIc\"")
+        buildConfigField("String", "FIREBASE_APP_ID", "\"1:984598232826:android:fc1670804c3c5074849343\"")
     }
 
     signingConfigs {
@@ -33,6 +39,8 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            // O app br.com.economae.debug tem registro próprio no Firebase.
+            buildConfigField("String", "FIREBASE_APP_ID", "\"1:984598232826:android:06850797fd477592849343\"")
             signingConfig = signingConfigs.getByName("previa")
         }
     }
@@ -72,6 +80,9 @@ dependencies {
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    // Push (Firebase Cloud Messaging). Só a biblioteca de mensagens; sem Analytics.
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
 
     testImplementation("junit:junit:4.13.2")
     // Desenho das telas com dados falsos, sem aparelho (TelasTest): confere que nada quebra na medição e gera imagens para olhar.

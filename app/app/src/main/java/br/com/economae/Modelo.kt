@@ -74,6 +74,15 @@ class Modelo(contexto: Context) {
         if (pref.ok && p != null && (p.getJSONArray("categorias").length() == 0 || p.getJSONArray("ceps").length() == 0)) { raiz(Tela.Preferencias); return }
         raiz(Tela.Principal())
         atualizarNaoLidos()
+        // Com consentimento, o token deste aparelho vai para a API a cada abertura (o FCM pode trocá-lo; a rota é idempotente).
+        if (me.corpo.optBoolean("notificacoes_consentidas")) Push.registrar(api)
+    }
+
+    suspend fun marcarAvisoLido(id: String) {
+        try {
+            api.post("/v1/avisos/leitura", JSONObject().put("ids", org.json.JSONArray(listOf(id))))
+            atualizarNaoLidos()
+        } catch (_: SemConexao) {}
     }
 
     suspend fun atualizarNaoLidos() {
