@@ -59,14 +59,13 @@ despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pus
   atualizações precisam baixar o zip da branch que tiver a fase 4, não o da `claude/zen-gates-965k2e`.
 - Firebase: o app `br.com.economae.debug` tem os dois SHA-1 (`10:88:...` e `7C:1C:...`), e a chave de API restrita a apps Android
   aceita os dois.
-- **Chave da conta de serviço em uso:** `b5aeff6f...`, criada em 30/10/2026 (relatório
-  `docs/juridico/fontes/firebase-chave-mantida-2026-10-30.md`), em `segredos\firebase-conta-servico.json`. O coletor passa a
-  usá-la quando é religado (`ligar-push.bat`). **Decisão do responsável (30/10/2026): ficar com a nova.** As duas antigas,
-  criadas por ele em 30/09 (`be7c50d3...`, guardada em `segredos\firebase-conta-servico.ANTIGA-be7c50d3b6.json`, e
-  `ccd2bbdf...`, em `Downloads\_to_delete`), continuam ativas e são dele; o servidor não as usa.
-- Política `iam.disableServiceAccountKeyCreation`: **fica desligada, por decisão do responsável (30/10/2026)**. Quem tem papel
-  de dono no projeto pode criar chave de conta de serviço sem passo extra. Para trocar a chave um dia: criar a chave, salvá-la
-  como `segredos\firebase-conta-servico.json` e rodar o `ligar-push.bat`.
+- **Chave da conta de serviço em uso:** `b5aeff6f...`, criada em 30/10/2026, em `segredos\firebase-conta-servico.json`; é a
+  **única** da conta (as antigas `be7c50d3...` e `ccd2bbdf...` foram excluídas pelo responsável, e os arquivos delas apagados).
+  O coletor reiniciou com ela em 30/10 00h32 e mostra "push ligado". Relatório: `docs/juridico/fontes/firebase-push-ligado-v2-2026-10-30.md`.
+  O envio real ainda não aconteceu (não havia nada a enviar): o primeiro push mostra se a chave vale (`ERRO no FCM` no log, se não).
+- Política `iam.disableServiceAccountKeyCreation`: **aplicada** em 30/10 (conferido pelo Cowork). Para trocar a chave um dia:
+  desligar a política por alguns minutos, criar a chave, salvá-la como `segredos\firebase-conta-servico.json`, rodar o
+  `ligar-push.bat` (ele recria o coletor, que só lê a chave ao ligar) e religar a política.
 
 ## O que ainda falta para o push chegar ao celular
 

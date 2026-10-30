@@ -26,7 +26,8 @@ if errorlevel 1 (
   echo O .env ja tinha FCM_CONTA_SERVICO; nada foi mudado nele.
 )
 echo Religando o coletor...
-docker compose up -d coletor
+rem --force-recreate: o coletor so le a chave ao ligar; sem isso, trocar o arquivo no mesmo caminho nao teria efeito.
+docker compose up -d --force-recreate coletor
 if errorlevel 1 goto erro
 rem Espera o coletor subir e mostra so a linha que diz se o push ligou (nunca mostra a chave).
 timeout /t 20 /nobreak >nul
