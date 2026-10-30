@@ -2,7 +2,7 @@
 
 ## Push ligado no servidor; app ainda sem push (2026-10-30)
 
-Relatório do Cowork: `docs/juridico/fontes/firebase-push-ligado-2026-10-30.md` (chaves de API mascaradas). O computador roda a branch `ccr-a7b2508f-xu0ojs` (fase 4) e o `ligar-push.bat` mostrou "push ligado" (informado pelo responsável). Firebase: SHA-1 do APK de prévia acrescentado ao app `br.com.economae.debug` e à chave de API Android; `google-services.json` novo recebido. **Chave da conta de serviço em uso é antiga** (`be7c50d3...`): a criação de uma nova está bloqueada pela política da organização; trocar e desativar as antigas (`push.md`). **Falta o app receber push** (FCM no app, permissão, canal, `PUT /v1/dispositivo`, abrir o aviso): parado porque a instalação do Android SDK neste ambiente foi barrada pela permissão do ambiente.
+Relatório do Cowork: `docs/juridico/fontes/firebase-push-ligado-2026-10-30.md` (chaves de API mascaradas). O computador roda a branch `ccr-a7b2508f-xu0ojs` (fase 4) e o `ligar-push.bat` mostrou "push ligado" (informado pelo responsável). Firebase: SHA-1 do APK de prévia acrescentado ao app `br.com.economae.debug` e à chave de API Android; `google-services.json` novo recebido. Chave da conta de serviço em uso: `be7c50d3...`, criada pelo responsável no começo do projeto; ele decidiu continuar com ela (sem troca pendente). **Falta o app receber push** (FCM no app, permissão, canal, `PUT /v1/dispositivo`, abrir o aviso): parado porque a instalação do Android SDK neste ambiente foi barrada pela permissão do ambiente.
 
 ## Firebase levantado para o push; ligar-push.bat (2026-10-30)
 

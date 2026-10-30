@@ -59,19 +59,13 @@ despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pus
   atualizações precisam baixar o zip da branch que tiver a fase 4, não o da `claude/zen-gates-965k2e`.
 - Firebase: o app `br.com.economae.debug` tem os dois SHA-1 (`10:88:...` e `7C:1C:...`), e a chave de API restrita a apps Android
   aceita os dois.
-- **A chave da conta de serviço em uso é antiga** (ID `be7c50d3...`, de 30/09/2026, que ficou um tempo solta em Downloads).
-  Criar uma nova está bloqueado pela política da organização `iam.disableServiceAccountKeyCreation`. A outra chave antiga
-  (`ccd2bbdf...`) também está num arquivo solto em `Downloads` (`project-79519032-1c32-4dac-a1f-ccd2bbdf75ca.json`).
-
-**Trocar a chave (recomendado, quando você puder):**
-1. No Google Cloud, em Políticas da organização, desligue por alguns minutos "Disable service account key creation".
-2. Crie uma chave JSON nova na conta `firebase-adminsdk-fbsvc`, salve-a como `segredos\firebase-conta-servico.json`
-   (renomeie a atual antes, sem abrir) e rode o `ligar-push.bat`. Confira "push ligado".
-3. Religue a política. Na aba Chaves da conta de serviço, **desative** as duas chaves antigas (`be7c50d3...` e `ccd2bbdf...`);
-   depois de uns dias sem problema, apague-as e apague os arquivos soltos delas.
-
-Enquanto não troca: apague o arquivo solto `project-79519032-1c32-4dac-a1f-ccd2bbdf75ca.json` da pasta Downloads (não é usado)
-e desative a chave `ccd2bbdf...` no console; a `be7c50d3...` é a que o servidor usa e não pode ser desativada ainda.
+- **Chave da conta de serviço em uso:** `be7c50d3...`, criada pelo responsável em 30/09/2026, no começo do projeto; o computador
+  só ele usa. **Decisão do responsável (30/10/2026): continuar com ela**; não há troca pendente. A outra chave da conta
+  (`ccd2bbdf...`) também é dele e não é usada pelo servidor; o arquivo dela está solto em Downloads
+  (`project-79519032-1c32-4dac-a1f-ccd2bbdf75ca.json`): guardar junto com a outra em `segredos` ou apagar, à escolha dele.
+  Criar chave nova continua bloqueado pela política `iam.disableServiceAccountKeyCreation` (isso é bom: ninguém cria chave
+  sem querer). Se um dia precisar trocar: desligar a política por alguns minutos, criar a chave, salvá-la como
+  `segredos\firebase-conta-servico.json`, rodar o `ligar-push.bat` e religar a política.
 
 ## O que ainda falta para o push chegar ao celular
 
