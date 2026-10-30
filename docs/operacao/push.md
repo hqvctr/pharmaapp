@@ -64,9 +64,9 @@ despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pus
   usá-la quando é religado (`ligar-push.bat`). **Decisão do responsável (30/10/2026): ficar com a nova.** As duas antigas,
   criadas por ele em 30/09 (`be7c50d3...`, guardada em `segredos\firebase-conta-servico.ANTIGA-be7c50d3b6.json`, e
   `ccd2bbdf...`, em `Downloads\_to_delete`), continuam ativas e são dele; o servidor não as usa.
-- Política `iam.disableServiceAccountKeyCreation`: o responsável a desligou para criar a chave e **vai religá-la** (ele mesmo,
-  no console). Com ela ligada, ninguém cria chave sem querer. Para trocar de novo um dia: desligar por alguns minutos, criar a
-  chave, salvá-la como `segredos\firebase-conta-servico.json`, rodar o `ligar-push.bat` e religar.
+- Política `iam.disableServiceAccountKeyCreation`: **fica desligada, por decisão do responsável (30/10/2026)**. Quem tem papel
+  de dono no projeto pode criar chave de conta de serviço sem passo extra. Para trocar a chave um dia: criar a chave, salvá-la
+  como `segredos\firebase-conta-servico.json` e rodar o `ligar-push.bat`.
 
 ## O que ainda falta para o push chegar ao celular
 
