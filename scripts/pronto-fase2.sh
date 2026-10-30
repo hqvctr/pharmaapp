@@ -74,7 +74,7 @@ confere "nenhum medicamento virou oferta" \
   "SELECT count(*) FROM products WHERE categoria = 'medicamentos_isentos'" 0
 confere "categoria fora do escopo ignorada" \
   "SELECT count(*) FROM products WHERE nome LIKE 'Fone%'" 0
-confere "histórico: 21 dias do protetor na loja A (P1)" \
+confere "histórico: 21 dias do hidratante infantil na loja A (P1)" \
   "SELECT count(*) FROM price_history ph JOIN offers o ON o.product_id = ph.product_id AND o.store_id = ph.store_id WHERE o.id_externo = 'A-100:A-100-1'" 21
 confere "2ª coleta não duplicou alerta" "SELECT $ALERTAS_2 - $ALERTAS_1" 0
 
