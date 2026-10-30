@@ -59,13 +59,14 @@ despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pus
   atualizações precisam baixar o zip da branch que tiver a fase 4, não o da `claude/zen-gates-965k2e`.
 - Firebase: o app `br.com.economae.debug` tem os dois SHA-1 (`10:88:...` e `7C:1C:...`), e a chave de API restrita a apps Android
   aceita os dois.
-- **Chave da conta de serviço em uso:** `be7c50d3...`, criada pelo responsável em 30/09/2026, no começo do projeto; o computador
-  só ele usa. **Decisão do responsável (30/10/2026): continuar com ela**; não há troca pendente. A outra chave da conta
-  (`ccd2bbdf...`) também é dele e não é usada pelo servidor; o arquivo dela está solto em Downloads
-  (`project-79519032-1c32-4dac-a1f-ccd2bbdf75ca.json`): guardar junto com a outra em `segredos` ou apagar, à escolha dele.
-  Criar chave nova continua bloqueado pela política `iam.disableServiceAccountKeyCreation` (isso é bom: ninguém cria chave
-  sem querer). Se um dia precisar trocar: desligar a política por alguns minutos, criar a chave, salvá-la como
-  `segredos\firebase-conta-servico.json`, rodar o `ligar-push.bat` e religar a política.
+- **Chave da conta de serviço em uso:** `b5aeff6f...`, criada em 30/10/2026 (relatório
+  `docs/juridico/fontes/firebase-chave-mantida-2026-10-30.md`), em `segredos\firebase-conta-servico.json`. O coletor passa a
+  usá-la quando é religado (`ligar-push.bat`). **Decisão do responsável (30/10/2026): ficar com a nova.** As duas antigas,
+  criadas por ele em 30/09 (`be7c50d3...`, guardada em `segredos\firebase-conta-servico.ANTIGA-be7c50d3b6.json`, e
+  `ccd2bbdf...`, em `Downloads\_to_delete`), continuam ativas e são dele; o servidor não as usa.
+- Política `iam.disableServiceAccountKeyCreation`: o responsável a desligou para criar a chave e **vai religá-la** (ele mesmo,
+  no console). Com ela ligada, ninguém cria chave sem querer. Para trocar de novo um dia: desligar por alguns minutos, criar a
+  chave, salvá-la como `segredos\firebase-conta-servico.json`, rodar o `ligar-push.bat` e religar.
 
 ## O que ainda falta para o push chegar ao celular
 
