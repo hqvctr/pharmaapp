@@ -1,5 +1,5 @@
 {
-  "caso": "13 observações (uma a menos que o mínimo) com queda de 40%: ainda sem alerta",
+  "caso": "6 observações (uma a menos que o mínimo de 7) com queda de 40%: ainda sem alerta",
   "tags": ["sem_historico"],
   "agora": "2026-09-01T12:00:00Z",
   "oferta": {
@@ -13,12 +13,12 @@
     "validaAte": null,
     "observadaEm": "2026-09-01T12:00:00Z"
   },
-  "historico": [{ "deDiasAtras": 13, "ateDiasAtras": 1, "aCadaDias": 1, "precoCentavos": 1000 }],
+  "historico": [{ "deDiasAtras": 6, "ateDiasAtras": 1, "aCadaDias": 1, "precoCentavos": 1000 }],
   "loja": { "status": "aprovada", "reputacao": 0.9 },
   "fonte": { "confiabilidade": "alta" },
   "esperado": {
     "decisao": "descartar",
     "reprovacoes": ["HISTORICO_INSUFICIENTE"],
-    "motivoContem": ["13 observações", "mínimo 14"]
+    "motivoContem": ["6 observações", "mínimo 7"]
   }
 }

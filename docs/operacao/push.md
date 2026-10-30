@@ -8,7 +8,7 @@ coletor, no seu computador: depois de cada coleta e a cada 10 minutos. Regras co
 | Aviso | Quando | Para quem |
 |---|---|---|
 | Promoção excepcional | o motor cria um alerta de destaque (ou o operador aprova um alerta que aguardava) | quem escolheu a categoria **ou** segue o produto, e tem loja que entrega no CEP |
-| Baixou X% | o preço ficou X% abaixo do **preço normal** do produto (mediana dos preços dele em todas as lojas nos últimos 30 dias; precisa de 14 dias de histórico). Uma vez por queda; de novo se cair mais X pontos ou depois de voltar ao normal | quem segue o produto com esse aviso ligado |
+| Baixou X% | o preço ficou X% abaixo do **preço normal** do produto (mediana dos preços dele em todas as lojas nos últimos 30 dias; precisa de 7 dias de histórico). Uma vez por queda; de novo se cair mais X pontos ou depois de voltar ao normal | quem segue o produto com esse aviso ligado |
 | Voltou ao estoque | o produto estava sem oferta no CEP da pessoa e voltou | idem |
 | Menor preço em 180 dias | o selo "menor preço em 180 dias" acendeu | idem |
 | Promoção acabando | uma oferta do produto vence em menos de 24 h | idem |

@@ -3,7 +3,6 @@
 import { randomUUID } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { comTransacao } from '../../../db/transacao.js';
-import { DIAS_PARA_ALERTA } from '../../../pipeline/status.js';
 import { registrarAuditoria } from '../../auditoria.js';
 import { corpoObjeto, falhaDeValidacao } from '../../corpo.js';
 import { ErroApi, type CampoInvalido } from '../../erros.js';
@@ -126,7 +125,7 @@ export function rotasAdminGestao(app: FastifyInstance, d: DepsAdmin): void {
       coleta: {
         ultima_coleta_em: catalogo.ultima_coleta_em === null ? null : catalogo.ultima_coleta_em.toISOString(),
         dias_historico: historico.valor as number,
-        dias_para_alertas: DIAS_PARA_ALERTA,
+        dias_para_alertas: ctx.tenant.config.curadoria.minObservacoes,
         ultimo_ciclo: ultimoCiclo,
       },
       alertas_7_dias: { criados: alertas7.criados, aprovados: alertas7.aprovados, rejeitados: alertas7.rejeitados, notificados: alertas7.notificados },

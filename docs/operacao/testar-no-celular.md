@@ -17,8 +17,8 @@
 
 ## "Nenhuma promoção aparece": é esperado por enquanto
 
-A aba **Promoções** mostra *alertas*, e o motor só cria alerta depois de **14 dias de histórico de preços** (para saber o que é queda de verdade). A
-coleta começou em 27/10, então os primeiros alertas reais só saem por volta de **11/11/2026**. Dois jeitos de testar nesse meio tempo:
+A aba **Promoções** mostra *alertas*, e o motor só cria alerta depois de **7 dias de histórico de preços** (eram 14 até 30/10/2026) (para saber o que é queda de verdade). A
+coleta começou em 27/10, então os primeiros alertas reais saem por volta de **04/11/2026**. Dois jeitos de testar nesse meio tempo:
 
 - **Aba Buscar** funciona já: ela mostra produtos e preços atuais coletados (procure "fralda", "shampoo", uma marca). A página do produto mostra as
   lojas, o link e o início do histórico.

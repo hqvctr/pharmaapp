@@ -1,6 +1,6 @@
 // P1: a coleta roda várias vezes ao dia, mas o motor recebe UMA observação por dia fechado,
 // com o menor preço por unidade do dia, no fuso de São Paulo. O dia corrente é a própria oferta
-// e não entra no histórico. Assim "14 observações" significa 14 dias com observação.
+// e não entra no histórico. Assim "N observações" (`curadoria.minObservacoes`) significa N dias com observação.
 import type { ObservacaoPreco, Unidade } from '../curadoria/tipos.js';
 
 export const FUSO_PADRAO = 'America/Sao_Paulo';

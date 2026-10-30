@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Histórico mínimo de 7 dias e branches juntas (2026-10-30, DECISIONS 103)
+
+O responsável reduziu o histórico mínimo do motor de 14 para 7 dias: primeiros alertas reais por volta de 04/11. `status.bat` e o painel leem o valor da config. A branch `claude/zen-gates-965k2e` recebeu toda a fase 4 (avanço simples, sem reescrever nada) e está igual à `ccr-a7b2508f-xu0ojs`; o `atualizar.bat` volta a servir com o zip dela. 735 testes passam; `pronto-fase3` PRONTO. **`pronto-fase2.sh` falha em 4 checagens, já antes desta mudança** (com 14 dias também): tarefa separada sugerida. Atualização do computador pelo Cowork: prompt de 30/10.
+
 ## Regras do push decididas (2026-10-30, DECISIONS 102)
 
 O responsável confirmou o silêncio que espera e a validade de 12 h, e trocou duas regras: (1) **repetição**: sem abrir o último push do produto, só sai outro com desconto maior (1%) ou numa promoção nova; se abriu, a qualquer hora; (2) **baixou X%** conta do **preço normal** (mediana de 30 dias em todas as lojas). Migration 0015; `antiRepeticaoHoras` saiu da config. 735 testes passam; 14 mutações das regras novas quebram o teste certo. Lembrete "carrinho parado" adiado (BACKLOG). Entra no computador na próxima atualização (zip da branch + `atualizar.bat`).

@@ -103,7 +103,7 @@ executar('admin: gestão e financeiro (Postgres)', () => {
       const j = r.json();
       expect(j.pendencias.alertas).toBeGreaterThanOrEqual(1);
       expect(j.lojas.sem_area_entrega).toBeGreaterThanOrEqual(1);
-      expect(j.coleta).toMatchObject({ dias_para_alertas: 14, ultimo_ciclo: null });
+      expect(j.coleta).toMatchObject({ dias_para_alertas: 7, ultimo_ciclo: null });
       expect(typeof j.coleta.dias_historico).toBe('number');
       expect(j.coleta.ultima_coleta_em).not.toBeNull();
       expect(Object.keys(j).sort()).toEqual(['alertas_7_dias', 'catalogo', 'coleta', 'fontes', 'gerado_em', 'lojas', 'ofertas_manuais_ativas', 'pendencias']);

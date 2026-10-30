@@ -1,4 +1,4 @@
-// Alertas de DEMONSTRAÇÃO para testar o app antes de haver histórico de preços (o motor só avisa depois de 14 dias).
+// Alertas de DEMONSTRAÇÃO para testar o app antes de haver histórico de preços (o motor só avisa depois do histórico mínimo, `curadoria.minObservacoes`).
 // Usa ofertas REAIS já coletadas, mas o "preço de antes" e a queda são inventados: cada alerta sai marcado "DEMONSTRAÇÃO" no app
 // e com motivo "DEMO:" no banco. Só para teste no computador do responsável; `--remover` apaga tudo que foi criado.
 //   node dist/pipeline/demo.js --tenant padrao --criar [--quantidade 8]

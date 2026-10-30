@@ -1,7 +1,7 @@
 # Coletar preços no seu computador (Windows 11)
 
-**Para que serve:** o app só pode avisar de uma promoção depois de acompanhar o preço do produto por 14 dias. Este
-passo liga a coleta de preços no seu computador, sozinha, a cada 2 horas, para esses 14 dias começarem a contar.
+**Para que serve:** o app só pode avisar de uma promoção depois de acompanhar o preço do produto por 7 dias (`curadoria.minObservacoes`; eram 14 até 30/10/2026). Este
+passo liga a coleta de preços no seu computador, sozinha, a cada 2 horas, para esses dias começarem a contar.
 
 **O que precisa:** computador com Windows 11, sempre ligado e com internet; a chave da Lomadee; cerca de 30 minutos
 na primeira vez. Depois disso, quase nada a fazer.
@@ -51,7 +51,7 @@ Na primeira vez, espere uns 10 minutos para a primeira coleta terminar. O primei
 
 - Deixe o computador ligado e o Docker Desktop aberto. Se o Windows reiniciar sozinho (atualização), entre na sua conta: o Docker abre e a coleta volta sozinha.
 - Para ver como está, use `status.bat` quando quiser. A mensagem "ATENÇÃO: está demorando" significa que a coleta parou: confira o computador e o Docker.
-- Os alertas só começam depois de 14 dias; o `status.bat` conta isso para você.
+- Os alertas só começam depois de 7 dias de histórico; o `status.bat` conta isso para você.
 
 ## Se algo der errado
 

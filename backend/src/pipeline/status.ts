@@ -9,8 +9,6 @@ import pg from 'pg';
 import * as repo from './repositorio.js';
 import { carregarConfigTenant } from '../shared/tenantConfig.js';
 
-export const DIAS_PARA_ALERTA = 14;
-
 export interface Contagens {
   produtos: number;
   ofertas: number;
@@ -25,18 +23,21 @@ export interface Contagens {
   push?: { aparelhos: number; ultimas24h: Record<string, number> };
 }
 
-/** Texto para o operador. `agora` entra como argumento para o teste. */
-export function descreverStatus(c: Contagens, ultimoCiclo: { falhou: boolean; fim: string; erro?: string } | null, agora: Date): string[] {
+/**
+ * Texto para o operador. `agora` entra como argumento para o teste. `diasParaAlerta` é o histórico mínimo do motor
+ * (`curadoria.minObservacoes` do tenant).
+ */
+export function descreverStatus(c: Contagens, ultimoCiclo: { falhou: boolean; fim: string; erro?: string } | null, agora: Date, diasParaAlerta: number): string[] {
   const linhas: string[] = [];
   if (c.primeiraObservacao === null) {
     linhas.push('Ainda não há nenhum preço guardado. Se o coletor acabou de ligar, espere o primeiro ciclo terminar (alguns minutos).');
   } else {
     const dias = c.diasFechados;
-    linhas.push(`Histórico de preços: ${dias} de ${DIAS_PARA_ALERTA} dias.`);
+    linhas.push(`Histórico de preços: ${dias} de ${diasParaAlerta} dias.`);
     linhas.push(
-      dias >= DIAS_PARA_ALERTA
+      dias >= diasParaAlerta
         ? 'Já dá para avaliar promoções com base no histórico.'
-        : `Faltam cerca de ${DIAS_PARA_ALERTA - dias} dias de coleta para os alertas poderem começar.`,
+        : `Faltam cerca de ${diasParaAlerta - dias} dias de coleta para os alertas poderem começar.`,
     );
   }
   if (primeiroDiaAberto(c)) linhas.push('O dia de hoje ainda não conta: o histórico só soma dias que já terminaram.');
@@ -104,8 +105,8 @@ async function main(): Promise<void> {
   const pool = new pg.Pool({ connectionString: databaseUrl, max: 1 });
   try {
     const tenantId = await repo.buscarTenant(pool, tenant);
-    const { fuso } = await carregarConfigTenant(tenant);
-    for (const l of descreverStatus(await contagens(pool, tenantId, fuso), ultimo, new Date())) console.log(l);
+    const { fuso, curadoria } = await carregarConfigTenant(tenant);
+    for (const l of descreverStatus(await contagens(pool, tenantId, fuso), ultimo, new Date(), curadoria.minObservacoes)) console.log(l);
   } finally {
     await pool.end();
   }
