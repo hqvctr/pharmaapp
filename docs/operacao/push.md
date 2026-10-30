@@ -67,13 +67,21 @@ despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pus
   desligar a política por alguns minutos, criar a chave, salvá-la como `segredos\firebase-conta-servico.json`, rodar o
   `ligar-push.bat` (ele recria o coletor, que só lê a chave ao ligar) e religar a política.
 
-## O que ainda falta para o push chegar ao celular
+## No app (0.5.0 de prévia)
 
-- **O app ainda não recebe push.** O app de prévia não tem o Firebase Messaging: falta registrar o app Android no Firebase, pôr a
-  biblioteca do FCM no app, pedir a permissão de notificação (Android 13+), criar o canal `avisos`, mandar o token com
-  `PUT /v1/dispositivo` e abrir o aviso ao tocar. Próximo passo do app.
-- Para testar antes dos 14 dias de histórico, os alertas de demonstração (`demo-feed.bat`) também geram avisos e push
-  (os dois de destaque). O `demo-feed-remover.bat` apaga os avisos deles junto.
+- Ao ligar "Avisos por notificação" (na entrada ou no Perfil), o app pede a permissão do Android 13+ e manda o token do aparelho
+  para a API (`PUT /v1/dispositivo`). Ele manda de novo a cada abertura e quando o Firebase troca o token. Desligar faz a API
+  apagar os aparelhos da pessoa.
+- Se o Android bloquear as notificações, o Perfil avisa e tem um botão para as configurações; os avisos continuam na aba Avisos.
+- Tocar na notificação abre a promoção (ou o produto) e marca o aviso como lido. Com o app aberto, o próprio app mostra a
+  notificação; com ele fechado, o Android mostra a que veio do servidor.
+- O APK é compilado pelo GitHub Actions (`.github/workflows/app.yml`): na página da execução, artefato `economae-previa-apk`.
+
+**Teste de ponta a ponta:** instalar o APK 0.5.0, entrar, ligar as notificações, conferir no servidor que o aparelho registrou
+(`docker compose exec postgres psql -U promo -d promo -c "SELECT plataforma, versao_app, registrado_em FROM dispositivos"`),
+rodar o `demo-feed-remover.bat` (se já houver demonstração; ela não se repete) e depois o `demo-feed.bat`, e esperar até 10 minutos (o despachante roda a cada 10 min) pela notificação dos dois alertas de destaque.
+O celular precisa alcançar a API (rede local ou túnel) só para registrar o token; o push chega por fora, pelo Google.
+O `demo-feed-remover.bat` apaga os alertas e os avisos da demonstração.
 
 ## Rodar à mão
 

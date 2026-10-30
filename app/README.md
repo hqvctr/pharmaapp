@@ -1,6 +1,6 @@
 # economae: app Android de prévia
 
-App de **teste** (Kotlin + Jetpack Compose) que fala com a API deste repositório. Não é o app da Play: não tem push, assinatura nem anúncios.
+App de **teste** (Kotlin + Jetpack Compose) que fala com a API deste repositório. Não é o app da Play: não tem assinatura nem anúncios. Push pelo Firebase desde a 0.5.0 (`docs/operacao/push.md`).
 Como instalar no celular e apontar para o servidor: `docs/operacao/testar-no-celular.md`.
 
 ## O que tem
@@ -18,6 +18,10 @@ componentes visuais em `Componentes.kt`. As artes (`res/drawable/ic_launcher_*`,
 Conferência sem aparelho: `node scripts/conferencia-visual.mjs <pasta>` (aproximação do tema) e `TelasTest` (Robolectric desenha as telas reais contra um servidor falso e grava PNGs em `app/app/build/telas/`).
 
 ## Como gerar o APK
+
+Pelo GitHub: cada push que muda `app/` roda `.github/workflows/app.yml` (testes + APK); o APK fica no artefato `economae-previa-apk` da execução.
+
+Na sua máquina:
 
 ```bash
 ANDROID_HOME=/caminho/do/android-sdk scripts/gerar-apk.sh
