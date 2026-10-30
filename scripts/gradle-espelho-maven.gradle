@@ -1,0 +1,10 @@
+// Só para compilar em ambientes onde o Maven Central devolve 429 (muitas requisições): troca-o pelo espelho público do Google.
+// Uso: ./gradlew --init-script ../scripts/gradle-espelho-maven.gradle ... (e ROBOLECTRIC_REPO=https://maven-central.storage-download.googleapis.com/maven2/)
+def espelho = 'https://maven-central.storage-download.googleapis.com/maven2/'
+def trocar = { repos ->
+  repos.all { r ->
+    if (r instanceof MavenArtifactRepository && r.url.toString().startsWith('https://repo.maven.apache.org/maven2')) r.url = espelho
+  }
+}
+beforeSettings { s -> trocar(s.pluginManagement.repositories); trocar(s.dependencyResolutionManagement.repositories) }
+allprojects { trocar(buildscript.repositories); trocar(repositories) }

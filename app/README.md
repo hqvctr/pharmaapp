@@ -27,7 +27,7 @@ Na sua máquina:
 ANDROID_HOME=/caminho/do/android-sdk scripts/gerar-apk.sh
 ```
 
-Os testes (`testDebugUnitTest`, rodados pelo script) incluem o `TelasTest`, que baixa o android-all do Robolectric; se o Maven Central não responder, aponte `ROBOLECTRIC_REPO` para um espelho.
+Os testes (`testDebugUnitTest`, rodados pelo script) incluem o `TelasTest`, que baixa o android-all do Robolectric; se o Maven Central não responder, aponte `ROBOLECTRIC_REPO` para um espelho. Onde o Maven Central devolve 429 (o ambiente de desenvolvimento na nuvem), use o espelho do Google: `ROBOLECTRIC_REPO=https://maven-central.storage-download.googleapis.com/maven2/ ./gradlew --init-script ../scripts/gradle-espelho-maven.gradle testDebugUnitTest assembleDebug`.
 
 Saída: `app/app/build/outputs/apk/debug/app-debug.apk`. Pacote `br.com.economae.debug`.
 

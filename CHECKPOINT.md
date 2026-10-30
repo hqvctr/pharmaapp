@@ -1,5 +1,9 @@
 # Checkpoint
 
+## App 0.5.0 com push (2026-10-30, DECISIONS 101)
+
+O app recebe push: Firebase no código, canal `avisos`, permissão do Android 13+ ao ligar as notificações, token mandado com `PUT /v1/dispositivo` (entrada, ligar, troca de token) e toque que abre a promoção e marca o aviso como lido. **47 testes do app passam** (3 novos, inclusive os 8 que desenham as telas), compilado aqui (Android SDK instalado com autorização do responsável; Maven Central pelo espelho do Google, `scripts/gradle-espelho-maven.gradle`); APK conferido: `br.com.economae.debug` 0.5.0, SHA-1 `7C:1C:...:36:A6`, mesma chave, instala por cima. GitHub Actions (`.github/workflows/app.yml`) compila e roda os testes a cada mudança em `app/`. **Não testado no celular**: teste de ponta a ponta em `docs/operacao/push.md` (ligar notificações, `demo-feed.bat`, esperar até 10 min).
+
 ## Push ligado no servidor; app ainda sem push (2026-10-30)
 
 Relatório do Cowork: `docs/juridico/fontes/firebase-push-ligado-2026-10-30.md` (chaves de API mascaradas). O computador roda a branch `ccr-a7b2508f-xu0ojs` (fase 4) e o `ligar-push.bat` mostrou "push ligado" (informado pelo responsável). Firebase: SHA-1 do APK de prévia acrescentado ao app `br.com.economae.debug` e à chave de API Android; `google-services.json` novo recebido. Chave da conta de serviço: `b5aeff6f...`, a única da conta (as antigas foram excluídas); o coletor reiniciou com ela e mostra "push ligado"; a política de criação de chaves está aplicada (`firebase-push-ligado-v2-2026-10-30.md`). O primeiro envio real ainda não aconteceu. **Falta o app receber push** (FCM no app, permissão, canal, `PUT /v1/dispositivo`, abrir o aviso): parado porque a instalação do Android SDK neste ambiente foi barrada pela permissão do ambiente.
