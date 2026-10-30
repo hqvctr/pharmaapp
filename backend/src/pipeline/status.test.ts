@@ -39,6 +39,12 @@ describe('status da coleta', () => {
     expect(t).toContain('ATENÇÃO');
   });
 
+  it('mostra os aparelhos registrados e o destino dos avisos das últimas 24 h', () => {
+    const t = descreverStatus({ ...base, push: { aparelhos: 1, ultimas24h: { enviado: 2, sem_aparelho: 3 } } }, null, agora).join('\n');
+    expect(t).toContain('Aparelhos com notificação registrados: 1. Avisos nas últimas 24 h: enviado 2, sem_aparelho 3.');
+    expect(descreverStatus({ ...base, push: { aparelhos: 0, ultimas24h: {} } }, null, agora).join('\n')).toContain('Avisos nas últimas 24 h: nenhum.');
+  });
+
   it('mostra o problema do último ciclo', () => {
     const t = descreverStatus(base, { falhou: true, fim: '2026-11-15T10:00:00Z', erro: 'sem internet' }, agora).join('\n');
     expect(t).toContain('COM PROBLEMA');

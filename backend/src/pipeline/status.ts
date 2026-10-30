@@ -21,6 +21,8 @@ export interface Contagens {
   ultimaColeta: Date | null;
   bloqueios: number;
   alertas: number;
+  /** Fase 4: aparelhos com sessão viva e o destino dos avisos das últimas 24 h (`avisos.push`). */
+  push?: { aparelhos: number; ultimas24h: Record<string, number> };
 }
 
 /** Texto para o operador. `agora` entra como argumento para o teste. */
@@ -43,6 +45,10 @@ export function descreverStatus(c: Contagens, ultimoCiclo: { falhou: boolean; fi
   if (c.ultimaColeta !== null) {
     const horas = Math.floor((agora.getTime() - c.ultimaColeta.getTime()) / 3_600_000);
     linhas.push(`Última coleta de preços: há ${horas} hora(s).${horas >= 6 ? ' ATENÇÃO: está demorando; confira se o computador está ligado e o Docker aberto.' : ''}`);
+  }
+  if (c.push !== undefined) {
+    const destinos = Object.entries(c.push.ultimas24h).map(([k, v]) => `${k} ${v}`).join(', ');
+    linhas.push(`Aparelhos com notificação registrados: ${c.push.aparelhos}. Avisos nas últimas 24 h: ${destinos || 'nenhum'}.`);
   }
   if (ultimoCiclo !== null) {
     linhas.push(`Último ciclo do coletor: ${ultimoCiclo.falhou ? 'COM PROBLEMA' : 'ok'} (${ultimoCiclo.fim}).${ultimoCiclo.erro ? ` Motivo: ${ultimoCiclo.erro}` : ''}`);
@@ -68,6 +74,9 @@ async function contagens(pool: pg.Pool, tenantId: string, fuso: string): Promise
   const o = await q(`SELECT count(*)::int AS n, max(coletada_em) AS ultima FROM offers WHERE tenant_id = $1`);
   const b = await q(`SELECT count(*)::int AS n FROM triagem_bloqueios WHERE tenant_id = $1`);
   const a = await q(`SELECT count(*)::int AS n FROM alerts WHERE tenant_id = $1`);
+  const ap = await q(`SELECT count(*)::int AS n FROM dispositivos d JOIN sessions s ON s.tenant_id = d.tenant_id AND s.id = d.session_id
+                       WHERE d.tenant_id = $1 AND s.revogada_em IS NULL AND s.refresh_expira_em > now()`);
+  const av = (await pool.query(`SELECT push, count(*)::int AS n FROM avisos WHERE tenant_id = $1 AND criado_em > now() - interval '24 hours' GROUP BY push ORDER BY push`, [tenantId])).rows;
   return {
     produtos: Number(p.n),
     ofertas: Number(o.n),
@@ -77,6 +86,7 @@ async function contagens(pool: pg.Pool, tenantId: string, fuso: string): Promise
     ultimaColeta: (o.ultima as Date | null) ?? null,
     bloqueios: Number(b.n),
     alertas: Number(a.n),
+    push: { aparelhos: Number(ap.n), ultimas24h: Object.fromEntries(av.map((r: { push: string; n: number }) => [r.push, r.n])) },
   };
 }
 

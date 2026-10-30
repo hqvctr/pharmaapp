@@ -41,6 +41,8 @@ export async function acharOuCriarPorGoogle(
   const email = g.email.trim().toLowerCase();
   const porEmail = await db.query(`SELECT id, google_sub FROM users WHERE tenant_id = $1 AND lower(email) = $2 FOR UPDATE`, [tenantId, email]);
   if (porEmail.rowCount === 1) {
+    // Mesmo `sub`: outra entrada simultânea criou a conta entre a busca pelo `sub` e esta (READ COMMITTED). É a mesma pessoa.
+    if (porEmail.rows[0].google_sub === g.sub) return { userId: porEmail.rows[0].id, contaNova: false };
     if (porEmail.rows[0].google_sub !== null) return null;
     await db.query(`UPDATE users SET google_sub = $3 WHERE tenant_id = $1 AND id = $2`, [tenantId, porEmail.rows[0].id, g.sub]);
     return { userId: porEmail.rows[0].id, contaNova: false };

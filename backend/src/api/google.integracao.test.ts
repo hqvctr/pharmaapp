@@ -2,6 +2,7 @@
 import { randomUUID } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ChavesGoogleIndisponiveis, VerificadorGoogleJwks } from '../auth/google.js';
+import { acharOuCriarPorGoogle } from '../auth/usuarios.js';
 import { CLIENTE_GOOGLE_TESTE, emitirIdToken, parDeChaves } from '../auth/testeGoogle.js';
 import { ambienteDeTeste, URL_BASE } from './testeAmbiente.js';
 
@@ -126,6 +127,24 @@ executar('login com Google (Postgres)', () => {
     expect(r1.json().usuario.id).toBe(r2.json().usuario.id);
     expect((await usuarios()).filter((u) => u.google_sub === sub)).toHaveLength(1);
     expect([r1.json().conta_nova, r2.json().conta_nova].filter(Boolean)).toHaveLength(1);
+  });
+
+  it('a outra entrada cria a conta entre a busca pelo sub e a busca pelo e-mail: entra nessa conta, sem recusar', async () => {
+    // Reproduz a ordem que deixava a corrida acima instável: a busca pelo `sub` não vê a conta (ainda não confirmada) e a busca
+    // pelo e-mail, logo depois, já vê a conta com o mesmo `sub`.
+    const sub = `sub-${randomUUID()}`;
+    const email = 'entre-consultas@example.com';
+    const id = (await e.pool.query(`INSERT INTO users (tenant_id, email, google_sub) VALUES ($1, $2, $3) RETURNING id`, [e.tenantId, email, sub])).rows[0].id;
+    let primeira = true;
+    const db = {
+      query: (sql: string, params: unknown[]) => {
+        if (primeira && sql.includes('google_sub = $2')) { primeira = false; return Promise.resolve({ rows: [], rowCount: 0 }); }
+        return e.pool.query(sql, params);
+      },
+    } as never;
+    expect(await acharOuCriarPorGoogle(db, e.tenantId, { sub, email, emailVerificado: true }, e.agora)).toEqual({ userId: id, contaNova: false });
+    // Mesmo e-mail ligado a OUTRO Google continua recusado.
+    expect(await acharOuCriarPorGoogle(e.pool, e.tenantId, { sub: `outro-${sub}`, email, emailVerificado: true }, e.agora)).toBeNull();
   });
 
   it('perde a disputa pelo índice único para outra entrada da mesma conta: repete e entra na conta criada', async () => {
