@@ -26,19 +26,29 @@ diário e não recebeu push do mesmo produto nas últimas 24 h. O que aconteceu 
 
 Para ver no banco: `docker compose exec postgres psql -U promo -d promo -c "SELECT push, count(*) FROM avisos GROUP BY push"`.
 
+## Situação no Firebase (levantamento do Cowork, 29/10/2026)
+
+Relatório: `docs/juridico/fontes/firebase-push-2026-10-30.md`.
+
+- Projeto `project-79519032-1c32-4dac-a1f` (número/ID do remetente `984598232826`), plano Spark (sem custo).
+- **API Firebase Cloud Messaging (V1) ativada**; a legada, desativada (o servidor só usa a V1).
+- App Android `br.com.economae.debug` já registrado: ID `1:984598232826:android:06850797fd477592849343`, SHA-1 cadastrado
+  `10:88:D4:...:3B:85` (a chave de debug do seu computador). **Falta o SHA-1 do APK de prévia** (`7C:1C:41:D9:...:36:A6`).
+  O app `br.com.economae` (release) também existe: `1:984598232826:android:fc1670804c3c5074849343`.
+- Conta de serviço `firebase-adminsdk-fbsvc@project-79519032-1c32-4dac-a1f.iam.gserviceaccount.com`, papel "Agente de serviço
+  administrador do SDK Admin do Firebase" (envia push pela API V1). Duas chaves antigas ativas (30/09/2026, sem validade), de
+  origem desconhecida.
+- Duas chaves de API "Android key (auto created by Firebase)": uma restrita a apps Android, outra sem restrição de app.
+
 ## Ligar o push no seu computador
 
-Hoje o push está **desligado**: os avisos são criados e aparecem na central, mas nenhum push sai. Para ligar:
+1. **Chave JSON da conta de serviço** (é uma senha: nunca no chat, no Git ou num e-mail). Salve como
+   `segredos\firebase-conta-servico.json` dentro da pasta do economae (ao lado do `docker-compose.yml`). A pasta está fora do Git.
+2. Dê dois cliques em **`scripts\windows\ligar-push.bat`**. Ele confere o arquivo, acrescenta
+   `FCM_CONTA_SERVICO=/segredos/firebase-conta-servico.json` ao `.env` (sem abrir nem mostrar o `.env`) e religa o coletor.
+   Tem de aparecer **`push ligado`**.
 
-1. **Conta de serviço do Firebase.** No Google Cloud do projeto (`project-79519032-1c32-4dac-a1f`), uma conta de serviço com
-   permissão de enviar mensagens do Firebase e uma chave JSON dela. **Quem baixa a chave é você, sem o Cowork e sem passar pelo
-   chat**: é uma senha. (O BACKLOG registra que já existe uma chave antiga, sem validade; o prompt do Cowork abaixo só descobre
-   o que existe.)
-2. Crie a pasta `segredos` dentro da pasta do economae (ao lado do `docker-compose.yml`) e ponha o JSON lá, por exemplo
-   `segredos\firebase-conta-servico.json`. A pasta está fora do Git.
-3. No `.env`, acrescente: `FCM_CONTA_SERVICO=/segredos/firebase-conta-servico.json` (o caminho é o de **dentro** do contêiner).
-4. Rode o `atualizar.bat`. No log do coletor deve aparecer `push ligado`.
-
+O código da fase 4 precisa estar no computador antes (zip da branch com a fase 4 + `atualizar.bat`).
 Se o arquivo estiver errado, o coletor não sobe e diz o motivo (sem mostrar o conteúdo). Se o Google recusar a chave, o
 despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pushes ficam pendentes e expiram em 12 h.
 
