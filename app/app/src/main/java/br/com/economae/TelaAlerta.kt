@@ -58,7 +58,7 @@ fun TelaAlerta(m: Modelo, id: String, origem: String) {
         try { m.api.post("/v1/alertas/$id/eventos", JSONObject().put("tipo", "aberto").put("origem", origem), extra = Api.novaChave()) } catch (_: SemConexao) {}
     }
     Moldura("Promoção", { m.voltar() }) {
-        Carregar(listOf(id, m.versao), { m.api.get("/v1/alertas/$id") }) { r, recarregar ->
+        Carregar(listOf(id, m.versao), { m.api.get("/v1/alertas/$id") }, puxar = true) { r, recarregar ->
             val a = r.corpo
             if (!r.ok || a == null) { Erro(if (r.status == 404) "Esta promoção não está mais disponível." else r.mensagem, recarregar); return@Carregar }
             val p = a.getJSONObject("produto")

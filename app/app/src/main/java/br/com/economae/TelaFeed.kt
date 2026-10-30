@@ -79,7 +79,7 @@ fun FeedConteudo(m: Modelo) {
         }
         Carregar(listOf(categoria, m.versao), {
             m.api.get("/v1/alertas?limite=30" + (categoria?.let { "&categoria=$it" } ?: ""))
-        }) { r, recarregar ->
+        }, puxar = true) { r, recarregar ->
             val corpo = r.corpo
             if (!r.ok || corpo == null) { Erro(r.mensagem, recarregar); return@Carregar }
             val itens = corpo.lista("itens")

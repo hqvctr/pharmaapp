@@ -11,13 +11,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -136,23 +132,6 @@ object Push {
             NotificationManagerCompat.from(contexto).notify(chave, 1, n)
         } catch (e: SecurityException) {
             Log.w(TAG, "Notificação recusada pelo Android: ${e.message}")
-        }
-    }
-}
-
-/**
- * Pede a permissão de notificação do Android 13+ quando falta e devolve se as notificações vão aparecer. Antes do 13 não há
- * pedido: só conta se a pessoa não bloqueou o app nas configurações.
- */
-@Composable
-fun rememberPedirNotificacoes(aoResponder: (Boolean) -> Unit): () -> Unit {
-    val contexto = LocalContext.current
-    val pedido = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { aoResponder(it && Push.permitido(contexto)) }
-    return {
-        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(contexto, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            pedido.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            aoResponder(Push.permitido(contexto))
         }
     }
 }

@@ -92,6 +92,8 @@ fun TelaPrincipal(m: Modelo, aba: Int) {
             }
         }
     }
+    // Convite das notificações, logo que a pessoa entra no app (DECISIONS 104).
+    ConviteNotificacoes(m)
 }
 
 // ------------------------------------------------------------------------------------------------ avisos
@@ -111,7 +113,7 @@ fun AbaAvisos(m: Modelo) {
                 }
             }) { Text("Marcar todos como lidos") }
         }
-        Carregar(m.versao, { m.api.get("/v1/avisos?limite=50") }) { r, recarregar ->
+        Carregar(m.versao, { m.api.get("/v1/avisos?limite=50") }, puxar = true) { r, recarregar ->
             val corpo = r.corpo
             if (!r.ok || corpo == null) { Erro(r.mensagem, recarregar); return@Carregar }
             LaunchedEffect(corpo.optInt("nao_lidos")) { m.naoLidos = corpo.optInt("nao_lidos") }
@@ -192,7 +194,8 @@ fun AbaConta(m: Modelo) {
         }
         if (u.getBoolean("notificacoes_consentidas") && !permitidas) {
             Text(TEXTO_NOTIFICACAO_BLOQUEADA, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            TextButton({ abrirConfiguracaoDeNotificacoes(contexto) }) { Text("Abrir configurações de notificação") }
+            // Pede ao Android; se ele não deixar mais perguntar, leva às configurações.
+            TextButton({ pedirNotificacoes() }) { Text("Permitir notificações") }
         } else {
             Text("Promoções excepcionais das categorias escolhidas e avisos dos produtos que você segue, respeitando o silêncio e o limite diário.",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

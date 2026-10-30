@@ -71,7 +71,8 @@ despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pus
 
 ## No app (0.5.0 de prévia)
 
-- Ao ligar "Avisos por notificação" (na entrada ou no Perfil), o app pede a permissão do Android 13+ e manda o token do aparelho
+- Logo que a pessoa entra no app (0.6.0), um convite oferece as notificações; "Agora não" volta a perguntar uma vez, 7 dias depois (DECISIONS 104).
+- Ao aceitar o convite ou ligar "Avisos por notificação" no Perfil, o app pede a permissão do Android 13+ e manda o token do aparelho
   para a API (`PUT /v1/dispositivo`). Ele manda de novo a cada abertura e quando o Firebase troca o token. Desligar faz a API
   apagar os aparelhos da pessoa.
 - Se o Android bloquear as notificações, o Perfil avisa e tem um botão para as configurações; os avisos continuam na aba Avisos.

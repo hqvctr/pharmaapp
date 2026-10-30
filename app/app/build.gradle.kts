@@ -12,8 +12,8 @@ android {
         applicationId = "br.com.economae"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.5.0-previa"
+        versionCode = 9
+        versionName = "0.6.0-previa"
         // ID de cliente OAuth Web do servidor (público): o app pede o ID token do Google para ele.
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"984598232826-so1nrq35e06bb4aka2nhl7j3r0if3fuf.apps.googleusercontent.com\"")
         buildConfigField("String", "TENANT", "\"padrao\"")

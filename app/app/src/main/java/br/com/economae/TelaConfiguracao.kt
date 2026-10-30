@@ -15,7 +15,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,11 +45,8 @@ fun TelaTermos(m: Modelo) {
     val contexto = LocalContext.current
     val cfg = m.config
     var aceito by remember { mutableStateOf(false) }
-    var notificacoes by remember { mutableStateOf(false) }
-    var bloqueadas by remember { mutableStateOf(false) }
     var ocupado by remember { mutableStateOf(false) }
     var erro by remember { mutableStateOf<String?>(null) }
-    val pedirNotificacoes = rememberPedirNotificacoes { permitidas -> bloqueadas = !permitidas }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), Arrangement.spacedBy(12.dp)) {
         Text("Antes de começar", style = MaterialTheme.typography.headlineSmall)
         Text("Leia os termos de uso e a política de privacidade. Os textos ainda estão em revisão jurídica (prévia).")
@@ -58,16 +55,12 @@ fun TelaTermos(m: Modelo) {
             OutlinedButton({ abrirNoNavegador(contexto, cfg.getJSONObject("privacidade").getString("url")) }, Modifier.fillMaxWidth()) { Text("Ler a política de privacidade") }
         }
         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(aceito, { aceito = it }); Text("Li e aceito os termos e a política", Modifier.weight(1f)) }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Switch(notificacoes, { notificacoes = it; if (it) pedirNotificacoes() else bloqueadas = false })
-            Text("  Quero receber avisos de promoção por notificação", Modifier.weight(1f))
-        }
-        if (notificacoes && bloqueadas) Text(TEXTO_NOTIFICACAO_BLOQUEADA, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Botao("Continuar", aceito && !ocupado && cfg != null) {
             escopo.launch {
                 ocupado = true; erro = null
                 try {
-                    val corpo = JSONObject().put("termos_versao", cfg!!.getJSONObject("termos").getString("versao")).put("notificacoes", notificacoes)
+                    // As notificações têm consentimento próprio (LGPD), pedido no convite logo depois de entrar (DECISIONS 104).
+                    val corpo = JSONObject().put("termos_versao", cfg!!.getJSONObject("termos").getString("versao"))
                     val r = m.api.put("/v1/me/consentimentos", corpo)
                     if (r.ok) m.seguirFluxo() else erro = r.mensagem
                 } catch (e: SemConexao) { erro = e.message }
@@ -92,6 +85,13 @@ fun TelaPreferencias(m: Modelo, aoSalvar: () -> Unit) {
         var erro by remember { mutableStateOf<String?>(null) }
         // Quantos produtos cada categoria tem para os CEPs digitados (o maior entre eles). Null = ainda não sabe: tudo fica liberado.
         var contagem by remember { mutableStateOf<Map<String, Int>?>(null) }
+        var avisoLocal by remember { mutableStateOf<String?>(null) }
+        // Localização só para descobrir o CEP, no aparelho (DECISIONS 104): preenche o primeiro campo vazio, ou o primeiro.
+        val usarLocalizacao = rememberCepPelaLocalizacao(
+            aoAchar = { cep -> avisoLocal = null; val i = ceps.indexOfFirst { it.isBlank() }.takeIf { it >= 0 } ?: 0; ceps[i] = cep },
+            aoFalhar = { avisoLocal = it },
+        )
+        ConviteLocalizacao(convidar = remember { ceps.all { it.isBlank() } }, usarLocalizacao = usarLocalizacao)
         val cepsProntos = ceps.filter { it.length == 8 }.distinct()
         LaunchedEffect(cepsProntos) {
             contagem = null
@@ -109,6 +109,8 @@ fun TelaPreferencias(m: Modelo, aoSalvar: () -> Unit) {
                 OutlinedTextField(c, { ceps[i] = it.filter(Char::isDigit).take(8) }, label = { Text("CEP ${i + 1}") }, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
             }
+            TextButton(usarLocalizacao) { Text("Usar minha localização") }
+            avisoLocal?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
             if (ceps.size < limiteCeps) OutlinedButton({ ceps.add("") }) { Text("Adicionar CEP") }
             Titulo("O que você quer acompanhar")
             val c = contagem

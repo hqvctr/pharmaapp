@@ -3,6 +3,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Android 13+: pedida quando a pessoa liga "Avisos por notificação". -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Só para descobrir o CEP no aparelho (DECISIONS 104): a localização não sai do celular. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- A localização é opcional (o CEP pode ser digitado): aparelho sem GPS continua podendo instalar. -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
 
     <application
         android:name=".EconomaeApp"

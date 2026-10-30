@@ -19,7 +19,7 @@ import org.json.JSONObject
 fun AbaFavoritos(m: Modelo) {
     Column(Modifier.fillMaxSize()) {
         Text("Favoritos", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 0.dp))
-        Carregar(m.versao, { todosOsSeguidos(m) }) { r, recarregar ->
+        Carregar(m.versao, { todosOsSeguidos(m) }, puxar = true) { r, recarregar ->
             val itens = r.second
             if (r.first != null) { Erro(r.first!!, recarregar); return@Carregar }
             if (itens.isEmpty()) { Vazio("Você ainda não tem favoritos. Toque no coração de um produto para acompanhar o preço dele."); return@Carregar }

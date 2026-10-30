@@ -26,7 +26,11 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -46,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 // ------------------------------------------------------------------------------------------------ aba Categorias
@@ -147,11 +153,13 @@ private enum class Estado { Carregando, Pronto, Falha }
  * Lista de produtos paginada por cursor: carrega a primeira página quando `consulta` muda e a próxima ao chegar perto do fim.
  * `grade` = duas colunas de `CartaoProduto` (categoria, Início); sem grade, uma coluna de `LinhaProduto` (pesquisa, favoritos).
  * `cabecalho` entra antes dos produtos, dentro da mesma grade (rola junto; use `linhaInteira`). `aoFacetas` recebe as lojas e marcas da
- * primeira página. Trocar de consulta começa de novo do topo.
+ * primeira página. Trocar de consulta começa de novo do topo. Puxar a lista para baixo recarrega a primeira página (e roda `aoPuxar`,
+ * para a tela recarregar o que ela mesma busca, como as fileiras do Início), mantendo os produtos à vista até chegar a resposta.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaProdutos(m: Modelo, consulta: String, vazio: String, grade: Boolean = false, aoFacetas: ((JSONObject?) -> Unit)? = null,
-                  rodapeVazio: (LazyGridScope.() -> Unit)? = null, cabecalho: LazyGridScope.() -> Unit = {}) {
+                  rodapeVazio: (LazyGridScope.() -> Unit)? = null, aoPuxar: (suspend () -> Unit)? = null, cabecalho: LazyGridScope.() -> Unit = {}) {
     var itens by remember(consulta) { mutableStateOf<List<JSONObject>>(emptyList()) }
     var cursor by remember(consulta) { mutableStateOf<String?>(null) }
     var estado by remember(consulta) { mutableStateOf(Estado.Carregando) }
@@ -159,7 +167,9 @@ fun ListaProdutos(m: Modelo, consulta: String, vazio: String, grade: Boolean = f
     var maisCarregando by remember(consulta) { mutableStateOf(false) }
     var erroMais by remember(consulta) { mutableStateOf<String?>(null) }
     var tentativa by remember(consulta) { mutableStateOf(0) }
+    var atualizando by remember(consulta) { mutableStateOf(false) }
     val lista = rememberLazyGridState()
+    val escopo = rememberCoroutineScope()
 
     /** Pede uma página. Na primeira, falha troca a tela por "tentar de novo"; nas seguintes, a lista já carregada fica e o erro aparece no fim. */
     suspend fun pagina(depoisDe: String?) {
@@ -191,35 +201,53 @@ fun ListaProdutos(m: Modelo, consulta: String, vazio: String, grade: Boolean = f
         }
     }
 
-    LazyVerticalGrid(GridCells.Fixed(if (grade) 2 else 1), Modifier.fillMaxSize(), lista, contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        cabecalho()
-        when (estado) {
-            Estado.Carregando -> linhaInteira("carregando") { Box(Modifier.fillMaxWidth().padding(32.dp), Alignment.Center) { CircularProgressIndicator() } }
-            Estado.Falha -> linhaInteira("falha") {
-                Column(Modifier.fillMaxWidth().padding(16.dp), Arrangement.spacedBy(8.dp), Alignment.CenterHorizontally) {
-                    Text(mensagem, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
-                    OutlinedButton({ tentativa += 1 }) { Text("Tentar de novo") }
-                }
+    val puxar: () -> Unit = {
+        atualizando = true
+        erroMais = null
+        escopo.launch {
+            try {
+                aoPuxar?.invoke()
+                pagina(null)
+            } finally {
+                atualizando = false
             }
-            Estado.Pronto -> {
-                if (itens.isEmpty()) {
-                    linhaInteira("vazio") { Text(vazio, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 24.dp)) }
-                    rodapeVazio?.invoke(this)
+        }
+    }
+    // `pullToRefresh` numa Box comum, e não `PullToRefreshBox`: dentro do lambda dele a grade às vezes não era redesenhada quando o
+    // cabeçalho mudava (as fileiras do Início chegando depois dos produtos ficavam de fora; o TelasTest pegava).
+    val puxarEstado = rememberPullToRefreshState()
+    Box(Modifier.fillMaxSize().pullToRefresh(atualizando, puxarEstado, onRefresh = puxar)) {
+        LazyVerticalGrid(GridCells.Fixed(if (grade) 2 else 1), Modifier.fillMaxSize(), lista, contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            cabecalho()
+            when (estado) {
+                Estado.Carregando -> linhaInteira("carregando") { Box(Modifier.fillMaxWidth().padding(32.dp), Alignment.Center) { CircularProgressIndicator() } }
+                Estado.Falha -> linhaInteira("falha") {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), Arrangement.spacedBy(8.dp), Alignment.CenterHorizontally) {
+                        Text(mensagem, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
+                        OutlinedButton({ tentativa += 1 }) { Text("Tentar de novo") }
+                    }
                 }
-                items(itens, key = { it.getString("id") }) { p ->
-                    if (grade) CartaoProduto(m, p) { m.ir(Tela.Produto(p.getString("id"))) } else LinhaProduto(m, p, { m.ir(Tela.Produto(p.getString("id"))) })
-                }
-                if (maisCarregando) linhaInteira("mais") { Box(Modifier.fillMaxWidth().padding(16.dp), Alignment.Center) { CircularProgressIndicator(Modifier.size(24.dp)) } }
-                erroMais?.let { msg ->
-                    linhaInteira("erro-mais") {
-                        Column(Modifier.fillMaxWidth().padding(8.dp), Arrangement.spacedBy(8.dp), Alignment.CenterHorizontally) {
-                            Text(msg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-                            OutlinedButton({ erroMais = null }) { Text("Tentar de novo") }
+                Estado.Pronto -> {
+                    if (itens.isEmpty()) {
+                        linhaInteira("vazio") { Text(vazio, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 24.dp)) }
+                        rodapeVazio?.invoke(this)
+                    }
+                    items(itens, key = { it.getString("id") }) { p ->
+                        if (grade) CartaoProduto(m, p) { m.ir(Tela.Produto(p.getString("id"))) } else LinhaProduto(m, p, { m.ir(Tela.Produto(p.getString("id"))) })
+                    }
+                    if (maisCarregando) linhaInteira("mais") { Box(Modifier.fillMaxWidth().padding(16.dp), Alignment.Center) { CircularProgressIndicator(Modifier.size(24.dp)) } }
+                    erroMais?.let { msg ->
+                        linhaInteira("erro-mais") {
+                            Column(Modifier.fillMaxWidth().padding(8.dp), Arrangement.spacedBy(8.dp), Alignment.CenterHorizontally) {
+                                Text(msg, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+                                OutlinedButton({ erroMais = null }) { Text("Tentar de novo") }
+                            }
                         }
                     }
                 }
             }
         }
+        PullToRefreshDefaults.Indicator(puxarEstado, atualizando, Modifier.align(Alignment.TopCenter))
     }
 }

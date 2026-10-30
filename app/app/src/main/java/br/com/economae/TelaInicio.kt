@@ -44,7 +44,8 @@ fun AbaInicio(m: Modelo) {
     var cep by remember { mutableStateOf<String?>(null) }
     var fileiras by remember { mutableStateOf<List<FileiraInicio>>(emptyList()) }
     var vistos by remember { mutableStateOf<List<JSONObject>>(emptyList()) }
-    LaunchedEffect(Unit) {
+    // Fileiras e "vistos recentemente": ao abrir e ao puxar a tela para baixo (junto com a grade "Para você").
+    suspend fun carregarFileiras() {
         try {
             val r = m.api.get("/v1/inicio")
             val c = r.corpo
@@ -61,9 +62,11 @@ fun AbaInicio(m: Modelo) {
             if (r.ok && r.corpo != null) vistos = naOrdemDosVistos(ids, r.corpo.lista("itens"))
         } catch (_: SemConexao) {}
     }
+    LaunchedEffect(Unit) { carregarFileiras() }
     val todas = comVistos(fileiras, vistos)
 
     ListaProdutos(m, consultaProdutos(ordem = Ordem.ParaVoce), "Ainda não há ofertas nas lojas que entregam no seu CEP, nas categorias que você escolheu.", grade = true,
+        aoPuxar = { carregarFileiras() },
         rodapeVazio = {
             linhaInteira("mudar") { OutlinedButton({ m.ir(Tela.Preferencias) }, Modifier.fillMaxWidth()) { Text("Mudar categorias e CEP") } }
         }) {

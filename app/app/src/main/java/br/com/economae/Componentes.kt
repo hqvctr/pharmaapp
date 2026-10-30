@@ -13,7 +13,11 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.ShoppingCart
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.draw.clip
@@ -64,18 +68,31 @@ sealed interface Carga<out T> {
     data class Ok<T>(val valor: T) : Carga<T>
 }
 
-/** Executa `buscar` quando `chave` muda (ou ao tentar de novo) e mostra carregando, erro ou o conteúdo. */
+/**
+ * Executa `buscar` quando `chave` muda (ou ao tentar de novo) e mostra carregando, erro ou o conteúdo. Com `puxar`, puxar a tela
+ * para baixo busca de novo, mantendo o conteúdo atual à vista até chegar o novo (o conteúdo precisa rolar: lista ou coluna com scroll).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T> Carregar(chave: Any?, buscar: suspend () -> T, conteudo: @Composable (T, () -> Unit) -> Unit) {
+fun <T> Carregar(chave: Any?, buscar: suspend () -> T, puxar: Boolean = false, conteudo: @Composable (T, () -> Unit) -> Unit) {
     var tentativa by remember { mutableIntStateOf(0) }
     var estado by remember { mutableStateOf<Carga<T>>(Carga.Carregando) }
+    var atualizando by remember { mutableStateOf(false) }
+    val puxarEstado = rememberPullToRefreshState()
     LaunchedEffect(chave, tentativa) {
         estado = try { Carga.Ok(buscar()) } catch (e: SemConexao) { Carga.Falha(e.message ?: "Sem conexão.") } catch (e: Exception) { Carga.Falha(e.message ?: "Erro inesperado.") }
+        atualizando = false
     }
     when (val s = estado) {
         is Carga.Carregando -> Column(Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) { CircularProgressIndicator() }
         is Carga.Falha -> Erro(s.mensagem) { estado = Carga.Carregando; tentativa += 1 }
-        is Carga.Ok -> conteudo(s.valor) { tentativa += 1 }
+        // Box comum com `pullToRefresh` (e não `PullToRefreshBox`, cujo lambda à parte às vezes não redesenhava o conteúdo novo).
+        is Carga.Ok -> if (puxar) {
+            Box(Modifier.fillMaxSize().pullToRefresh(atualizando, puxarEstado, onRefresh = { atualizando = true; tentativa += 1 })) {
+                conteudo(s.valor) { tentativa += 1 }
+                PullToRefreshDefaults.Indicator(puxarEstado, atualizando, Modifier.align(Alignment.TopCenter))
+            }
+        } else conteudo(s.valor) { tentativa += 1 }
     }
 }
 

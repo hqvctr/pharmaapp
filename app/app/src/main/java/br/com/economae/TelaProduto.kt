@@ -52,7 +52,7 @@ fun TelaProduto(m: Modelo, id: String) {
     val contexto = LocalContext.current
     val escopo = rememberCoroutineScope()
     Moldura("Detalhes do produto", { m.voltar() }) {
-        Carregar(listOf(id, m.versao), { m.api.get("/v1/produtos/$id") }) { r, recarregar ->
+        Carregar(listOf(id, m.versao), { m.api.get("/v1/produtos/$id") }, puxar = true) { r, recarregar ->
             val p = r.corpo
             if (!r.ok || p == null) { Erro(if (r.status == 404) "Produto não encontrado." else r.mensagem, recarregar); return@Carregar }
             val ofertas = p.lista("ofertas")

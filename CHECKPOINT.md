@@ -1,5 +1,9 @@
 # Checkpoint
 
+## App 0.6.0: convites de permissão, puxar para atualizar e fase 2 de volta (2026-10-30, DECISIONS 104)
+
+App 0.6.0 (APK entregue; mesma chave, instala por cima): convite das notificações ao entrar no app (também para quem consentiu e tem o Android bloqueando), convite da localização no cadastro sem CEP (localização só no aparelho, para achar o CEP), "Agora não" volta uma vez em 7 dias, "Permitir notificações" no Perfil, "Usar minha localização" no campo de CEP, e puxar para atualizar nas listas e telas de detalhe. 53 testes do app passam (6 novos); mutação sem o gesto quebra os 2 testes dele. `PullToRefreshBox` trocado por `pullToRefresh` numa `Box` depois de deixar o Início sem fileiras no teste. Critério da fase 2 de volta a PRONTO (gravação de teste com produtos do catálogo atual). **Não testado no celular.**
+
 ## Computador atualizado com a fase 4 (2026-10-30)
 
 Relatório do Cowork: `docs/juridico/fontes/atualizacao-fase4-2026-10-30.md`. Zip da `claude/zen-gates-965k2e` aplicado pelo `atualizar.bat` (rodado pelo responsável); coletor religado às 02h23 com "push ligado"; `status.bat` novo: "3 de 7 dias", 1 aparelho registrado, avisos das últimas 24 h "enviado 2, sem_aparelho 2" (os da demonstração). Os 8 alertas são os de demonstração (apagar com `demo-feed-remover.bat`). Primeiros alertas reais por volta de 04/11.

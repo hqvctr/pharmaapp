@@ -15,6 +15,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToKey
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.printToString
@@ -23,6 +25,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -50,6 +53,8 @@ class TelasTest {
     private lateinit var servidor: MiniServidor
     private val pedidos = mutableListOf<String>()
     private var seguidoAgora = false
+    /** CEPs que o servidor falso devolve em /v1/preferencias (o convite da localização só aparece sem CEP). */
+    private var cepsGuardados = """["14020260"]"""
     private lateinit var m: Modelo
     private val saida = File("build/telas").also { it.mkdirs() }
 
@@ -99,7 +104,7 @@ class TelasTest {
                     JSONObject().put("slug", "gestacao").put("produtos", 0), JSONObject().put("slug", "mamae").put("produtos", 1),
                     JSONObject().put("slug", "bebe").put("produtos", 12), JSONObject().put("slug", "infantil").put("produtos", 3),
                 ))).toString())
-                caminho == "/v1/preferencias" -> json(200, """{"categorias":[],"ceps":["14020260"],"silencio":null,"limite_diario":null}""")
+                caminho == "/v1/preferencias" -> json(200, """{"categorias":[],"ceps":$cepsGuardados,"silencio":null,"limite_diario":null}""")
                 caminho == "/v1/produtos" && q.contains("ids=") -> json(200, JSONObject().put("itens", JSONArray(listOf(produto(7, "bebe")))).put("proximo_cursor", JSONObject.NULL).toString())
                 caminho == "/v1/produtos" -> {
                     val cat = Regex("categoria=(\\w+)").find(q)?.groupValues?.get(1) ?: "bebe"
@@ -241,6 +246,48 @@ class TelasTest {
         caixas[0].assertIsNotEnabled()
         caixas[2].assertIsEnabled()
         foto("09-cadastro")
+    }
+
+    @Test fun `puxar a lista para baixo busca de novo, nos produtos e nos favoritos`() {
+        mostrar { TelaLista(m, "Baixaram de preço", VerTodas(null, null, Ordem.MaiorQueda, Filtros(comQueda = true))) }
+        esperar("Fralda descartável")
+        val lista = { pedidos.count { it.contains("ordem=maior_queda") } }
+        val antes = lista()
+        rule.onNode(androidx.compose.ui.test.hasScrollAction()).performTouchInput { swipeDown() }
+        rule.waitUntil(10_000) { lista() > antes }
+        esperar("Fralda descartável") // a lista continua na tela
+    }
+
+    @Test fun `favoritos tambem atualizam ao puxar`() {
+        mostrar { AbaFavoritos(m) }
+        esperar("sem oferta na sua região")
+        val seguidos = { pedidos.count { it.startsWith("GET /v1/seguidos") } }
+        val antes = seguidos()
+        rule.onNode(androidx.compose.ui.test.hasScrollAction()).performTouchInput { swipeDown() }
+        rule.waitUntil(10_000) { seguidos() > antes }
+        esperar("sem oferta na sua região")
+    }
+
+    @Test fun `cadastro sem cep convida a usar a localizacao e agora nao fecha o convite por 7 dias`() {
+        cepsGuardados = "[]"
+        m.usuario = JSONObject().put("plano", JSONObject().put("ceps_permitidos", 1))
+        mostrar { TelaPreferencias(m) {} }
+        esperar("Preencher o CEP pela localização?")
+        foto("10-convite-localizacao")
+        rule.onNodeWithText("Agora não").performClick()
+        rule.waitUntil(5_000) { !rule.onAllNodesWithTextExists("Preencher o CEP pela localização?") }
+        assertFalse(Convites(ApplicationProvider.getApplicationContext()).pode("localizacao"))
+        esperar("Usar minha localização") // o botão continua no campo de CEP
+    }
+
+    @Test fun `convite das notificacoes aparece para quem nao consentiu e agora nao fecha por 7 dias`() {
+        m.usuario = JSONObject().put("notificacoes_consentidas", false)
+        mostrar { ConviteNotificacoes(m) }
+        esperar("Avisos de promoção no celular")
+        foto("11-convite-notificacoes")
+        rule.onNodeWithText("Agora não").performClick()
+        rule.waitUntil(5_000) { !rule.onAllNodesWithTextExists("Avisos de promoção no celular") }
+        assertFalse(Convites(ApplicationProvider.getApplicationContext()).pode("notificacoes"))
     }
 
     @Test fun `favoritos mostra foto e preco, e sem oferta diz que nao ha na regiao`() {
