@@ -77,7 +77,7 @@ despachante para de enviar naquela rodada e escreve `ERRO no FCM` no log; os pus
   notificação; com ele fechado, o Android mostra a que veio do servidor.
 - O APK é compilado pelo GitHub Actions (`.github/workflows/app.yml`): na página da execução, artefato `economae-previa-apk`.
 
-**Teste de ponta a ponta:** instalar o APK 0.5.0, entrar, ligar as notificações, conferir no servidor que o aparelho registrou
+**Teste de ponta a ponta** (feito em 30/10/2026: as notificações chegaram ao celular): instalar o APK 0.5.0, entrar, ligar as notificações, conferir no servidor que o aparelho registrou
 (`docker compose exec postgres psql -U promo -d promo -c "SELECT plataforma, versao_app, registrado_em FROM dispositivos"`),
 rodar o `demo-feed-remover.bat` (se já houver demonstração; ela não se repete) e depois o `demo-feed.bat`, e esperar até 10 minutos (o despachante roda a cada 10 min) pela notificação dos dois alertas de destaque.
 O celular precisa alcançar a API (rede local ou túnel) só para registrar o token; o push chega por fora, pelo Google.

@@ -1,5 +1,9 @@
 # Checkpoint
 
+## Push testado no celular (2026-10-30)
+
+**Funcionou de ponta a ponta**, informado pelo responsável: app 0.5.0 instalado, notificações ligadas no Perfil, aparelho registrado (`dispositivos`: android, 0.5.0-previa), alertas de demonstração (`demo-feed.bat`) e as notificações chegaram ao celular, enviadas pelo coletor com a chave da conta de serviço `b5aeff6f...`. Achados do teste no BACKLOG: falta "puxar para atualizar" no app; quem já tinha consentido não vê o pedido de permissão do Android. Próximos: o responsável confirmar as regras propostas do push (DECISIONS 100); depois de ~11/11, os primeiros alertas reais do motor.
+
 ## App 0.5.0 com push (2026-10-30, DECISIONS 101)
 
 O app recebe push: Firebase no código, canal `avisos`, permissão do Android 13+ ao ligar as notificações, token mandado com `PUT /v1/dispositivo` (entrada, ligar, troca de token) e toque que abre a promoção e marca o aviso como lido. **47 testes do app passam** (3 novos, inclusive os 8 que desenham as telas), compilado aqui (Android SDK instalado com autorização do responsável; Maven Central pelo espelho do Google, `scripts/gradle-espelho-maven.gradle`); APK conferido: `br.com.economae.debug` 0.5.0, SHA-1 `7C:1C:...:36:A6`, mesma chave, instala por cima. GitHub Actions (`.github/workflows/app.yml`) compila e roda os testes a cada mudança em `app/`. **Não testado no celular**: teste de ponta a ponta em `docs/operacao/push.md` (ligar notificações, `demo-feed.bat`, esperar até 10 min).
